@@ -1,32 +1,32 @@
 <?php
 /**
- * CDbSchema class file.
+ * Schema class file.
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema;
+namespace DreamFactory\Rave\SqlDbCore\Schema;
 
 use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Rave\SqlDb\DB\CDbConnection;
+use DreamFactory\Rave\SqlDbCore\Connection;
 
 /**
- * CDbSchema is the base class for retrieving metadata information.
+ * Schema is the base class for retrieving metadata information.
  *
- * @property CDbConnection     $dbConnection   Database connection. The connection is active.
+ * @property Connection     $dbConnection   Database connection. The connection is active.
  * @property array             $tables         The metadata for all tables in the database.
- * Each array element is an instance of {@link CDbTableSchema} (or its child class).
+ * Each array element is an instance of {@link TableSchema} (or its child class).
  * The array keys are table names.
  * @property array             $tableNames     All table names in the database.
- * @property CDbCommandBuilder $commandBuilder The SQL command builder for this connection.
+ * @property CommandBuilder $commandBuilder The SQL command builder for this connection.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
  * @since   1.0
  */
-abstract class CDbSchema
+abstract class Schema
 {
     const DEFAULT_STRING_MAX_SIZE = 255;
 
@@ -59,7 +59,7 @@ abstract class CDbSchema
      */
     private $_functions = array();
     /**
-     * @var CDbConnection
+     * @var Connection
      */
     private $_connection;
     /**
@@ -72,14 +72,14 @@ abstract class CDbSchema
      *
      * @param string $name table name
      *
-     * @return CDbTableSchema driver dependent table metadata, null if the table does not exist.
+     * @return TableSchema driver dependent table metadata, null if the table does not exist.
      */
     abstract protected function loadTable( $name );
 
     /**
      * Constructor.
      *
-     * @param CDbConnection $conn database connection.
+     * @param Connection $conn database connection.
      */
     public function __construct( $conn )
     {
@@ -87,7 +87,7 @@ abstract class CDbSchema
     }
 
     /**
-     * @return CDbConnection database connection. The connection is active.
+     * @return Connection database connection. The connection is active.
      */
     public function getDbConnection()
     {
@@ -151,7 +151,7 @@ abstract class CDbSchema
      * @param boolean $refresh if we need to refresh schema cache for a table.
      *                         Parameter available since 1.1.9
      *
-     * @return CDbTableSchema table metadata. Null if the named table does not exist.
+     * @return TableSchema table metadata. Null if the named table does not exist.
      */
     public function getTable( $name, $refresh = false )
     {
@@ -185,7 +185,7 @@ abstract class CDbSchema
      * @param bool   $refresh
      *
      * @return array the metadata for all tables in the database.
-     * Each array element is an instance of {@link CDbTableSchema} (or its child class).
+     * Each array element is an instance of {@link TableSchema} (or its child class).
      * The array keys are table names.
      */
     public function getTables( $schema = '', $include_views = true, $refresh = false )
@@ -291,7 +291,7 @@ abstract class CDbSchema
      * @param boolean $refresh if we need to refresh schema cache for a stored procedure.
      *                         Parameter available since 1.1.9
      *
-     * @return CDbProcedureSchema stored procedure metadata. Null if the named stored procedure does not exist.
+     * @return ProcedureSchema stored procedure metadata. Null if the named stored procedure does not exist.
      */
     public function getProcedure( $name, $refresh = false )
     {
@@ -315,7 +315,7 @@ abstract class CDbSchema
      * @param string $name procedure name
      *
      * @throws \Exception
-     * @return CDbProcedureSchema driver dependent procedure metadata, null if the procedure does not exist.
+     * @return ProcedureSchema driver dependent procedure metadata, null if the procedure does not exist.
      */
     protected function loadProcedure( $name )
     {
@@ -340,7 +340,7 @@ abstract class CDbSchema
      * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default schema.
      *
      * @return array the metadata for all stored procedures in the database.
-     * Each array element is an instance of {@link CDbProcedureSchema} (or its child class).
+     * Each array element is an instance of {@link ProcedureSchema} (or its child class).
      * The array keys are procedure names.
      */
     public function getProcedures( $schema = '' )
@@ -442,7 +442,7 @@ abstract class CDbSchema
      * @param boolean $refresh if we need to refresh schema cache for a stored function.
      *                         Parameter available since 1.1.9
      *
-     * @return CDbFunctionSchema stored function metadata. Null if the named stored function does not exist.
+     * @return FunctionSchema stored function metadata. Null if the named stored function does not exist.
      */
     public function getFunction( $name, $refresh = false )
     {
@@ -465,7 +465,7 @@ abstract class CDbSchema
      * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default schema.
      *
      * @return array the metadata for all stored functions in the database.
-     * Each array element is an instance of {@link CDbFunctionSchema} (or its child class).
+     * Each array element is an instance of {@link FunctionSchema} (or its child class).
      * The array keys are functions names.
      */
     public function getFunctions( $schema = '' )
@@ -566,7 +566,7 @@ abstract class CDbSchema
      * @param string $name function name
      *
      * @throws \Exception
-     * @return CDbFunctionSchema driver dependent function metadata, null if the function does not exist.
+     * @return FunctionSchema driver dependent function metadata, null if the function does not exist.
      */
     protected function loadFunction( $name )
     {
@@ -586,7 +586,7 @@ abstract class CDbSchema
     }
 
     /**
-     * @return CDbCommandBuilder the SQL command builder for this connection.
+     * @return CommandBuilder the SQL command builder for this connection.
      */
     public function getCommandBuilder()
     {
@@ -735,7 +735,7 @@ abstract class CDbSchema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param integer|null   $value the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a primary
      *                              key plus one (i.e. sequence trimming).
@@ -762,11 +762,11 @@ abstract class CDbSchema
      * Creates a command builder for the database.
      * This method may be overridden by child classes to create a DBMS-specific command builder.
      *
-     * @return CDbCommandBuilder command builder instance
+     * @return CommandBuilder command builder instance
      */
     protected function createCommandBuilder()
     {
-        return new CDbCommandBuilder( $this );
+        return new CommandBuilder( $this );
     }
 
     /**
@@ -1280,7 +1280,7 @@ abstract class CDbSchema
      */
     public function getTimestampForSet( $update = false )
     {
-        return new CDbExpression( '(NOW())' );
+        return new Expression( '(NOW())' );
     }
 
     public function parseValueForSet( $value, $field_info )

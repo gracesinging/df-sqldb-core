@@ -13,17 +13,17 @@
  * @author  Lee Hicks <leehicks@dreamfactory.com>
  * @package system.db.schema.ibmdb2
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Ibmdb2;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Ibmdb2;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
-class CIbmDB2Schema extends CDbSchema
+class CIbmDB2Schema extends Schema
 {
     //******************************************************************************
     //* Members
@@ -67,11 +67,11 @@ class CIbmDB2Schema extends CDbSchema
      *
      * @param string $name table name
      *
-     * @return CDbTableSchema driver dependent table metadata, null if the table does not exist.
+     * @return TableSchema driver dependent table metadata, null if the table does not exist.
      */
     protected function loadTable( $name )
     {
-        $table = new CDbTableSchema;
+        $table = new TableSchema;
         $this->resolveTableNames( $table, $name );
         if ( !$this->findColumns( $table ) )
         {
@@ -340,7 +340,7 @@ class CIbmDB2Schema extends CDbSchema
     /**
      * Generates various kinds of table names.
      *
-     * @param CDbTableSchema $table the table instance
+     * @param TableSchema $table the table instance
      * @param string         $name  the unquoted table name
      */
     protected function resolveTableNames( $table, $name )
@@ -364,7 +364,7 @@ class CIbmDB2Schema extends CDbSchema
     /**
      * Collects the table column metadata.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @return boolean whether the table exists in the database
      */
@@ -428,7 +428,7 @@ SQL;
      *
      * @param array $column column metadata
      *
-     * @return CDbColumnSchema normalized column metadata
+     * @return ColumnSchema normalized column metadata
      */
     protected function createColumn( $column )
     {
@@ -466,7 +466,7 @@ SQL;
     /**
      * Collects the primary and foreign key column details for the given table.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      */
     protected function findConstraints( $table )
     {
@@ -572,7 +572,7 @@ SQL;
     /**
      * Gets the primary key column(s) details for the given table.
      *
-     * @param CDbTableSchema $table table
+     * @param TableSchema $table table
      *
      * @return mixed primary keys (null if no pk, string if only 1 column pk, or array if composite pk)
      */
@@ -745,7 +745,7 @@ SQL;
      * Creates a command builder for the database.
      * This method overrides parent implementation in order to create a DB2 specific command builder
      *
-     * @return CDbCommandBuilder command builder instance
+     * @return CommandBuilder command builder instance
      */
     protected function createCommandBuilder()
     {
@@ -757,7 +757,7 @@ SQL;
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or 1.
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param mixed          $value the value for the primary key of the next new row inserted. If this is not set,
      *                              the next new row's primary key will have a value 1.
      */
@@ -1102,11 +1102,11 @@ SQL;
     {
         if ( !$update )
         {
-            return new CDbExpression( '(CURRENT_TIMESTAMP)' );
+            return new Expression( '(CURRENT_TIMESTAMP)' );
         }
         else
         {
-            return new CDbExpression( '(GENERATED ALWAYS FOR EACH ROW ON UPDATE AS ROW CHANGE TIMESTAMP)' );
+            return new Expression( '(GENERATED ALWAYS FOR EACH ROW ON UPDATE AS ROW CHANGE TIMESTAMP)' );
         }
     }
 

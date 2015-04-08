@@ -1,26 +1,26 @@
 <?php
 /**
- * CDbDataReader class file
+ * DataReader class file
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @link http://www.yiiframework.com/
  * @copyright 2008-2013 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB;
+namespace DreamFactory\Rave\SqlDbCore;
 
 /**
- * CDbDataReader represents a forward-only stream of rows from a query result set.
+ * DataReader represents a forward-only stream of rows from a query result set.
  *
  * To read the current row of data, call {@link read}. The method {@link readAll}
  * returns all the rows in a single array.
  *
- * One can also retrieve the rows of data in CDbDataReader by using foreach:
+ * One can also retrieve the rows of data in DataReader by using foreach:
  * <pre>
  * foreach($reader as $row)
  *     // $row represents a row of data
  * </pre>
- * Since CDbDataReader is a forward-only stream, you can only traverse it once.
+ * Since DataReader is a forward-only stream, you can only traverse it once.
  *
  * It is possible to use a specific mode of data fetching by setting
  * {@link setFetchMode FetchMode}. See {@link http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php}
@@ -35,7 +35,7 @@ namespace DreamFactory\Rave\SqlDb\DB;
  * @package system.db
  * @since 1.0
  */
-class CDbDataReader
+class DataReader
 {
 	private $_statement;
 	private $_closed=false;
@@ -44,9 +44,10 @@ class CDbDataReader
 
 	/**
 	 * Constructor.
-	 * @param CDbCommand $command the command generating the query result
+	 *
+*@param Command $command the command generating the query result
 	 */
-	public function __construct(CDbCommand $command)
+	public function __construct( Command $command)
 	{
 		$this->_statement=$command->getPdoStatement();
 		$this->_statement->setFetchMode(\PDO::FETCH_ASSOC);
@@ -201,7 +202,7 @@ class CDbDataReader
 			$this->_index=0;
 		}
 		else
-			throw new \Exception('CDbDataReader cannot rewind. It is a forward-only reader.');
+			throw new \Exception('DataReader cannot rewind. It is a forward-only reader.');
 	}
 
 	/**

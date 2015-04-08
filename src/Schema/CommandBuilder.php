@@ -1,27 +1,27 @@
 <?php
 /**
- * CDbCommandBuilder class file.
+ * CommandBuilder class file.
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema;
+namespace DreamFactory\Rave\SqlDbCore\Schema;
 
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
-use DreamFactory\Rave\SqlDb\DB\CDbConnection;
+use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Rave\SqlDbCore\Connection;
 /**
- * CDbCommandBuilder provides basic methods to create query commands for tables.
+ * CommandBuilder provides basic methods to create query commands for tables.
  *
- * @property CDbConnection $dbConnection Database connection.
- * @property CDbSchema     $schema       The schema for this command builder.
+ * @property Connection $dbConnection Database connection.
+ * @property Schema     $schema       The schema for this command builder.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
  * @since   1.0
  */
-class CDbCommandBuilder
+class CommandBuilder
 {
     const PARAM_PREFIX = ':yp';
 
@@ -29,7 +29,7 @@ class CDbCommandBuilder
     private $_connection;
 
     /**
-     * @param CDbSchema $schema the schema for this command builder
+     * @param Schema $schema the schema for this command builder
      */
     public function __construct( $schema )
     {
@@ -38,7 +38,7 @@ class CDbCommandBuilder
     }
 
     /**
-     * @return CDbConnection database connection.
+     * @return Connection database connection.
      */
     public function getDbConnection()
     {
@@ -46,7 +46,7 @@ class CDbCommandBuilder
     }
 
     /**
-     * @return CDbSchema the schema for this command builder.
+     * @return Schema the schema for this command builder.
      */
     public function getSchema()
     {
@@ -56,7 +56,7 @@ class CDbCommandBuilder
     /**
      * Returns the last insertion ID for the specified table.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      *
      * @return mixed last insertion id. Null is returned if no sequence name.
      */
@@ -76,11 +76,11 @@ class CDbCommandBuilder
     /**
      * Creates a SELECT command for a single table.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
-     * @param CDbCriteria $criteria the query criteria
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param Criteria $criteria the query criteria
      * @param string      $alias    the alias name of the primary table. Defaults to 't'.
      *
-     * @return CDbCommand query command.
+     * @return Command query command.
      */
     public function createFindCommand( $table, $criteria, $alias = 't' )
     {
@@ -120,11 +120,11 @@ class CDbCommandBuilder
     /**
      * Creates a COUNT(*) command for a single table.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
-     * @param CDbCriteria $criteria the query criteria
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param Criteria $criteria the query criteria
      * @param string      $alias    the alias name of the primary table. Defaults to 't'.
      *
-     * @return CDbCommand query command.
+     * @return Command query command.
      */
     public function createCountCommand( $table, $criteria, $alias = 't' )
     {
@@ -216,10 +216,10 @@ class CDbCommandBuilder
     /**
      * Creates a DELETE command.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
-     * @param CDbCriteria $criteria the query criteria
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param Criteria $criteria the query criteria
      *
-     * @return CDbCommand delete command.
+     * @return Command delete command.
      */
     public function createDeleteCommand( $table, $criteria )
     {
@@ -240,10 +240,10 @@ class CDbCommandBuilder
     /**
      * Creates an INSERT command.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand insert command
+     * @return Command insert command
      */
     public function createInsertCommand( $table, $data )
     {
@@ -257,7 +257,7 @@ class CDbCommandBuilder
             if ( ( $column = $table->getColumn( $name ) ) !== null && ( $value !== null || $column->allowNull ) )
             {
                 $fields[] = $column->rawName;
-                if ( $value instanceof CDbExpression )
+                if ( $value instanceof Expression )
                 {
                     $placeholders[] = $value->expression;
                     foreach ( $value->params as $n => $v )
@@ -298,11 +298,11 @@ class CDbCommandBuilder
      * This method could be used to achieve better performance during insertion of the large
      * amount of data into the database tables.
      *
-     * @param mixed   $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed   $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column value).
      *                       If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand multiple insert command
+     * @return Command multiple insert command
      * @since 1.1.14
      */
     public function createMultipleInsertCommand( $table, array $data )
@@ -315,12 +315,12 @@ class CDbCommandBuilder
      * This method compose the SQL expression via given part templates, providing ability to adjust
      * command for different SQL syntax.
      *
-     * @param mixed   $table     the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed   $table     the table schema ({@link TableSchema}) or the table name (string).
      * @param array[] $data      list data to be inserted, each value should be an array in format (column name=>column value).
      *                           If a key is not a valid column name, the corresponding value will be ignored.
      * @param array   $templates templates for the SQL parts.
      *
-     * @return CDbCommand multiple insert command
+     * @return Command multiple insert command
      */
     protected function composeMultipleInsertCommand( $table, array $data, array $templates = array() )
     {
@@ -367,8 +367,8 @@ class CDbCommandBuilder
             foreach ( $columns as $columnName )
             {
                 $column = $table->getColumn( $columnName );
-                $columnValue = array_key_exists( $columnName, $rowData ) ? $rowData[$columnName] : new CDbExpression( 'NULL' );
-                if ( $columnValue instanceof CDbExpression )
+                $columnValue = array_key_exists( $columnName, $rowData ) ? $rowData[$columnName] : new Expression( 'NULL' );
+                if ( $columnValue instanceof Expression )
                 {
                     $columnInsertValue = $columnValue->expression;
                     foreach ( $columnValue->params as $columnValueParamName => $columnValueParam )
@@ -420,12 +420,12 @@ class CDbCommandBuilder
     /**
      * Creates an UPDATE command.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param array       $data     list of columns to be updated (name=>value)
-     * @param CDbCriteria $criteria the query criteria
+     * @param Criteria $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated for the given table
-     * @return CDbCommand update command.
+     * @return Command update command.
      */
     public function createUpdateCommand( $table, $data, $criteria )
     {
@@ -438,7 +438,7 @@ class CDbCommandBuilder
         {
             if ( ( $column = $table->getColumn( $name ) ) !== null )
             {
-                if ( $value instanceof CDbExpression )
+                if ( $value instanceof Expression )
                 {
                     $fields[] = $column->rawName . '=' . $value->expression;
                     foreach ( $value->params as $n => $v )
@@ -479,12 +479,12 @@ class CDbCommandBuilder
     /**
      * Creates an UPDATE command that increments/decrements certain columns.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param array       $counters counters to be updated (counter increments/decrements indexed by column names.)
-     * @param CDbCriteria $criteria the query criteria
+     * @param Criteria $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated for the given table
-     * @return CDbCommand the created command
+     * @return Command the created command
      */
     public function createUpdateCounterCommand( $table, $counters, $criteria )
     {
@@ -529,7 +529,7 @@ class CDbCommandBuilder
      * @param string $sql    the explicitly specified SQL statement
      * @param array  $params parameters that will be bound to the SQL statement
      *
-     * @return CDbCommand the created command
+     * @return Command the created command
      */
     public function createSqlCommand( $sql, $params = array() )
     {
@@ -666,7 +666,7 @@ class CDbCommandBuilder
     /**
      * Binds parameter values for an SQL command.
      *
-     * @param CDbCommand $command database command
+     * @param Command $command database command
      * @param array      $values  values for binding (integer-indexed array for question mark placeholders, string-indexed array for named placeholders)
      */
     public function bindValues( $command, $values )
@@ -700,28 +700,28 @@ class CDbCommandBuilder
      *
      * @param mixed $condition query condition or criteria.
      *                         If a string, it is treated as query condition (the WHERE clause);
-     *                         If an array, it is treated as the initial values for constructing a {@link CDbCriteria} object;
-     *                         Otherwise, it should be an instance of {@link CDbCriteria}.
+     *                         If an array, it is treated as the initial values for constructing a {@link Criteria} object;
+     *                         Otherwise, it should be an instance of {@link Criteria}.
      * @param array $params    parameters to be bound to an SQL statement.
      *                         This is only used when the first parameter is a string (query condition).
-     *                         In other cases, please use {@link CDbCriteria::params} to set parameters.
+     *                         In other cases, please use {@link Criteria::params} to set parameters.
      *
-     * @return CDbCriteria the created query criteria
-     * @throws \Exception if the condition is not string, array and CDbCriteria
+     * @return Criteria the created query criteria
+     * @throws \Exception if the condition is not string, array and Criteria
      */
     public function createCriteria( $condition = '', $params = array() )
     {
         if ( is_array( $condition ) )
         {
-            $criteria = new CDbCriteria( $condition );
+            $criteria = new Criteria( $condition );
         }
-        elseif ( $condition instanceof CDbCriteria )
+        elseif ( $condition instanceof Criteria )
         {
             $criteria = clone $condition;
         }
         else
         {
-            $criteria = new CDbCriteria;
+            $criteria = new Criteria;
             $criteria->condition = $condition;
             $criteria->params = $params;
         }
@@ -732,18 +732,18 @@ class CDbCommandBuilder
     /**
      * Creates a query criteria with the specified primary key.
      *
-     * @param mixed  $table     the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed  $table     the table schema ({@link TableSchema}) or the table name (string).
      * @param mixed  $pk        primary key value(s). Use array for multiple primary keys. For composite key, each key value must be an array (column name=>column value).
      * @param mixed  $condition query condition or criteria.
      *                          If a string, it is treated as query condition;
-     *                          If an array, it is treated as the initial values for constructing a {@link CDbCriteria};
-     *                          Otherwise, it should be an instance of {@link CDbCriteria}.
+     *                          If an array, it is treated as the initial values for constructing a {@link Criteria};
+     *                          Otherwise, it should be an instance of {@link Criteria}.
      * @param array  $params    parameters to be bound to an SQL statement.
      *                          This is only used when the second parameter is a string (query condition).
-     *                          In other cases, please use {@link CDbCriteria::params} to set parameters.
+     *                          In other cases, please use {@link Criteria::params} to set parameters.
      * @param string $prefix    column prefix (ended with dot). If null, it will be the table name
      *
-     * @return CDbCriteria the created query criteria
+     * @return Criteria the created query criteria
      */
     public function createPkCriteria( $table, $pk, $condition = '', $params = array(), $prefix = null )
     {
@@ -777,7 +777,7 @@ class CDbCommandBuilder
     /**
      * Generates the expression for selecting rows of specified primary key values.
      *
-     * @param mixed  $table  the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed  $table  the table schema ({@link TableSchema}) or the table name (string).
      * @param array  $values list of primary key values to be selected within
      * @param string $prefix column prefix (ended with dot). If null, it will be the table name
      *
@@ -793,19 +793,19 @@ class CDbCommandBuilder
     /**
      * Creates a query criteria with the specified column values.
      *
-     * @param mixed  $table     the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed  $table     the table schema ({@link TableSchema}) or the table name (string).
      * @param array  $columns   column values that should be matched in the query (name=>value)
      * @param mixed  $condition query condition or criteria.
      *                          If a string, it is treated as query condition;
-     *                          If an array, it is treated as the initial values for constructing a {@link CDbCriteria};
-     *                          Otherwise, it should be an instance of {@link CDbCriteria}.
+     *                          If an array, it is treated as the initial values for constructing a {@link Criteria};
+     *                          Otherwise, it should be an instance of {@link Criteria}.
      * @param array  $params    parameters to be bound to an SQL statement.
      *                          This is only used when the third parameter is a string (query condition).
-     *                          In other cases, please use {@link CDbCriteria::params} to set parameters.
+     *                          In other cases, please use {@link Criteria::params} to set parameters.
      * @param string $prefix    column prefix (ended with dot). If null, it will be the table name
      *
      * @throws \Exception if specified column is not found in given table
-     * @return CDbCriteria the created query criteria
+     * @return Criteria the created query criteria
      */
     public function createColumnCriteria( $table, $columns, $condition = '', $params = array(), $prefix = null )
     {
@@ -876,7 +876,7 @@ class CDbCommandBuilder
      * The search expression is generated using the 'LIKE' SQL syntax.
      * Every word in the keywords must be present and appear in at least one of the columns.
      *
-     * @param mixed   $table         the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed   $table         the table schema ({@link TableSchema}) or the table name (string).
      * @param array   $columns       list of column names for potential search condition.
      * @param mixed   $keywords      search keywords. This can be either a string with space-separated keywords or an array of keywords.
      * @param string  $prefix        optional column prefix (with dot at the end). If null, the table name will be used as the prefix.
@@ -931,7 +931,7 @@ class CDbCommandBuilder
     /**
      * Generates the expression for selecting rows of specified primary key values.
      *
-     * @param mixed  $table      the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed  $table      the table schema ({@link TableSchema}) or the table name (string).
      * @param mixed  $columnName the column name(s). It can be either a string indicating a single column
      *                           or an array of column names. If the latter, it stands for a composite key.
      * @param array  $values     list of key values to be selected within
@@ -1039,7 +1039,7 @@ class CDbCommandBuilder
     /**
      * Generates the expression for selecting rows with specified composite key values.
      *
-     * @param CDbTableSchema $table  the table schema
+     * @param TableSchema $table  the table schema
      * @param array          $values list of primary key values to be selected within
      * @param string         $prefix column prefix (ended with dot)
      *
@@ -1065,7 +1065,7 @@ class CDbCommandBuilder
      * Checks if the parameter is a valid table schema.
      * If it is a string, the corresponding table schema will be retrieved.
      *
-     * @param mixed $table table schema ({@link CDbTableSchema}) or table name (string).
+     * @param mixed $table table schema ({@link TableSchema}) or table name (string).
      * If this refers to a valid table name, this parameter will be returned with the corresponding table schema.
      *
      * @throws \Exception if the table name is not valid

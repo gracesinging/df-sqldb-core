@@ -7,9 +7,9 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Sqlite;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Sqlite;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * CSqliteColumnSchema class describes the column meta data of a SQLite table.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @package system.db.schema.sqlite
  * @since   1.0
  */
-class CSqliteColumnSchema extends CDbColumnSchema
+class CSqliteColumnSchema extends ColumnSchema
 {
     /**
      * Extracts the default value for the column.

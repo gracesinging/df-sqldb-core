@@ -7,9 +7,9 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\MySql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\MySql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
 /**
  * CMysqlCommandBuilder provides basic methods to create query commands for tables.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  * @package system.db.schema.mysql
  * @since   1.1.13
  */
-class CMysqlCommandBuilder extends CDbCommandBuilder
+class CMysqlCommandBuilder extends CommandBuilder
 {
     /**
      * Alters the SQL to apply JOIN clause.

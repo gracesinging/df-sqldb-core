@@ -7,9 +7,9 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Pgsql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Pgsql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * CPgsqlColumnSchema class describes the column meta data of a PostgreSQL table.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @package system.db.schema.pgsql
  * @since   1.0
  */
-class CPgsqlColumnSchema extends CDbColumnSchema
+class CPgsqlColumnSchema extends ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

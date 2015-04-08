@@ -7,11 +7,11 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Sqlite;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Sqlite;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Command;
 
 /**
  * CSqliteCommandBuilder provides basic methods to create query commands for SQLite tables.
@@ -20,14 +20,14 @@ use DreamFactory\Rave\SqlDb\DB\CDbCommand;
  * @package system.db.schema.sqlite
  * @since   1.0
  */
-class CSqliteCommandBuilder extends CDbCommandBuilder
+class CSqliteCommandBuilder extends CommandBuilder
 {
     /**
      * Generates the expression for selecting rows with specified composite key values.
      * This method is overridden because SQLite does not support the default
      * IN expression with composite columns.
      *
-     * @param CDbTableSchema $table  the table schema
+     * @param TableSchema $table  the table schema
      * @param array          $values list of primary key values to be selected within
      * @param string         $prefix column prefix (ended with dot)
      *
@@ -55,11 +55,11 @@ class CSqliteCommandBuilder extends CDbCommandBuilder
      * amount of data into the database tables.
      * Note that SQLite does not keep original order of the inserted rows.
      *
-     * @param mixed   $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed   $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column value).
      *                       If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand multiple insert command
+     * @return Command multiple insert command
      * @since 1.1.14
      */
     public function createMultipleInsertCommand( $table, array $data )

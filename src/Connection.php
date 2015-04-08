@@ -1,32 +1,32 @@
 <?php
 /**
- * CDbConnection class file
+ * Connection class file
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB;
+namespace DreamFactory\Rave\SqlDbCore;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
 /**
- * CDbConnection represents a connection to a database.
+ * Connection represents a connection to a database.
  *
- * CDbConnection works together with {@link CDbCommand}, {@link CDbDataReader}
- * and {@link CDbTransaction} to provide data access to various DBMS
+ * Connection works together with {@link Command}, {@link DataReader}
+ * and {@link Transaction} to provide data access to various DBMS
  * in a common set of APIs. They are a thin wrapper of the {@link http://www.php.net/manual/en/ref.pdo.php PDO}
  * PHP extension.
  *
  * To establish a connection, set {@link setActive active} to true after
  * specifying {@link connectionString}, {@link username} and {@link password}.
  *
- * The following example shows how to create a CDbConnection instance and establish
+ * The following example shows how to create a Connection instance and establish
  * the actual connection:
  * <pre>
- * $connection=new CDbConnection($dsn,$username,$password);
+ * $connection=new Connection($dsn,$username,$password);
  * $connection->active=true;
  * </pre>
  *
@@ -65,17 +65,17 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  * }
  * </pre>
  *
- * CDbConnection also provides a set of methods to support setting and querying
+ * Connection also provides a set of methods to support setting and querying
  * of certain DBMS attributes, such as {@link getNullConversion nullConversion}.
  *
- * Since CDbConnection implements the interface IApplicationComponent, it can
+ * Since Connection implements the interface IApplicationComponent, it can
  * be used as an application component and be configured in application configuration,
  * like the following,
  * <pre>
  * array(
  *     'components'=>array(
  *         'db'=>array(
- *             'class'=>'CDbConnection',
+ *             'class'=>'Connection',
  *             'connectionString'=>'sqlite:path/to/dbfile',
  *         ),
  *     ),
@@ -84,9 +84,9 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  *
  * @property boolean            $active             Whether the DB connection is established.
  * @property \PDO               $pdoInstance        The PDO instance, null if the connection is not established yet.
- * @property CDbTransaction     $currentTransaction The currently active transaction. Null if no active transaction.
- * @property CDbSchema          $schema             The database schema for the current connection.
- * @property CDbCommandBuilder  $commandBuilder     The command builder.
+ * @property Transaction     $currentTransaction The currently active transaction. Null if no active transaction.
+ * @property Schema          $schema             The database schema for the current connection.
+ * @property CommandBuilder  $commandBuilder     The command builder.
  * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved from the sequence object.
  * @property mixed              $columnCase         The case of the column names.
  * @property mixed              $nullConversion     How the null and empty strings are converted.
@@ -107,7 +107,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  * @package system.db
  * @since   1.0
  */
-class CDbConnection
+class Connection
 {
     /**
      * @var string The Data Source Name, or DSN, contains the information required to connect to the database.
@@ -129,7 +129,7 @@ class CDbConnection
     /**
      * @var boolean whether the database connection should be automatically established
      * the component is being initialized. Defaults to true. Note, this property is only
-     * effective when the CDbConnection object is used as an application component.
+     * effective when the Connection object is used as an application component.
      */
     public $autoConnect = true;
     /**
@@ -152,7 +152,7 @@ class CDbConnection
     public $emulatePrepare;
     /**
      * @var string the default prefix for table names. Defaults to null, meaning no table prefix.
-     * By setting this property, any token like '{{tableName}}' in {@link CDbCommand::text} will
+     * By setting this property, any token like '{{tableName}}' in {@link Command::text} will
      * be replaced by 'prefixTableName', where 'prefix' refers to this property value.
      * @since 1.1.0
      */
@@ -168,16 +168,16 @@ class CDbConnection
      * @since 1.1.6
      */
     public $driverMap = array(
-        'pgsql'   => 'DreamFactory\Rave\SqlDb\DB\Schema\Pgsql\CPgsqlSchema',    // PostgreSQL
-        'mysqli'  => 'DreamFactory\Rave\SqlDb\DB\Schema\Mysql\CMysqlSchema',   // MySQL
-        'mysql'   => 'DreamFactory\Rave\SqlDb\DB\Schema\MySql\CMysqlSchema',    // MySQL
-        'sqlite'  => 'DreamFactory\Rave\SqlDb\DB\Schema\Sqllite\CSqliteSchema',  // sqlite 3
-        'sqlite2' => 'DreamFactory\Rave\SqlDb\DB\Schema\Sqllite\CSqliteSchema', // sqlite 2
-        'mssql'   => 'DreamFactory\Rave\SqlDb\DB\Schema\Mssql\CMssqlSchema',    // Mssql driver on windows hosts
-        'dblib'   => 'DreamFactory\Rave\SqlDb\DB\Schema\Mssql\CMssqlSchema',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv'  => 'DreamFactory\Rave\SqlDb\DB\Schema\Mssql\CMssqlSchema',   // Mssql
-        'oci'     => 'DreamFactory\Rave\SqlDb\DB\Schema\Oci\COciSchema',        // Oracle driver
-        'ibm'     => 'DreamFactory\Rave\SqlDb\DB\Schema\Ibm\CIbmDB2Schema',     // IBM DB2 driver
+        'pgsql'   => 'DreamFactory\Rave\SqlDbCore\Schema\Pgsql\CPgsqlSchema',    // PostgreSQL
+        'mysqli'  => 'DreamFactory\Rave\SqlDbCore\Schema\Mysql\CMysqlSchema',   // MySQL
+        'mysql'   => 'DreamFactory\Rave\SqlDbCore\Schema\MySql\CMysqlSchema',    // MySQL
+        'sqlite'  => 'DreamFactory\Rave\SqlDbCore\Schema\Sqllite\CSqliteSchema',  // sqlite 3
+        'sqlite2' => 'DreamFactory\Rave\SqlDbCore\Schema\Sqllite\CSqliteSchema', // sqlite 2
+        'mssql'   => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',    // Mssql driver on windows hosts
+        'dblib'   => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',    // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv'  => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',   // Mssql
+        'oci'     => 'DreamFactory\Rave\SqlDbCore\Schema\Oci\COciSchema',        // Oracle driver
+        'ibm'     => 'DreamFactory\Rave\SqlDbCore\Schema\Ibm\CIbmDB2Schema',     // IBM DB2 driver
     );
 
     /**
@@ -229,15 +229,15 @@ class CDbConnection
      * @return array list of available PDO drivers
      * @see http://www.php.net/manual/en/function.PDO-getAvailableDBs.php
      */
-    public static function getAvailableDBs()
+    public static function getAvailableDrivers()
     {
-        return \PDO::getAvailableDBs();
+        return \PDO::getAvailableDrivers();
     }
 
     /**
      * Initializes the component.
      * This method is required by {@link IApplicationComponent} and is invoked by application
-     * when the CDbConnection is used as an application component.
+     * when the Connection is used as an application component.
      * If you override this method, make sure to call the parent implementation
      * so that the component can be marked as initialized.
      */
@@ -292,7 +292,7 @@ class CDbConnection
         {
             if ( empty( $this->connectionString ) )
             {
-                throw new \Exception( 'CDbConnection.connectionString cannot be empty.' );
+                throw new \Exception( 'Connection.connectionString cannot be empty.' );
             }
             try
             {
@@ -303,7 +303,7 @@ class CDbConnection
             catch ( \PDOException $e )
             {
                 throw new \Exception(
-                    'CDbConnection failed to open the DB connection: ' . $e->getMessage(), (int)$e->getCode(), $e->errorInfo
+                    'Connection failed to open the DB connection: ' . $e->getMessage(), (int)$e->getCode(), $e->errorInfo
                 );
             }
         }
@@ -336,28 +336,28 @@ class CDbConnection
             $driver = strtolower( substr( $this->connectionString, 0, $pos ) );
             if ( $driver === 'mssql' || $driver === 'dblib' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDb\\DB\\Schema\\Mssql\\CMssqlPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Mssql\\CMssqlPdoAdapter';
             }
             elseif ( $driver === 'sqlsrv' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDb\\DB\\Schema\\Mssql\\CMssqlSqlsrvPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Mssql\\CMssqlSqlsrvPdoAdapter';
             }
             elseif ( $driver === 'oci' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDb\\DB\\Schema\\Oci\\COciPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Oci\\COciPdoAdapter';
             }
         }
 
         if ( !class_exists( $pdoClass ) )
         {
-            throw new \Exception( 'CDbConnection is unable to find PDO class "{$pdoClass}". Make sure PDO is installed correctly.' );
+            throw new \Exception( 'Connection is unable to find PDO class "{$pdoClass}". Make sure PDO is installed correctly.' );
         }
 
         @$instance = new $pdoClass( $this->connectionString, $this->username, $this->password, $this->_attributes );
 
         if ( !$instance )
         {
-            throw new \Exception( 'CDbConnection failed to open the DB connection.' );
+            throw new \Exception( 'Connection failed to open the DB connection.' );
         }
 
         return $instance;
@@ -408,23 +408,23 @@ class CDbConnection
      * Creates a command for execution.
      *
      * @param mixed $query the DB query to be executed. This can be either a string representing a SQL statement,
-     *                     or an array representing different fragments of a SQL statement. Please refer to {@link CDbCommand::__construct}
+     *                     or an array representing different fragments of a SQL statement. Please refer to {@link Command::__construct}
      *                     for more details about how to pass an array as the query. If this parameter is not given,
-     *                     you will have to call query builder methods of {@link CDbCommand} to build the DB query.
+     *                     you will have to call query builder methods of {@link Command} to build the DB query.
      *
-     * @return CDbCommand the DB command
+     * @return Command the DB command
      */
     public function createCommand( $query = null )
     {
         $this->setActive( true );
 
-        return new CDbCommand( $this, $query );
+        return new Command( $this, $query );
     }
 
     /**
      * Returns the currently active transaction.
      *
-     * @return CDbTransaction the currently active transaction. Null if no active transaction.
+     * @return Transaction the currently active transaction. Null if no active transaction.
      */
     public function getCurrentTransaction()
     {
@@ -442,21 +442,21 @@ class CDbConnection
     /**
      * Starts a transaction.
      *
-     * @return CDbTransaction the transaction initiated
+     * @return Transaction the transaction initiated
      */
     public function beginTransaction()
     {
         $this->setActive( true );
         $this->_pdo->beginTransaction();
 
-        return $this->_transaction = new CDbTransaction( $this );
+        return $this->_transaction = new Transaction( $this );
     }
 
     /**
      * Returns the database schema for the current connection
      *
-     * @throws \Exception if CDbConnection does not support reading schema for specified database driver
-     * @return CDbSchema the database schema for the current connection
+     * @throws \Exception if Connection does not support reading schema for specified database driver
+     * @return Schema the database schema for the current connection
      */
     public function getSchema()
     {
@@ -473,7 +473,7 @@ class CDbConnection
             }
             else
             {
-                throw new \Exception( 'CDbConnection does not support reading schema for {$driver} database.' );
+                throw new \Exception( 'Connection does not support reading schema for {$driver} database.' );
             }
         }
     }
@@ -533,7 +533,7 @@ class CDbConnection
     /**
      * Returns the SQL command builder for the current DB connection.
      *
-     * @return CDbCommandBuilder the command builder
+     * @return CommandBuilder the command builder
      */
     public function getCommandBuilder()
     {

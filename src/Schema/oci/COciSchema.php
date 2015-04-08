@@ -7,15 +7,15 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Oci;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Oci;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
 /**
  * COciSchema is the class for retrieving metadata information from an Oracle database.
@@ -25,7 +25,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class COciSchema extends CDbSchema
+class COciSchema extends Schema
 {
     private $_defaultSchema = '';
 
@@ -294,7 +294,7 @@ class COciSchema extends CDbSchema
      * Creates a command builder for the database.
      * This method may be overridden by child classes to create a DBMS-specific command builder.
      *
-     * @return CDbCommandBuilder command builder instance
+     * @return CommandBuilder command builder instance
      */
     protected function createCommandBuilder()
     {
@@ -345,11 +345,11 @@ class COciSchema extends CDbSchema
      *
      * @param string $name table name
      *
-     * @return CDbTableSchema driver dependent table metadata.
+     * @return TableSchema driver dependent table metadata.
      */
     protected function loadTable( $name )
     {
-        $table = new CDbTableSchema;
+        $table = new TableSchema;
         $this->resolveTableNames( $table, $name );
 
         if ( !$this->findColumns( $table ) )
@@ -364,7 +364,7 @@ class COciSchema extends CDbSchema
     /**
      * Generates various kinds of table names.
      *
-     * @param CDbTableSchema $table the table instance
+     * @param TableSchema $table the table instance
      * @param string         $name  the unquoted table name
      */
     protected function resolveTableNames( $table, $name )
@@ -398,7 +398,7 @@ class COciSchema extends CDbSchema
     /**
      * Collects the table column metadata.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @return boolean whether the table exists in the database
      */
@@ -493,7 +493,7 @@ EOD;
      *
      * @param array $column column metadata
      *
-     * @return CDbColumnSchema normalized column metadata
+     * @return ColumnSchema normalized column metadata
      */
     protected function createColumn( $column )
     {
@@ -516,7 +516,7 @@ EOD;
     /**
      * Collects the primary and foreign key column details for the given table.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      */
     protected function findConstraints( $table )
     {
@@ -733,7 +733,7 @@ EOD;
      * Please refer to the following issue for more details:
      * {@link  https://github.com/yiisoft/yii/issues/2241}
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param integer | null $value the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will
      *                              have the max value of a primary key plus one (i.e. sequence trimming).
@@ -1002,6 +1002,6 @@ SQL;
      */
     public function getTimestampForSet( $update = false )
     {
-        return new CDbExpression( '(CURRENT_TIMESTAMP)' );
+        return new Expression( '(CURRENT_TIMESTAMP)' );
     }
 }

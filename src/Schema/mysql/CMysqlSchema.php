@@ -7,14 +7,14 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mysql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mysql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
 /**
  * CMysqlSchema is the class for retrieving metadata information from a MySQL database (version 4.1.x and 5.x).
@@ -23,7 +23,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
  * @package system.db.schema.mysql
  * @since   1.0
  */
-class CMysqlSchema extends CDbSchema
+class CMysqlSchema extends Schema
 {
     //******************************************************************************
     //* Members
@@ -315,7 +315,7 @@ class CMysqlSchema extends CDbSchema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param integer|null   $value the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a
      *                              primary key plus one (i.e. sequence trimming).
@@ -364,11 +364,11 @@ MYSQL
      *
      * @param string $name table name
      *
-     * @return CDbTableSchema driver dependent table metadata. Null if the table does not exist.
+     * @return TableSchema driver dependent table metadata. Null if the table does not exist.
      */
     protected function loadTable( $name )
     {
-        $table = new CDbTableSchema;
+        $table = new TableSchema;
         $this->resolveTableNames( $table, $name );
 
         if ( !$this->findColumns( $table ) )
@@ -384,7 +384,7 @@ MYSQL
     /**
      * Generates various kinds of table names.
      *
-     * @param CDbTableSchema $table the table instance
+     * @param TableSchema $table the table instance
      * @param string         $name  the unquoted table name
      */
     protected function resolveTableNames( $table, $name )
@@ -408,7 +408,7 @@ MYSQL
     /**
      * Collects the table column metadata.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @return boolean whether the table exists in the database
      */
@@ -456,7 +456,7 @@ MYSQL
      *
      * @param array $column column metadata
      *
-     * @return CDbColumnSchema normalized column metadata
+     * @return ColumnSchema normalized column metadata
      */
     protected function createColumn( $column )
     {
@@ -523,7 +523,7 @@ MYSQL
      * Collects the foreign key column details for the given table.
      * Also, collects the foreign tables and columns that reference the given table.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      */
     protected function findConstraints( $table )
     {
@@ -854,7 +854,7 @@ MYSQL;
      * Creates a command builder for the database.
      * This method overrides parent implementation in order to create a MySQL specific command builder
      *
-     * @return CDbCommandBuilder command builder instance
+     * @return CommandBuilder command builder instance
      * @since 1.1.13
      */
     protected function createCommandBuilder()

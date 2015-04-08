@@ -1,20 +1,20 @@
 <?php
 /**
- * CDbTableSchema class file.
+ * TableSchema class file.
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema;
+namespace DreamFactory\Rave\SqlDbCore\Schema;
 
 /**
- * CDbTableSchema is the base class for representing the metadata of a database table.
+ * TableSchema is the base class for representing the metadata of a database table.
  *
  * It may be extended by different DBMS driver to provide DBMS-specific table metadata.
  *
- * CDbTableSchema provides the following information about a table:
+ * TableSchema provides the following information about a table:
  * <ul>
  * <li>{@link name}</li>
  * <li>{@link rawName}</li>
@@ -30,7 +30,7 @@ namespace DreamFactory\Rave\SqlDb\DB\Schema;
  * @package system.db.schema
  * @since   1.0
  */
-class CDbTableSchema
+class TableSchema
 {
     /**
      * @var string name of the schema that this table belongs to.
@@ -65,7 +65,7 @@ class CDbTableSchema
      */
     public $references = array();
     /**
-     * @var array column metadata of this table. Each array element is a CDbColumnSchema object, indexed by column names.
+     * @var array column metadata of this table. Each array element is a ColumnSchema object, indexed by column names.
      */
     public $columns = array();
 
@@ -75,7 +75,7 @@ class CDbTableSchema
      *
      * @param string $name column name
      *
-     * @return CDbColumnSchema metadata of the named column. Null if the named column does not exist.
+     * @return ColumnSchema metadata of the named column. Null if the named column does not exist.
      */
     public function getColumn( $name )
     {

@@ -13,14 +13,14 @@
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Ibmdb2;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Ibmdb2;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCriteria;
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\Criteria;
+use DreamFactory\Rave\SqlDbCore\Command;
 
-class CIbmDB2CommandBuilder extends CDbCommandBuilder
+class CIbmDB2CommandBuilder extends CommandBuilder
 {
 
     /**
@@ -71,11 +71,11 @@ class CIbmDB2CommandBuilder extends CDbCommandBuilder
     /**
      * Creates a COUNT(*) command for a single table.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
-     * @param CDbCriteria $criteria the query criteria
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param Criteria $criteria the query criteria
      * @param string      $alias    the alias name of the primary table. Defaults to 't'.
      *
-     * @return CDbCommand query command.
+     * @return Command query command.
      */
     public function createCountCommand( $table, $criteria, $alias = 't' )
     {
@@ -98,12 +98,12 @@ class CIbmDB2CommandBuilder extends CDbCommandBuilder
     /**
      * Creates an UPDATE command.
      *
-     * @param mixed       $table    the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param array       $data     list of columns to be updated (name=>value)
-     * @param CDbCriteria $criteria the query criteria
+     * @param Criteria $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated for the given table
-     * @return CDbCommand update command.
+     * @return Command update command.
      */
     public function createUpdateCommand( $table, $data, $criteria )
     {
@@ -125,7 +125,7 @@ class CIbmDB2CommandBuilder extends CDbCommandBuilder
     /**
      * Generates the expression for selecting rows with specified composite key values.
      *
-     * @param CDbTableSchema $table  the table schema
+     * @param TableSchema $table  the table schema
      * @param array          $values list of primary key values to be selected within
      * @param string         $prefix column prefix (ended with dot)
      *

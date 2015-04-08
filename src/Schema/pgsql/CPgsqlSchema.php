@@ -7,13 +7,13 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Pgsql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Pgsql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * CPgsqlSchema is the class for retrieving metadata information from a PostgreSQL database.
@@ -22,7 +22,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @package system.db.schema.pgsql
  * @since   1.0
  */
-class CPgsqlSchema extends CDbSchema
+class CPgsqlSchema extends Schema
 {
     const DEFAULT_SCHEMA = 'public';
 
@@ -268,7 +268,7 @@ class CPgsqlSchema extends CDbSchema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param integer|null   $value the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a primary
      *                              key plus one (i.e. sequence trimming).
@@ -326,11 +326,11 @@ class CPgsqlSchema extends CDbSchema
      *
      * @param string $name table name
      *
-     * @return CDbTableSchema driver dependent table metadata.
+     * @return TableSchema driver dependent table metadata.
      */
     protected function loadTable( $name )
     {
-        $table = new CDbTableSchema;
+        $table = new TableSchema;
         $this->resolveTableNames( $table, $name );
         if ( !$this->findColumns( $table ) )
         {
@@ -360,7 +360,7 @@ class CPgsqlSchema extends CDbSchema
     /**
      * Generates various kinds of table names.
      *
-     * @param CDbTableSchema $table the table instance
+     * @param TableSchema $table the table instance
      * @param string         $name  the unquoted table name
      */
     protected function resolveTableNames( $table, $name )
@@ -394,7 +394,7 @@ class CPgsqlSchema extends CDbSchema
     /**
      * Collects the table column metadata.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      *
      * @return boolean whether the table exists in the database
      */
@@ -445,7 +445,7 @@ EOD;
      *
      * @param array $column column metadata
      *
-     * @return CDbColumnSchema normalized column metadata
+     * @return ColumnSchema normalized column metadata
      */
     protected function createColumn( $column )
     {
@@ -467,7 +467,7 @@ EOD;
     /**
      * Collects the primary and foreign key column details for the given table.
      *
-     * @param CDbTableSchema $table the table metadata
+     * @param TableSchema $table the table metadata
      */
     protected function findConstraints( $table )
     {
@@ -568,7 +568,7 @@ EOD;
     /**
      * Gets the primary key column(s) details for the given table.
      *
-     * @param CDbTableSchema $table table
+     * @param TableSchema $table table
      *
      * @return mixed primary keys (null if no pk, string if only 1 column pk, or array if composite pk)
      */

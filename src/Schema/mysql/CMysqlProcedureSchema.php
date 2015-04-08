@@ -7,9 +7,9 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\MySql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\MySql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbProcedureSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ProcedureSchema;
 
 /**
  * CMysqlProcedureSchema represents the metadata for a MySQL stored procedure.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbProcedureSchema;
  * @package system.db.schema.mysql
  * @since   1.0
  */
-class CMysqlProcedureSchema extends CDbProcedureSchema
+class CMysqlProcedureSchema extends ProcedureSchema
 {
     /**
      * @var string name of the schema (database) that this procedure belongs to.

@@ -13,11 +13,11 @@
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Ibmdb2;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Ibmdb2;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
-class CIbmDB2ColumnSchema extends CDbColumnSchema
+class CIbmDB2ColumnSchema extends ColumnSchema
 {
 
 }

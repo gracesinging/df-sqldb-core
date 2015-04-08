@@ -9,9 +9,9 @@
  * @license   http://www.yiiframework.com/license/
  */
 
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mssql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mssql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * CMssqlColumnSchema class describes the column meta data of a MSSQL table.
@@ -20,7 +20,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-class CMssqlColumnSchema extends CDbColumnSchema
+class CMssqlColumnSchema extends ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

@@ -1,19 +1,19 @@
 <?php
 /**
- * CDbExpression class file.
+ * Expression class file.
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @link http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema;
+namespace DreamFactory\Rave\SqlDbCore\Schema;
 
 /**
- * CDbExpression represents a DB expression that does not need escaping.
- * CDbExpression is mainly used in {@link CActiveRecord} as attribute values.
+ * Expression represents a DB expression that does not need escaping.
+ * Expression is mainly used in {@link CActiveRecord} as attribute values.
  * When inserting or updating a {@link CActiveRecord}, attribute values of
- * type CDbExpression will be directly put into the corresponding SQL statement
+ * type Expression will be directly put into the corresponding SQL statement
  * without escaping. A typical usage is that an attribute is set with 'NOW()'
  * expression so that saving the record would fill the corresponding column
  * with the current DB server timestamp.
@@ -25,7 +25,7 @@ namespace DreamFactory\Rave\SqlDb\DB\Schema;
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
  */
-class CDbExpression
+class Expression
 {
 	/**
 	 * @var string the DB expression

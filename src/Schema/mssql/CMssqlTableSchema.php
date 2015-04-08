@@ -16,11 +16,11 @@
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mssql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mssql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
 
-class CMssqlTableSchema extends CDbTableSchema
+class CMssqlTableSchema extends TableSchema
 {
     /**
      * @var string name of the catalog (database) that this table belongs to.

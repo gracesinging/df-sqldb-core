@@ -1,22 +1,22 @@
 <?php
 /**
- * CDbColumnSchema class file.
+ * ColumnSchema class file.
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema;
+namespace DreamFactory\Rave\SqlDbCore\Schema;
 
 /**
- * CDbColumnSchema class describes the column meta data of a database table.
+ * ColumnSchema class describes the column meta data of a database table.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
  * @since   1.0
  */
-class CDbColumnSchema
+class ColumnSchema
 {
     /**
      * @var string name of this column (without quotes).
@@ -336,7 +336,7 @@ class CDbColumnSchema
      */
     public function typecast( $value )
     {
-        if ( gettype( $value ) === $this->phpType || $value === null || $value instanceof CDbExpression )
+        if ( gettype( $value ) === $this->phpType || $value === null || $value instanceof Expression )
         {
             return $value;
         }

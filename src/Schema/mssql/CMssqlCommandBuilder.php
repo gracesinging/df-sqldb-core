@@ -18,27 +18,27 @@
  * @author  Wei Zhuo <weizhuo[at]gmail[dot]com>
  * @package system.db.schema.mssql
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mssql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mssql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCriteria;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\Criteria;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
+use DreamFactory\Rave\SqlDbCore\Command;
 
-class CMssqlCommandBuilder extends CDbCommandBuilder
+class CMssqlCommandBuilder extends CommandBuilder
 {
     /**
      * Creates a COUNT(*) command for a single table.
      * Override parent implementation to remove the order clause of criteria if it exists
      *
-     * @param CDbTableSchema $table    the table metadata
-     * @param CDbCriteria    $criteria the query criteria
+     * @param TableSchema $table    the table metadata
+     * @param Criteria    $criteria the query criteria
      * @param string         $alias    the alias name of the primary table. Defaults to 't'.
      *
-     * @return CDbCommand query command.
+     * @return Command query command.
      */
     public function createCountCommand( $table, $criteria, $alias = 't' )
     {
@@ -51,11 +51,11 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
      * Creates a SELECT command for a single table.
      * Override parent implementation to check if an orderby clause if specified when querying with an offset
      *
-     * @param CDbTableSchema $table    the table metadata
-     * @param CDbCriteria    $criteria the query criteria
+     * @param TableSchema $table    the table metadata
+     * @param Criteria    $criteria the query criteria
      * @param string         $alias    the alias name of the primary table. Defaults to 't'.
      *
-     * @return CDbCommand query command.
+     * @return Command query command.
      */
     public function createFindCommand( $table, $criteria, $alias = 't' )
     {
@@ -69,12 +69,12 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
      * Creates an UPDATE command.
      * Override parent implementation because mssql don't want to update an identity column
      *
-     * @param CDbTableSchema $table    the table metadata
+     * @param TableSchema $table    the table metadata
      * @param array          $data     list of columns to be updated (name=>value)
-     * @param CDbCriteria    $criteria the query criteria
+     * @param Criteria    $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated
-     * @return CDbCommand update command.
+     * @return Command update command.
      */
     public function createUpdateCommand( $table, $data, $criteria )
     {
@@ -95,7 +95,7 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
                 {
                     continue;
                 }
-                if ( $value instanceof CDbExpression )
+                if ( $value instanceof Expression )
                 {
                     $fields[] = $column->rawName . '=' . $value->expression;
                     foreach ( $value->params as $n => $v )
@@ -142,10 +142,10 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
      * Creates a DELETE command.
      * Override parent implementation to check if an orderby clause if specified when querying with an offset
      *
-     * @param CDbTableSchema $table    the table metadata
-     * @param CDbCriteria    $criteria the query criteria
+     * @param TableSchema $table    the table metadata
+     * @param Criteria    $criteria the query criteria
      *
-     * @return CDbCommand delete command.
+     * @return Command delete command.
      */
     public function createDeleteCommand( $table, $criteria )
     {
@@ -158,11 +158,11 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
      * Creates an UPDATE command that increments/decrements certain columns.
      * Override parent implementation to check if an orderby clause if specified when querying with an offset
      *
-     * @param CDbTableSchema $table    the table metadata
-     * @param CDbCriteria    $counters the query criteria
+     * @param TableSchema $table    the table metadata
+     * @param Criteria    $counters the query criteria
      * @param array          $criteria counters to be updated (counter increments/decrements indexed by column names.)
      *
-     * @return CDbCommand the created command
+     * @return Command the created command
      * @throws \Exception if no counter is specified
      */
     public function createUpdateCounterCommand( $table, $counters, $criteria )
@@ -367,9 +367,9 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
      * If not, order it by pk.
      *
      * @param CMssqlTableSchema $table    table schema
-     * @param CDbCriteria       $criteria criteria
+     * @param Criteria       $criteria criteria
      *
-     * @return CDbCriteria the modified criteria
+     * @return Criteria the modified criteria
      */
     protected function checkCriteria( $table, $criteria )
     {
@@ -384,7 +384,7 @@ class CMssqlCommandBuilder extends CDbCommandBuilder
     /**
      * Generates the expression for selecting rows with specified composite key values.
      *
-     * @param CDbTableSchema $table  the table schema
+     * @param TableSchema $table  the table schema
      * @param array          $values list of primary key values to be selected within
      * @param string         $prefix column prefix (ended with dot)
      *

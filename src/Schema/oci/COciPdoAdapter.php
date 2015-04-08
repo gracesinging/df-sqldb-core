@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2012 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Oci;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Oci;
 
 
 /**

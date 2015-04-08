@@ -7,11 +7,11 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Oci;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Oci;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
 
 /**
  * COciCommandBuilder provides basic methods to create query commands for tables.
@@ -19,7 +19,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class COciCommandBuilder extends CDbCommandBuilder
+class COciCommandBuilder extends CommandBuilder
 {
     /**
      * @var integer the last insertion ID
@@ -29,7 +29,7 @@ class COciCommandBuilder extends CDbCommandBuilder
     /**
      * Returns the last insertion ID for the specified table.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      *
      * @return mixed last insertion id. Null is returned if no sequence name.
      */
@@ -90,10 +90,10 @@ EOD;
     /**
      * Creates an INSERT command.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand insert command
+     * @return Command insert command
      */
     public function createInsertCommand( $table, $data )
     {
@@ -107,7 +107,7 @@ EOD;
             if ( ( $column = $table->getColumn( $name ) ) !== null && ( $value !== null || $column->allowNull ) )
             {
                 $fields[] = $column->rawName;
-                if ( $value instanceof CDbExpression )
+                if ( $value instanceof Expression )
                 {
                     $placeholders[] = $value->expression;
                     foreach ( $value->params as $n => $v )
@@ -151,11 +151,11 @@ EOD;
      * This method could be used to achieve better performance during insertion of the large
      * amount of data into the database tables.
      *
-     * @param mixed   $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed   $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column value).
      *                       If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand multiple insert command
+     * @return Command multiple insert command
      * @since 1.1.14
      */
     public function createMultipleInsertCommand( $table, array $data )

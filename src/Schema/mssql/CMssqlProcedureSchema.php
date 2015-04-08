@@ -15,11 +15,11 @@
  * @package system.db.schema.mssql
  * @since   1.0
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mssql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mssql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbProcedureSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ProcedureSchema;
 
-class CMssqlProcedureSchema extends CDbProcedureSchema
+class CMssqlProcedureSchema extends ProcedureSchema
 {
     /**
      * @var string name of the schema (database) that this procedure belongs to.

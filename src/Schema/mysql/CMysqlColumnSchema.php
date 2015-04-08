@@ -7,9 +7,9 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\MySql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\MySql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * CMysqlColumnSchema class describes the column meta data of a MySQL table.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @package system.db.schema.mysql
  * @since   1.0
  */
-class CMysqlColumnSchema extends CDbColumnSchema
+class CMysqlColumnSchema extends ColumnSchema
 {
     /**
      * Extracts the default value for the column.

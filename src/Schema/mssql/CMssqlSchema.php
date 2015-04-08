@@ -16,17 +16,17 @@
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Mssql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Mssql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbTableSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
+use DreamFactory\Rave\SqlDbCore\Schema\Schema;
+use DreamFactory\Rave\SqlDbCore\Schema\TableSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
 
-class CMssqlSchema extends CDbSchema
+class CMssqlSchema extends Schema
 {
     const DEFAULT_SCHEMA = 'dbo';
 
@@ -343,7 +343,7 @@ class CMssqlSchema extends CDbSchema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param CDbTableSchema $table the table schema whose primary key sequence will be reset
+     * @param TableSchema $table the table schema whose primary key sequence will be reset
      * @param integer|null   $value the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a primary
      *                              key plus one (i.e. sequence trimming).
@@ -694,7 +694,7 @@ EOD;
      *
      * @param array $column column metadata
      *
-     * @return CDbColumnSchema normalized column metadata
+     * @return ColumnSchema normalized column metadata
      */
     protected function createColumn( $column )
     {
@@ -1062,7 +1062,7 @@ EOD;
      * Creates a command builder for the database.
      * This method overrides parent implementation in order to create a MSSQL specific command builder
      *
-     * @return CDbCommandBuilder command builder instance
+     * @return CommandBuilder command builder instance
      */
     protected function createCommandBuilder()
     {
@@ -1222,7 +1222,7 @@ MYSQL;
      */
     public function getTimestampForSet( $update = false )
     {
-        return new CDbExpression( '(SYSDATETIMEOFFSET())' );
+        return new Expression( '(SYSDATETIMEOFFSET())' );
     }
 
     public function parseValueForSet( $value, $field_info )

@@ -7,9 +7,9 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Oci;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Oci;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
+use DreamFactory\Rave\SqlDbCore\Schema\ColumnSchema;
 
 /**
  * COciColumnSchema class describes the column meta data of an Oracle table.
@@ -17,7 +17,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbColumnSchema;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class COciColumnSchema extends CDbColumnSchema
+class COciColumnSchema extends ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

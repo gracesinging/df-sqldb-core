@@ -13,11 +13,11 @@
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Ibmdb2;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Ibmdb2;
 
-use DreamFactory\Rave\SqlDb\DB\CDbConnection;
+use DreamFactory\Rave\SqlDbCore\Connection;
 
-class CIbmDB2Connection extends CDbConnection
+class CIbmDB2Connection extends Connection
 {
 
     protected function initConnection( $pdo )

@@ -7,11 +7,11 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB\Schema\Pgsql;
+namespace DreamFactory\Rave\SqlDbCore\Schema\Pgsql;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbCommandBuilder;
-use DreamFactory\Rave\SqlDb\DB\CDbCommand;
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
+use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
+use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
 
 /**
  * CPgsqlCommandBuilder provides basic methods to create query commands for tables.
@@ -20,7 +20,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
  * @package system.db.schema.pgsql
  * @since   1.1.14
  */
-class CPgsqlCommandBuilder extends CDbCommandBuilder
+class CPgsqlCommandBuilder extends CommandBuilder
 {
     /**
      * @var integer the last insertion ID
@@ -30,7 +30,7 @@ class CPgsqlCommandBuilder extends CDbCommandBuilder
     /**
      * Returns the last insertion ID for the specified table.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      *
      * @return mixed last insertion id. Null is returned if no sequence name.
      */
@@ -42,10 +42,10 @@ class CPgsqlCommandBuilder extends CDbCommandBuilder
     /**
      * Creates an INSERT command.
      *
-     * @param mixed $table the table schema ({@link CDbTableSchema}) or the table name (string).
+     * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
      * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the corresponding value will be ignored.
      *
-     * @return CDbCommand insert command
+     * @return Command insert command
      */
     public function createInsertCommand( $table, $data )
     {
@@ -59,7 +59,7 @@ class CPgsqlCommandBuilder extends CDbCommandBuilder
             if ( ( $column = $table->getColumn( $name ) ) !== null && ( $value !== null || $column->allowNull ) )
             {
                 $fields[] = $column->rawName;
-                if ( $value instanceof CDbExpression )
+                if ( $value instanceof Expression )
                 {
                     $placeholders[] = $value->expression;
                     foreach ( $value->params as $n => $v )

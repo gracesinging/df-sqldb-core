@@ -1,20 +1,20 @@
 <?php
 /**
- * This file contains the CDbCommand class.
+ * This file contains the Command class.
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB;
+namespace DreamFactory\Rave\SqlDbCore;
 
-use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
+use DreamFactory\Rave\SqlDbCore\Schema\Expression;
 
 /**
- * CDbCommand represents an SQL statement to execute against a database.
+ * Command represents an SQL statement to execute against a database.
  *
- * It is usually created by calling {@link CDbConnection::createCommand}.
+ * It is usually created by calling {@link Connection::createCommand}.
  * The SQL statement to be executed may be set via {@link setText Text}.
  *
  * To execute a non-query SQL (such as insert, delete, update), call
@@ -23,15 +23,15 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
  * {@link queryColumn}, or {@link queryScalar}.
  *
  * If an SQL statement returns results (such as a SELECT SQL), the results
- * can be accessed via the returned {@link CDbDataReader}.
+ * can be accessed via the returned {@link DataReader}.
  *
- * CDbCommand supports SQL statement preparation and parameter binding.
+ * Command supports SQL statement preparation and parameter binding.
  * Call {@link bindParam} to bind a PHP variable to a parameter in SQL.
  * Call {@link bindValue} to bind a value to an SQL parameter.
  * When binding a parameter, the SQL statement is automatically prepared.
  * You may also call {@link prepare} to explicitly prepare an SQL statement.
  *
- * Starting from version 1.1.6, CDbCommand can also be used as a query builder
+ * Starting from version 1.1.6, Command can also be used as a query builder
  * that builds a SQL statement from code fragments. For example,
  * <pre>
  * $user = Yii::app()->db->createCommand()
@@ -42,7 +42,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
  * </pre>
  *
  * @property string        $text         The SQL statement to be executed.
- * @property CDbConnection $connection   The connection associated with this command.
+ * @property Connection $connection   The connection associated with this command.
  * @property \PDOStatement  $pdoStatement The underlying PDOStatement for this command
  * It could be null if the statement is not prepared yet.
  * @property string        $select       The SELECT part (without 'SELECT') in the query.
@@ -65,7 +65,7 @@ use DreamFactory\Rave\SqlDb\DB\Schema\CDbExpression;
  * @since   1.0
  */
 
-class CDbCommand
+class Command
 {
     /**
      * @var array the parameters (name=>value) to be bound to the current query.
@@ -83,7 +83,7 @@ class CDbCommand
     /**
      * Constructor.
      *
-     * @param CDbConnection $connection the database connection
+     * @param Connection $connection the database connection
      * @param mixed         $query      the DB query to be executed. This can be either
      *                                  a string representing a SQL statement, or an array whose name-value pairs
      *                                  will be used to set the corresponding properties of the created command object.
@@ -102,7 +102,7 @@ class CDbCommand
      * {@link setFetchMode FetchMode}. See {@link http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php}
      * for more details.
      */
-    public function __construct( CDbConnection $connection, $query = null )
+    public function __construct( Connection $connection, $query = null )
     {
         $this->_connection = $connection;
         if ( is_array( $query ) )
@@ -135,7 +135,7 @@ class CDbCommand
      *
      * @param mixed $mode fetch mode
      *
-     * @return CDbCommand
+     * @return Command
      * @see   http://www.php.net/manual/en/function.PDOStatement-setFetchMode.php
      * @since 1.1.7
      */
@@ -153,7 +153,7 @@ class CDbCommand
      * multiple times for building different queries.
      * Calling this method will clean up all internal states of the command object.
      *
-     * @return CDbCommand this command instance
+     * @return Command this command instance
      * @since 1.1.6
      */
     public function reset()
@@ -186,7 +186,7 @@ class CDbCommand
      *
      * @param string $value the SQL statement to be executed
      *
-     * @return CDbCommand this command instance
+     * @return Command this command instance
      */
     public function setText( $value )
     {
@@ -204,7 +204,7 @@ class CDbCommand
     }
 
     /**
-     * @return CDbConnection the connection associated with this command
+     * @return Connection the connection associated with this command
      */
     public function getConnection()
     {
@@ -227,7 +227,7 @@ class CDbCommand
      * For SQL statement with binding parameters, this method is invoked
      * automatically.
      *
-     * @throws \Exception if CDbCommand failed to prepare the SQL statement
+     * @throws \Exception if Command failed to prepare the SQL statement
      */
     public function prepare()
     {
@@ -241,7 +241,7 @@ class CDbCommand
             catch ( \Exception $e )
             {
                 $errorInfo = $e instanceof \PDOException ? $e->errorInfo : null;
-                throw new \Exception( 'CDbCommand failed to prepare the SQL statement: ' . $e->getMessage(), (int)$e->getCode(), $errorInfo );
+                throw new \Exception( 'Command failed to prepare the SQL statement: ' . $e->getMessage(), (int)$e->getCode(), $errorInfo );
             }
         }
     }
@@ -266,7 +266,7 @@ class CDbCommand
      * @param integer $length        length of the data type
      * @param mixed   $driverOptions the driver-specific options (this is available since version 1.1.6)
      *
-     * @return CDbCommand the current command being executed
+     * @return Command the current command being executed
      * @see http://www.php.net/manual/en/function.PDOStatement-bindParam.php
      */
     public function bindParam( $name, &$value, $dataType = null, $length = null, $driverOptions = null )
@@ -303,7 +303,7 @@ class CDbCommand
      * @param mixed   $value    The value to bind to the parameter
      * @param integer $dataType SQL data type of the parameter. If null, the type is determined by the PHP type of the value.
      *
-     * @return CDbCommand the current command being executed
+     * @return Command the current command being executed
      * @see http://www.php.net/manual/en/function.PDOStatement-bindValue.php
      */
     public function bindValue( $name, $value, $dataType = null )
@@ -331,7 +331,7 @@ class CDbCommand
      *                      array with array keys being the parameter names, and array values the corresponding parameter values.
      *                      For example, <code>array(':name'=>'John', ':age'=>25)</code>.
      *
-     * @return CDbCommand the current command being executed
+     * @return Command the current command being executed
      * @since 1.1.5
      */
     public function bindValues( $values )
@@ -397,7 +397,7 @@ class CDbCommand
      *                      Please also note that all values are treated as strings in this case, if you need them to be handled as
      *                      their real data types, you have to use {@link bindParam} or {@link bindValue} instead.
      *
-     * @return CDbDataReader the reader object for fetching the query result
+     * @return DataReader the reader object for fetching the query result
      * @throws \Exception execution failed
      */
     public function query( $params = array() )
@@ -505,7 +505,7 @@ class CDbCommand
      *                       Please also note that all values are treated as strings in this case, if you need them to be handled as
      *                       their real data types, you have to use {@link bindParam} or {@link bindValue} instead.
      *
-     * @throws \Exception if CDbCommand failed to execute the SQL statement
+     * @throws \Exception if Command failed to execute the SQL statement
      * @return mixed the method execution result
      */
     private function queryInternal( $method, $mode, $params = array() )
@@ -526,7 +526,7 @@ class CDbCommand
 
             if ( $method === '' )
             {
-                $result = new CDbDataReader( $this );
+                $result = new DataReader( $this );
             }
             else
             {
@@ -623,7 +623,7 @@ class CDbCommand
      * @param string $option  additional option that should be appended to the 'SELECT' keyword. For example,
      *                        in MySQL, the option 'SQL_CALC_FOUND_ROWS' can be used. This parameter is supported since version 1.1.8.
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function select( $columns = '*', $option = '' )
@@ -697,7 +697,7 @@ class CDbCommand
      *
      * @param mixed $columns the columns to be selected. See {@link select} for more details.
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function selectDistinct( $columns = '*' )
@@ -739,7 +739,7 @@ class CDbCommand
      *                      The method will automatically quote the table names unless it contains some parenthesis
      *                      (which means the table is given as a sub-query or DB expression).
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function from( $tables )
@@ -835,7 +835,7 @@ class CDbCommand
      * @param mixed $conditions the conditions that should be put in the WHERE part.
      * @param array $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function where( $conditions, $params = array() )
@@ -860,7 +860,7 @@ class CDbCommand
      * @param mixed $conditions the conditions that should be appended to the WHERE part.
      * @param array $params     the parameters (name=>value) to be bound to the query.
      *
-     * @return CDbCommand the command object itself.
+     * @return Command the command object itself.
      * @since 1.1.13
      */
     public function andWhere( $conditions, $params = array() )
@@ -892,7 +892,7 @@ class CDbCommand
      * @param mixed $conditions the conditions that should be appended to the WHERE part.
      * @param array $params     the parameters (name=>value) to be bound to the query.
      *
-     * @return CDbCommand the command object itself.
+     * @return Command the command object itself.
      * @since 1.1.13
      */
     public function orWhere( $conditions, $params = array() )
@@ -949,7 +949,7 @@ class CDbCommand
      *                           Please refer to {@link where} on how to specify conditions.
      * @param array  $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function join( $table, $conditions, $params = array() )
@@ -995,7 +995,7 @@ class CDbCommand
      *                           Please refer to {@link where} on how to specify conditions.
      * @param array  $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function leftJoin( $table, $conditions, $params = array() )
@@ -1014,7 +1014,7 @@ class CDbCommand
      *                           Please refer to {@link where} on how to specify conditions.
      * @param array  $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function rightJoin( $table, $conditions, $params = array() )
@@ -1031,7 +1031,7 @@ class CDbCommand
      *                      The method will automatically quote the table name unless it contains some parenthesis
      *                      (which means the table is given as a sub-query or DB expression).
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function crossJoin( $table )
@@ -1048,7 +1048,7 @@ class CDbCommand
      *                      The method will automatically quote the table name unless it contains some parenthesis
      *                      (which means the table is given as a sub-query or DB expression).
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function naturalJoin( $table )
@@ -1064,7 +1064,7 @@ class CDbCommand
      *                       The method will automatically quote the column names unless a column contains some parenthesis
      *                       (which means the column contains a DB expression).
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function group( $columns )
@@ -1127,7 +1127,7 @@ class CDbCommand
      *                          Please refer to {@link where} on how to specify conditions.
      * @param array $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function having( $conditions, $params = array() )
@@ -1179,7 +1179,7 @@ class CDbCommand
      * $criteria->order('(1)');
      * </pre>
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function order( $columns )
@@ -1248,7 +1248,7 @@ class CDbCommand
      * @param integer $limit  the limit
      * @param integer $offset the offset
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function limit( $limit, $offset = null )
@@ -1291,7 +1291,7 @@ class CDbCommand
      *
      * @param integer $offset the offset
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function offset( $offset )
@@ -1330,7 +1330,7 @@ class CDbCommand
      *
      * @param string $sql the SQL statement to be appended using UNION
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     public function union( $sql )
@@ -1388,7 +1388,7 @@ class CDbCommand
         foreach ( $columns as $name => $value )
         {
             $names[] = $this->_connection->quoteColumnName( $name );
-            if ( $value instanceof CDbExpression )
+            if ( $value instanceof Expression )
             {
                 $placeholders[] = $value->expression;
                 foreach ( $value->params as $n => $v )
@@ -1433,7 +1433,7 @@ class CDbCommand
         $lines = array();
         foreach ( $columns as $name => $value )
         {
-            if ( $value instanceof CDbExpression )
+            if ( $value instanceof Expression )
             {
                 $lines[] = $this->_connection->quoteColumnName( $name ) . '=' . $value->expression;
                 foreach ( $value->params as $n => $v )
@@ -1792,7 +1792,7 @@ class CDbCommand
      *                           Please refer to {@link where} on how to specify conditions.
      * @param array  $params     the parameters (name=>value) to be bound to the query
      *
-     * @return CDbCommand the command object itself
+     * @return Command the command object itself
      * @since 1.1.6
      */
     private function joinInternal( $type, $table, $conditions = '', $params = array() )

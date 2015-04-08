@@ -1,19 +1,19 @@
 <?php
 /**
- * CDbTransaction class file
+ * Transaction class file
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @link http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDb\DB;
+namespace DreamFactory\Rave\SqlDbCore;
 
 
 /**
- * CDbTransaction represents a DB transaction.
+ * Transaction represents a DB transaction.
  *
- * It is usually created by calling {@link CDbConnection::beginTransaction}.
+ * It is usually created by calling {@link Connection::beginTransaction}.
  *
  * The following code is a common scenario of using transactions:
  * <pre>
@@ -31,24 +31,26 @@ namespace DreamFactory\Rave\SqlDb\DB;
  * }
  * </pre>
  *
- * @property CDbConnection $connection The DB connection for this transaction.
+ * @property Connection $connection The DB connection for this transaction.
  * @property boolean $active Whether this transaction is active.
  *
  * @author Qiang Xue <qiang.xue@gmail.com>
  * @package system.db
  * @since 1.0
  */
-class CDbTransaction
+class Transaction
 {
 	private $_connection=null;
 	private $_active;
 
 	/**
 	 * Constructor.
-	 * @param CDbConnection $connection the connection associated with this transaction
-	 * @see CDbConnection::beginTransaction
+	 *
+*@param Connection $connection the connection associated with this transaction
+	 *
+*@see CDbConnection::beginTransaction
 	 */
-	public function __construct(CDbConnection $connection)
+	public function __construct( Connection $connection)
 	{
 		$this->_connection=$connection;
 		$this->_active=true;
@@ -66,7 +68,7 @@ class CDbTransaction
 			$this->_active=false;
 		}
 		else
-			throw new \Exception( 'CDbTransaction is inactive and cannot perform commit or roll back operations.');
+			throw new \Exception( 'Transaction is inactive and cannot perform commit or roll back operations.');
 	}
 
 	/**
@@ -81,11 +83,11 @@ class CDbTransaction
 			$this->_active=false;
 		}
 		else
-			throw new \Exception( 'CDbTransaction is inactive and cannot perform commit or roll back operations.');
+			throw new \Exception( 'Transaction is inactive and cannot perform commit or roll back operations.');
 	}
 
 	/**
-	 * @return CDbConnection the DB connection for this transaction
+	 * @return Connection the DB connection for this transaction
 	 */
 	public function getConnection()
 	{
