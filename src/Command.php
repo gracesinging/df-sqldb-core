@@ -9,8 +9,6 @@
  */
 namespace DreamFactory\Rave\SqlDbCore;
 
-use DreamFactory\Rave\SqlDbCore\Schema\Expression;
-
 /**
  * Command represents an SQL statement to execute against a database.
  *

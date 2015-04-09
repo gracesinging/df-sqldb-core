@@ -9,9 +9,6 @@
  */
 namespace DreamFactory\Rave\SqlDbCore;
 
-use DreamFactory\Rave\SqlDbCore\Schema\Schema;
-use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
-
 /**
  * Connection represents a connection to a database.
  *
@@ -84,9 +81,9 @@ use DreamFactory\Rave\SqlDbCore\Schema\CommandBuilder;
  *
  * @property boolean            $active             Whether the DB connection is established.
  * @property \PDO               $pdoInstance        The PDO instance, null if the connection is not established yet.
- * @property Transaction     $currentTransaction The currently active transaction. Null if no active transaction.
- * @property Schema          $schema             The database schema for the current connection.
- * @property CommandBuilder  $commandBuilder     The command builder.
+ * @property Transaction        $currentTransaction The currently active transaction. Null if no active transaction.
+ * @property Schema             $schema             The database schema for the current connection.
+ * @property CommandBuilder     $commandBuilder     The command builder.
  * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved from the sequence object.
  * @property mixed              $columnCase         The case of the column names.
  * @property mixed              $nullConversion     How the null and empty strings are converted.
@@ -168,16 +165,16 @@ class Connection
      * @since 1.1.6
      */
     public $driverMap = array(
-        'pgsql'   => 'DreamFactory\Rave\SqlDbCore\Schema\Pgsql\CPgsqlSchema',    // PostgreSQL
-        'mysqli'  => 'DreamFactory\Rave\SqlDbCore\Schema\Mysql\CMysqlSchema',   // MySQL
-        'mysql'   => 'DreamFactory\Rave\SqlDbCore\Schema\MySql\CMysqlSchema',    // MySQL
-        'sqlite'  => 'DreamFactory\Rave\SqlDbCore\Schema\Sqllite\CSqliteSchema',  // sqlite 3
-        'sqlite2' => 'DreamFactory\Rave\SqlDbCore\Schema\Sqllite\CSqliteSchema', // sqlite 2
-        'mssql'   => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',    // Mssql driver on windows hosts
-        'dblib'   => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv'  => 'DreamFactory\Rave\SqlDbCore\Schema\Mssql\CMssqlSchema',   // Mssql
-        'oci'     => 'DreamFactory\Rave\SqlDbCore\Schema\Oci\COciSchema',        // Oracle driver
-        'ibm'     => 'DreamFactory\Rave\SqlDbCore\Schema\Ibm\CIbmDB2Schema',     // IBM DB2 driver
+        'pgsql'   => 'DreamFactory\Rave\SqlDbCore\Pgsql\Schema',    // PostgreSQL
+        'mysqli'  => 'DreamFactory\Rave\SqlDbCore\Mysql\Schema',   // MySQL
+        'mysql'   => 'DreamFactory\Rave\SqlDbCore\MySql\Schema',    // MySQL
+        'sqlite'  => 'DreamFactory\Rave\SqlDbCore\Sqllite\Schema',  // sqlite 3
+        'sqlite2' => 'DreamFactory\Rave\SqlDbCore\Sqllite\Schema', // sqlite 2
+        'mssql'   => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',    // Mssql driver on windows hosts
+        'dblib'   => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',    // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv'  => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',   // Mssql
+        'oci'     => 'DreamFactory\Rave\SqlDbCore\Oci\Schema',        // Oracle driver
+        'ibm'     => 'DreamFactory\Rave\SqlDbCore\Ibmdb2\Schema',     // IBM DB2 driver
     );
 
     /**
@@ -336,15 +333,15 @@ class Connection
             $driver = strtolower( substr( $this->connectionString, 0, $pos ) );
             if ( $driver === 'mssql' || $driver === 'dblib' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Mssql\\CMssqlPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Mssql\\PdoAdapter';
             }
             elseif ( $driver === 'sqlsrv' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Mssql\\CMssqlSqlsrvPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Mssql\\SqlsrvPdoAdapter';
             }
             elseif ( $driver === 'oci' )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Schema\\Oci\\COciPdoAdapter';
+                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Oci\\PdoAdapter';
             }
         }
 
