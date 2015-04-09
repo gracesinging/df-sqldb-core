@@ -861,6 +861,7 @@ abstract class Schema
      * @param string $info abstract column type
      *
      * @return string physical column type including arguments, null designation and defaults.
+     * @throws \Exception
      * @since 1.1.6
      */
     protected function getColumnType( $info )

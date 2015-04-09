@@ -23,14 +23,10 @@ class ColumnSchema
     /**
      * The followings are the supported abstract column data types.
      */
-    const TYPE_PK = 'pk';
     const TYPE_ID = 'id';
-    const TYPE_FK = 'fk';
     const TYPE_REF = 'reference';
-    const TYPE_BIGPK = 'bigpk';
     const TYPE_STRING = 'string';
     const TYPE_TEXT = 'text';
-    const TYPE_SMALLINT = 'smallint';
     const TYPE_INTEGER = 'integer';
     const TYPE_BIGINT = 'bigint';
     const TYPE_FLOAT = 'float';
@@ -69,10 +65,6 @@ class ColumnSchema
      */
     public $pdoType;
     /**
-     * @var boolean whether this column can be null.
-     */
-    public $allowNull;
-    /**
      * @var mixed default value of this column
      */
     public $defaultValue;
@@ -88,6 +80,10 @@ class ColumnSchema
      * @var integer scale of the column data, if it is numeric.
      */
     public $scale;
+    /**
+     * @var boolean whether this column can be null.
+     */
+    public $allowNull = false;
     /**
      * @var boolean whether this column is a primary key
      */
@@ -146,27 +142,20 @@ class ColumnSchema
     {
         switch ( $type )
         {
-            case 'boolean':
+            case static::TYPE_BOOLEAN:
                 return 'boolean';
 
-            case 'integer':
-            case 'id':
-            case 'reference':
+            case static::TYPE_INTEGER:
+            case static::TYPE_ID:
+            case static::TYPE_REF:
                 return 'integer';
 
-            case 'decimal':
-            case 'double':
-            case 'float':
-            case 'money':
+            case static::TYPE_DECIMAL:
+            case static::TYPE_DOUBLE:
+            case static::TYPE_FLOAT:
+            case static::TYPE_MONEY:
                 return 'double';
 
-            case 'string':
-            case 'text':
-            case 'binary':
-            case 'date':
-            case 'time':
-            case 'datetime':
-            case 'timestamp':
             default:
                 return 'string';
         }
@@ -183,15 +172,15 @@ class ColumnSchema
     {
         switch ( $type )
         {
-            case 'boolean':
+            case static::TYPE_BOOLEAN:
                 return \PDO::PARAM_BOOL;
 
-            case 'integer':
-            case 'id':
-            case 'reference':
+            case static::TYPE_INTEGER:
+            case static::TYPE_ID:
+            case static::TYPE_REF:
                 return \PDO::PARAM_INT;
 
-            case 'string':
+            case static::TYPE_STRING:
                 return \PDO::PARAM_STR;
         }
 
@@ -212,48 +201,48 @@ class ColumnSchema
         {
             case 'bit':
             case ( false !== strpos( $_simpleType, 'bool' ) ):
-                $this->type = 'boolean';
+                $this->type = static::TYPE_BOOLEAN;
                 break;
 
             case 'number': // Oracle for boolean, integers and decimals
                 if ( $this->size == 1 )
                 {
-                    $this->type = 'boolean';
+                    $this->type = static::TYPE_BOOLEAN;
                 }
                 elseif ( empty( $this->scale ) )
                 {
-                    $this->type = 'integer';
+                    $this->type = static::TYPE_INTEGER;
                 }
                 else
                 {
-                    $this->type = 'decimal';
+                    $this->type = static::TYPE_DECIMAL;
                 }
                 break;
 
             case 'decimal':
             case 'numeric':
             case 'percent':
-                $this->type = 'decimal';
+                $this->type = static::TYPE_DECIMAL;
                 break;
 
             case ( false !== strpos( $_simpleType, 'double' ) ):
-                $this->type = 'double';
+                $this->type = static::TYPE_DOUBLE;
                 break;
 
             case 'real':
             case ( false !== strpos( $_simpleType, 'float' ) ):
                 if ( $this->size == 53 )
                 {
-                    $this->type = 'double';
+                    $this->type = static::TYPE_DOUBLE;
                 }
                 else
                 {
-                    $this->type = 'float';
+                    $this->type = static::TYPE_FLOAT;
                 }
                 break;
 
             case ( false !== strpos( $_simpleType, 'money' ) ):
-                $this->type = 'money';
+                $this->type = static::TYPE_MONEY;
                 break;
 
             case 'tinyint':
@@ -265,57 +254,57 @@ class ColumnSchema
                 // watch out for point here!
                 if ( $this->size == 1 )
                 {
-                    $this->type = 'boolean';
+                    $this->type = static::TYPE_BOOLEAN;
                 }
                 else
                 {
-                    $this->type = 'integer';
+                    $this->type = static::TYPE_INTEGER;
                 }
                 break;
 
             case ( false !== strpos( $_simpleType, 'timestamp' ) ):
             case 'datetimeoffset': //  MSSQL
-                $this->type = 'timestamp';
+                $this->type = static::TYPE_TIMESTAMP;
                 break;
 
             case ( false !== strpos( $_simpleType, 'datetime' ) ):
-                $this->type = 'datetime';
+                $this->type = static::TYPE_DATETIME;
                 break;
 
             case 'date':
-                $this->type = 'date';
+                $this->type = static::TYPE_DATE;
                 break;
 
             case ( false !== strpos( $_simpleType, 'time' ) ):
-                $this->type = 'time';
+                $this->type = static::TYPE_TIME;
                 break;
 
             case ( false !== strpos( $_simpleType, 'binary' ) ):
             case ( false !== strpos( $_simpleType, 'blob' ) ):
-                $this->type = 'binary';
+                $this->type = static::TYPE_BINARY;
                 break;
 
             //	String types
             case ( false !== strpos( $_simpleType, 'clob' ) ):
             case ( false !== strpos( $_simpleType, 'text' ) ):
-                $this->type = 'text';
+                $this->type = static::TYPE_TEXT;
                 break;
 
             case 'varchar':
                 if ( $this->size == -1 )
                 {
-                    $this->type = 'text'; // varchar(max) in MSSQL
+                    $this->type = static::TYPE_TEXT; // varchar(max) in MSSQL
                 }
                 else
                 {
-                    $this->type = 'string';
+                    $this->type = static::TYPE_STRING;
                 }
                 break;
 
             case 'string':
             case ( false !== strpos( $_simpleType, 'char' ) ):
             default:
-                $this->type = 'string';
+                $this->type = static::TYPE_STRING;
                 break;
         }
 
@@ -368,7 +357,7 @@ class ColumnSchema
         }
         if ( $value === '' && $this->allowNull )
         {
-            return $this->phpType === 'string' ? '' : null;
+            return ($this->phpType === 'string') ? '' : null;
         }
         switch ( $this->phpType )
         {
@@ -446,7 +435,7 @@ class ColumnSchema
 
     public function determineRequired()
     {
-        if ( ( 1 == $this->allowNull ) || ( isset( $this->defaultValue ) ) || ( 1 == $this->autoIncrement ) )
+        if ( $this->allowNull || ( isset( $this->defaultValue ) ) || $this->autoIncrement )
         {
             return false;
         }
