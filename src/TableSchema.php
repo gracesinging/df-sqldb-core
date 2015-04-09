@@ -9,6 +9,8 @@
  */
 namespace DreamFactory\Rave\SqlDbCore;
 
+use DreamFactory\Library\Utility\Inflector;
+
 /**
  * TableSchema is the base class for representing the metadata of a database table.
  *
@@ -118,5 +120,27 @@ class TableSchema
         ];
 
         $this->references[] = $reference;
+    }
+
+    public function toArray()
+    {
+        $fields = array();
+        /** @var ColumnSchema $column */
+        foreach ( $this->columns as $column )
+        {
+            $fields[] = $column->toArray();
+        }
+
+        $label = Inflector::camelize( $this->displayName, '_', true );
+        $plural = Inflector::pluralize( $label );
+
+        return [
+            'name'        => $this->displayName,
+            'label'       => $label,
+            'plural'      => $plural,
+            'primary_key' => $this->primaryKey,
+            'field'       => $fields,
+            'related'     => $this->references
+        ];
     }
 }

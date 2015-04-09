@@ -9,6 +9,8 @@
  */
 namespace DreamFactory\Rave\SqlDbCore;
 
+use DreamFactory\Library\Utility\Inflector;
+
 /**
  * ColumnSchema class describes the column meta data of a database table.
  *
@@ -18,6 +20,30 @@ namespace DreamFactory\Rave\SqlDbCore;
  */
 class ColumnSchema
 {
+    /**
+     * The followings are the supported abstract column data types.
+     */
+    const TYPE_PK = 'pk';
+    const TYPE_ID = 'id';
+    const TYPE_FK = 'fk';
+    const TYPE_REF = 'reference';
+    const TYPE_BIGPK = 'bigpk';
+    const TYPE_STRING = 'string';
+    const TYPE_TEXT = 'text';
+    const TYPE_SMALLINT = 'smallint';
+    const TYPE_INTEGER = 'integer';
+    const TYPE_BIGINT = 'bigint';
+    const TYPE_FLOAT = 'float';
+    const TYPE_DOUBLE = 'double';
+    const TYPE_DECIMAL = 'decimal';
+    const TYPE_DATETIME = 'datetime';
+    const TYPE_TIMESTAMP = 'timestamp';
+    const TYPE_TIME = 'time';
+    const TYPE_DATE = 'date';
+    const TYPE_BINARY = 'binary';
+    const TYPE_BOOLEAN = 'boolean';
+    const TYPE_MONEY = 'money';
+
     /**
      * @var string name of this column (without quotes).
      */
@@ -389,5 +415,42 @@ class ColumnSchema
                 $this->fixedLength = true;
                 break;
         }
+    }
+
+    public function toArray()
+    {
+        return [
+            'name'               => $this->name,
+            'label'              => Inflector::camelize( $this->name, '_', true ),
+            'type'               => $this->type,
+            'db_type'            => $this->dbType,
+            'php_type'           => $this->phpType,
+            'pdo_type'           => $this->pdoType,
+            'length'             => $this->size,
+            'precision'          => $this->precision,
+            'scale'              => $this->scale,
+            'default'            => $this->defaultValue,
+            'required'           => $this->determineRequired(),
+            'allow_null'         => $this->allowNull,
+            'fixed_length'       => $this->fixedLength,
+            'supports_multibyte' => $this->supportsMultibyte,
+            'auto_increment'     => $this->autoIncrement,
+            'is_primary_key'     => $this->isPrimaryKey,
+            'is_foreign_key'     => $this->isForeignKey,
+            'is_unique'          => $this->isUnique,
+            'is_index'           => $this->isIndex,
+            'ref_table'          => $this->refTable,
+            'ref_fields'         => $this->refFields
+        ];
+    }
+
+    public function determineRequired()
+    {
+        if ( ( 1 == $this->allowNull ) || ( isset( $this->defaultValue ) ) || ( 1 == $this->autoIncrement ) )
+        {
+            return false;
+        }
+
+        return true;
     }
 }
