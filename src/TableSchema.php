@@ -61,15 +61,15 @@ class TableSchema
     /**
      * @var array foreign keys of this table. The array is indexed by column name. Each value is an array of foreign table name and foreign column name.
      */
-    public $foreignKeys = array();
+    public $foreignKeys = [ ];
     /**
-     * @var array foreign table references to this table. Each value is an array containing foreign table name, foreign column name, local column name, and reference type.
+     * @var array relationship metadata of this table. Each array element is a RelationSchema object, indexed by relation name.
      */
-    public $references = array();
+    public $relations = [ ];
     /**
-     * @var array column metadata of this table. Each array element is a ColumnSchema object, indexed by column names.
+     * @var array column metadata of this table. Each array element is a ColumnSchema object, indexed by column name.
      */
-    public $columns = array();
+    public $columns = [ ];
 
     /**
      * Gets the named column metadata.
@@ -92,43 +92,47 @@ class TableSchema
         return array_keys( $this->columns );
     }
 
+    /**
+     * Gets the named relation metadata.
+     *
+     * @param string $name relation name
+     *
+     * @return RelationSchema metadata of the named relation. Null if the named relation does not exist.
+     */
+    public function getRelation( $name )
+    {
+        return isset( $this->relations[$name] ) ? $this->relations[$name] : null;
+    }
+
+    /**
+     * @return array list of column names
+     */
+    public function getRelationNames()
+    {
+        return array_keys( $this->columns );
+    }
+
     public function addReference( $type, $ref_table, $ref_field, $field, $join = null )
     {
-        switch ( $type )
-        {
-            case 'belongs_to':
-                $name = $ref_table . '_by_' . $field;
-                break;
-            case 'has_many':
-                $name = $ref_table . '_by_' . $ref_field;
-                break;
-            case 'many_many':
-                $name = $ref_table . '_by_' . substr( $join, 0, strpos( $join, '(' ) );
-                break;
-            default:
-                $name = null;
-                break;
-        }
+        $relation = new RelationSchema($type, $ref_table, $ref_field, $field, $join);
 
-        $reference = [
-            'name'      => $name,
-            'type'      => $type,
-            'ref_table' => $ref_table,
-            'ref_field' => $ref_field,
-            'field'     => $field,
-            'join'      => $join
-        ];
-
-        $this->references[] = $reference;
+        $this->relations[] = $relation;
     }
 
     public function toArray()
     {
-        $fields = array();
+        $fields = [ ];
         /** @var ColumnSchema $column */
         foreach ( $this->columns as $column )
         {
             $fields[] = $column->toArray();
+        }
+
+        $relations = [ ];
+        /** @var RelationSchema $relation */
+        foreach ( $this->relations as $relation )
+        {
+            $relations[] = $relation->toArray();
         }
 
         $label = Inflector::camelize( $this->displayName, '_', true );
@@ -140,7 +144,7 @@ class TableSchema
             'plural'      => $plural,
             'primary_key' => $this->primaryKey,
             'field'       => $fields,
-            'related'     => $this->references
+            'related'     => $relations
         ];
     }
 }
