@@ -116,7 +116,7 @@ class TableSchema
     {
         $relation = new RelationSchema($type, $ref_table, $ref_field, $field, $join);
 
-        $this->relations[] = $relation;
+        $this->relations[$relation->name] = $relation;
     }
 
     public function toArray()
