@@ -9,6 +9,8 @@
  */
 namespace DreamFactory\Rave\SqlDbCore;
 
+use DreamFactory\Library\Utility\ArrayUtils;
+
 /**
  * Connection represents a connection to a database.
  *
@@ -164,7 +166,7 @@ class Connection
      * A schema class can be specified using path alias.
      * @since 1.1.6
      */
-    public $driverMap = array(
+    public static $driverSchemaMap = [
         'pgsql'   => 'DreamFactory\Rave\SqlDbCore\Pgsql\Schema',    // PostgreSQL
         'mysqli'  => 'DreamFactory\Rave\SqlDbCore\Mysql\Schema',   // MySQL
         'mysql'   => 'DreamFactory\Rave\SqlDbCore\MySql\Schema',    // MySQL
@@ -175,7 +177,7 @@ class Connection
         'sqlsrv'  => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',   // Mssql
         'oci'     => 'DreamFactory\Rave\SqlDbCore\Oci\Schema',        // Oracle driver
         'ibm'     => 'DreamFactory\Rave\SqlDbCore\Ibmdb2\Schema',     // IBM DB2 driver
-    );
+    ];
 
     /**
      * @var string Custom PDO wrapper class.
@@ -183,7 +185,19 @@ class Connection
      */
     public $pdoClass = 'PDO';
 
-    private $_attributes = array();
+    /**
+     * @var array mapping between PDO driver and adapter class name.
+     * An adapter class can be specified using path alias.
+     * @since 1.1.6
+     */
+    public static $driverAdapterMap = [
+        'mssql'  => 'DreamFactory\Rave\SqlDbCore\Mssql\PdoAdapter',    // Mssql driver on windows hosts
+        'dblib'  => 'DreamFactory\Rave\SqlDbCore\Mssql\PdoAdapter',    // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv' => 'DreamFactory\Rave\SqlDbCore\Mssql\SqlsrvPdoAdapter',   // Mssql
+        'oci'    => 'DreamFactory\Rave\SqlDbCore\Oci\PdoAdapter',        // Oracle driver
+    ];
+
+    private $_attributes = [ ];
     private $_active = false;
     private $_pdo;
     private $_transaction;
@@ -229,6 +243,78 @@ class Connection
     public static function getAvailableDrivers()
     {
         return \PDO::getAvailableDrivers();
+    }
+
+    /**
+     * Returns the name of the DB driver from a connection string
+     *
+     * @param string $dsn The connection string
+     *
+     * @return string name of the DB driver
+     */
+    public static function getDriverFromDSN( $dsn )
+    {
+        if ( is_string( $dsn ) )
+        {
+            if ( ( $pos = strpos( $dsn, ':' ) ) !== false )
+            {
+                return strtolower( substr( $dsn, 0, $pos ) );
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string  $driver
+     * @param boolean $requires_pdo
+     *
+     * @return bool Returns true if all required extensions are loaded, otherwise an exception is thrown
+     * @throws \Exception
+     */
+    public static function requireDriver( $driver, $requires_pdo = true )
+    {
+        static $driverExtensionMap = [
+            'sqlite' => 'sqlite3',
+            'mysql'  => 'mysql',
+            'mysqli' => 'mysqli',
+            'dblib'  => 'mssql',
+            'mssql'  => 'mssql',
+            'pgsql'  => 'pgsql',
+            'oci'    => 'oci8',
+            'ibm'    => 'ibm_db2',
+        ];
+
+        if ( !empty( $driver ) )
+        {
+            if ( isset( $driverExtensionMap[$driver] ) )
+            {
+                $extension = $driverExtensionMap[$driver];
+                if ( !extension_loaded( $extension ) )
+                {
+                    throw new \Exception( "Required extension or module '$extension' is not installed or loaded." );
+                }
+            }
+        }
+
+        if ( $requires_pdo )
+        {
+            if ( !extension_loaded( 'PDO' ) )
+            {
+                throw new \Exception( "Required PDO extension is not installed or loaded." );
+            }
+
+            if ( !empty( $driver ) )
+            {
+                $drivers = static::getAvailableDrivers();
+                if ( !in_array( $driver, $drivers ) )
+                {
+                    throw new \Exception( "Required PDO driver '$driver' is not installed or loaded properly." );
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -328,20 +414,15 @@ class Connection
     protected function createPdoInstance()
     {
         $pdoClass = $this->pdoClass;
-        if ( ( $pos = strpos( $this->connectionString, ':' ) ) !== false )
+        if ( null !== ( $driver = static::getDriverFromDSN( $this->connectionString ) ) )
         {
-            $driver = strtolower( substr( $this->connectionString, 0, $pos ) );
-            if ( $driver === 'mssql' || $driver === 'dblib' )
+            //  Require that the PDO driver and dependencies are loaded
+            static::requireDriver( $driver );
+
+            //  Detect if we need an adapter for PDO
+            if ( isset( static::$driverAdapterMap[$driver] ) )
             {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Mssql\\PdoAdapter';
-            }
-            elseif ( $driver === 'sqlsrv' )
-            {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Mssql\\SqlsrvPdoAdapter';
-            }
-            elseif ( $driver === 'oci' )
-            {
-                $pdoClass = '\\DreamFactory\\Rave\\SqlDbCore\\Oci\\PdoAdapter';
+                $pdoClass = static::$driverAdapterMap[$driver];
             }
         }
 
@@ -377,7 +458,7 @@ class Connection
         if ( $this->charset !== null )
         {
             $driver = strtolower( $pdo->getAttribute( \PDO::ATTR_DRIVER_NAME ) );
-            if ( in_array( $driver, array( 'pgsql', 'mysql', 'mysqli' ) ) )
+            if ( in_array( $driver, [ 'pgsql', 'mysql', 'mysqli' ] ) )
             {
                 $pdo->exec( 'SET NAMES ' . $pdo->quote( $this->charset ) );
             }
@@ -464,13 +545,13 @@ class Connection
         else
         {
             $driver = $this->getDBName();
-            if ( isset( $this->driverMap[$driver] ) )
+            if ( isset( static::$driverSchemaMap[$driver] ) )
             {
-                return $this->_schema = static::createComponent( $this->driverMap[$driver], $this );
+                return $this->_schema = static::createComponent( static::$driverSchemaMap[$driver], $this );
             }
             else
             {
-                throw new \Exception( 'Connection does not support reading schema for {$driver} database.' );
+                throw new \Exception( "Connection does not support reading schema for '$driver' database." );
             }
         }
     }
@@ -480,7 +561,7 @@ class Connection
         if ( is_string( $config ) )
         {
             $type = $config;
-            $config = array();
+            $config = [ ];
         }
         elseif ( isset( $config['class'] ) )
         {
@@ -512,7 +593,7 @@ class Connection
                 $class = new \ReflectionClass( $type );
                 // Note: ReflectionClass::newInstanceArgs() is available for PHP 5.1.3+
                 // $object=$class->newInstanceArgs($args);
-                $object = call_user_func_array( array( $class, 'newInstance' ), $args );
+                $object = call_user_func_array( [ $class, 'newInstance' ], $args );
             }
         }
         else
@@ -613,13 +694,13 @@ class Connection
      */
     public function getPdoType( $type )
     {
-        static $map = array(
+        static $map = [
             'boolean'  => \PDO::PARAM_BOOL,
             'integer'  => \PDO::PARAM_INT,
             'string'   => \PDO::PARAM_STR,
             'resource' => \PDO::PARAM_LOB,
             'NULL'     => \PDO::PARAM_NULL,
-        );
+        ];
 
         return isset( $map[$type] ) ? $map[$type] : \PDO::PARAM_STR;
     }
@@ -864,6 +945,6 @@ class Connection
      */
     public function getStats()
     {
-        return array();
+        return [ ];
     }
 }

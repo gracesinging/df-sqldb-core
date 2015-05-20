@@ -23,11 +23,6 @@ class Connection extends \DreamFactory\Rave\SqlDbCore\Connection
         $this->setAttribute( \PDO::ATTR_STRINGIFY_FETCHES, true );
     }
 
-    public $driverMap = array(
-        'ibm'  => 'Schema', // IBM DB2 driver
-        'odbc' => 'Schema', // IBM DB2 driver
-    );
-
     public function getPdoType( $type )
     {
         if ( $type == 'NULL' )
