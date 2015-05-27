@@ -290,7 +290,14 @@ class Connection
             if ( isset( $driverExtensionMap[$driver] ) )
             {
                 $extension = $driverExtensionMap[$driver];
-                if ( !extension_loaded( $extension ) )
+                if ( 'mysql' === $extension )
+                {
+                    if ( !extension_loaded( 'mysql' ) && !extension_loaded( 'mysqlnd' ) )
+                    {
+                        throw new \Exception( "Required extension or module '$extension' is not installed or loaded." );
+                    }
+                }
+                elseif ( !extension_loaded( $extension ) )
                 {
                     throw new \Exception( "Required extension or module '$extension' is not installed or loaded." );
                 }
