@@ -9,8 +9,6 @@
  */
 namespace DreamFactory\Core\SqlDbCore;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-
 /**
  * Connection represents a connection to a database.
  *

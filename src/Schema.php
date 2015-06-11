@@ -9,17 +9,15 @@
  */
 namespace DreamFactory\Core\SqlDbCore;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-
 /**
  * Schema is the base class for retrieving metadata information.
  *
- * @property Connection     $dbConnection   Database connection. The connection is active.
+ * @property Connection        $dbConnection   Database connection. The connection is active.
  * @property array             $tables         The metadata for all tables in the database.
  * Each array element is an instance of {@link TableSchema} (or its child class).
  * The array keys are table names.
  * @property array             $tableNames     All table names in the database.
- * @property CommandBuilder $commandBuilder The SQL command builder for this connection.
+ * @property CommandBuilder    $commandBuilder The SQL command builder for this connection.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
@@ -32,31 +30,31 @@ abstract class Schema
     /**
      * @var array
      */
-    private $_schemaNames = array();
+    private $_schemaNames = [ ];
     /**
      * @var array
      */
-    private $_tableNames = array();
+    private $_tableNames = [ ];
     /**
      * @var array
      */
-    private $_tables = array();
+    private $_tables = [ ];
     /**
      * @var array
      */
-    private $_procedureNames = array();
+    private $_procedureNames = [ ];
     /**
      * @var array
      */
-    private $_procedures = array();
+    private $_procedures = [ ];
     /**
      * @var array
      */
-    private $_functionNames = array();
+    private $_functionNames = [ ];
     /**
      * @var array
      */
-    private $_functions = array();
+    private $_functions = [ ];
     /**
      * @var Connection
      */
@@ -140,7 +138,7 @@ abstract class Schema
     protected function findSchemaNames()
     {
 //        throw new \Exception( '{get_class( $this )} does not support fetching all schema names.' );
-        return array( '' );
+        return [ '' ];
     }
 
     /**
@@ -189,7 +187,7 @@ abstract class Schema
      */
     public function getTables( $schema = '', $include_views = true, $refresh = false )
     {
-        $tables = array();
+        $tables = [ ];
         foreach ( $this->getTableNames( $schema, $include_views, $refresh ) as $name )
         {
             if ( ( $table = $this->getTable( $name, $refresh ) ) !== null )
@@ -220,7 +218,7 @@ abstract class Schema
         }
         if ( empty( $schema ) )
         {
-            $names = array();
+            $names = [ ];
             foreach ( $this->getSchemaNames() as $schema )
             {
                 if ( !isset( $this->_tableNames[$schema] ) )
@@ -228,7 +226,7 @@ abstract class Schema
                     $this->getCachedTableNames( $include_views );
                 }
 
-                $temp = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : array() );
+                $temp = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : [ ] );
                 $names = array_merge( $names, $temp );
             }
 
@@ -243,7 +241,7 @@ abstract class Schema
                 $this->getCachedTableNames( $include_views );
             }
 
-            $names = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : array() );
+            $names = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : [ ] );
             natcasesort( $names );
 
             return array_values( $names );
@@ -258,7 +256,7 @@ abstract class Schema
      */
     protected function getCachedTableNames( $include_views = true, $refresh = false )
     {
-        $names = array();
+        $names = [ ];
         foreach ( $this->getSchemaNames( $refresh ) as $temp )
         {
             $names[$temp] = $this->findTableNames( $temp, $include_views );
@@ -344,7 +342,7 @@ abstract class Schema
      */
     public function getProcedures( $schema = '' )
     {
-        $procedures = array();
+        $procedures = [ ];
         foreach ( $this->getProcedureNames( $schema ) as $name )
         {
             if ( ( $procedure = $this->getProcedure( $name ) ) !== null )
@@ -373,7 +371,7 @@ abstract class Schema
         }
         if ( empty( $schema ) )
         {
-            $names = array();
+            $names = [ ];
             foreach ( $this->getSchemaNames() as $schema )
             {
                 if ( !isset( $this->_procedureNames[$schema] ) )
@@ -381,7 +379,7 @@ abstract class Schema
                     $this->getCachedProcedureNames();
                 }
 
-                $temp = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : array() );
+                $temp = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : [ ] );
                 $names = array_merge( $names, $temp );
             }
 
@@ -396,7 +394,7 @@ abstract class Schema
                 $this->getCachedProcedureNames();
             }
 
-            $names = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : array() );
+            $names = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : [ ] );
             natcasesort( $names );
 
             return array_values( $names );
@@ -410,7 +408,7 @@ abstract class Schema
      */
     protected function getCachedProcedureNames( $refresh = false )
     {
-        $names = array();
+        $names = [ ];
         foreach ( $this->getSchemaNames( $refresh ) as $temp )
         {
             $names[$temp] = $this->findProcedureNames( $temp );
@@ -469,7 +467,7 @@ abstract class Schema
      */
     public function getFunctions( $schema = '' )
     {
-        $functions = array();
+        $functions = [ ];
         foreach ( $this->getFunctionNames( $schema ) as $name )
         {
             if ( ( $procedure = $this->getFunction( $name ) ) !== null )
@@ -498,7 +496,7 @@ abstract class Schema
         }
         if ( empty( $schema ) )
         {
-            $names = array();
+            $names = [ ];
             foreach ( $this->getSchemaNames() as $schema )
             {
                 if ( !isset( $this->_functionNames[$schema] ) )
@@ -506,7 +504,7 @@ abstract class Schema
                     $this->getCachedFunctionNames();
                 }
 
-                $temp = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : array() );
+                $temp = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : [ ] );
                 $names = array_merge( $names, $temp );
             }
 
@@ -521,7 +519,7 @@ abstract class Schema
                 $this->getCachedFunctionNames();
             }
 
-            $names = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : array() );
+            $names = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : [ ] );
             natcasesort( $names );
 
             return array_values( $names );
@@ -535,7 +533,7 @@ abstract class Schema
      */
     protected function getCachedFunctionNames( $refresh = false )
     {
-        $names = array();
+        $names = [ ];
         foreach ( $this->getSchemaNames( $refresh ) as $temp )
         {
             $names[$temp] = $this->findFunctionNames( $temp );
@@ -606,13 +604,13 @@ abstract class Schema
      */
     public function refresh()
     {
-        $this->_tables = array();
-        $this->_tableNames = array();
-        $this->_procedures = array();
-        $this->_procedureNames = array();
-        $this->_functions = array();
-        $this->_functionNames = array();
-        $this->_schemaNames = array();
+        $this->_tables = [ ];
+        $this->_tableNames = [ ];
+        $this->_procedures = [ ];
+        $this->_procedureNames = [ ];
+        $this->_functions = [ ];
+        $this->_functionNames = [ ];
+        $this->_schemaNames = [ ];
         $this->_builder = null;
     }
 
@@ -704,8 +702,8 @@ abstract class Schema
      */
     public function compareTableNames( $name1, $name2 )
     {
-        $name1 = str_replace( array( '"', '`', "'" ), '', $name1 );
-        $name2 = str_replace( array( '"', '`', "'" ), '', $name2 );
+        $name1 = str_replace( [ '"', '`', "'" ], '', $name1 );
+        $name2 = str_replace( [ '"', '`', "'" ], '', $name2 );
         if ( ( $pos = strrpos( $name1, '.' ) ) !== false )
         {
             $name1 = substr( $name1, $pos + 1 );
@@ -718,11 +716,11 @@ abstract class Schema
         {
             if ( strpos( $name1, '{' ) !== false )
             {
-                $name1 = $this->_connection->tablePrefix . str_replace( array( '{', '}' ), '', $name1 );
+                $name1 = $this->_connection->tablePrefix . str_replace( [ '{', '}' ], '', $name1 );
             }
             if ( strpos( $name2, '{' ) !== false )
             {
-                $name2 = $this->_connection->tablePrefix . str_replace( array( '{', '}' ), '', $name2 );
+                $name2 = $this->_connection->tablePrefix . str_replace( [ '{', '}' ], '', $name2 );
             }
         }
 
@@ -734,8 +732,8 @@ abstract class Schema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param TableSchema $table the table schema whose primary key sequence will be reset
-     * @param integer|null   $value the value for the primary key of the next new row inserted.
+     * @param TableSchema  $table   the table schema whose primary key sequence will be reset
+     * @param integer|null $value   the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a primary
      *                              key plus one (i.e. sequence trimming).
      *
@@ -791,20 +789,21 @@ abstract class Schema
     protected function buildColumnDefinition( array $info )
     {
         // This works for most except Oracle
-        $type = ArrayUtils::get( $info, 'type' );
-        $typeExtras = ArrayUtils::get( $info, 'type_extras' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
+        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ArrayUtils::getBool( $info, 'allow_null', true );
+        $allowNull = ( isset( $info['allow_null'] ) ) ? $info['allow_null'] : null;
         $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
 
-        $default = ArrayUtils::get( $info, 'default' );
+        $default = ( isset( $info['db_type'] ) ) ? $info['db_type'] : null;
         if ( isset( $default ) )
         {
             if ( is_array( $default ) )
             {
-                if ( null !== $expression = ArrayUtils::get( $default, 'expression' ) )
+                $expression = ( isset( $default['expression'] ) ) ? $default['expression'] : null;
+                if ( null !== $expression )
                 {
                     $definition .= ' DEFAULT ' . $expression;
                 }
@@ -816,8 +815,8 @@ abstract class Schema
             }
         }
 
-        $isUniqueKey = ArrayUtils::getBool( $info, 'is_unique', false );
-        $isPrimaryKey = ArrayUtils::getBool( $info, 'is_primary_key', false );
+        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
+        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
         if ( $isPrimaryKey && $isUniqueKey )
         {
             throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
@@ -874,17 +873,17 @@ abstract class Schema
         }
         elseif ( is_array( $info ) )
         {
-            $sql = ArrayUtils::get( $info, 'sql' );
+            $sql = ( isset( $info['sql'] ) ) ? $info['sql'] : null;
             if ( !empty( $sql ) )
             {
                 return $sql; // raw SQL statement given, pass it on.
             }
 
             $out = $info;
-            $type = ArrayUtils::get( $info, 'type' );
+            $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
             if ( empty( $type ) )
             {
-                $type = ArrayUtils::get( $info, 'db_type' );
+                $type = ( isset( $info['db_type'] ) ) ? $info['db_type'] : null;
                 if ( empty( $type ) )
                 {
                     throw new \Exception( "Invalid schema detected - no type or db_type element." );
@@ -931,7 +930,7 @@ abstract class Schema
      */
     public function createTable( $table, $columns, $options = null )
     {
-        $cols = array();
+        $cols = [ ];
         foreach ( $columns as $name => $type )
         {
             if ( is_string( $name ) )
@@ -1152,7 +1151,7 @@ abstract class Schema
      */
     public function createIndex( $name, $table, $column, $unique = false )
     {
-        $cols = array();
+        $cols = [ ];
         $columns = preg_split( '/\s*,\s*/', $column, -1, PREG_SPLIT_NO_EMPTY );
         foreach ( $columns as $col )
         {
@@ -1257,7 +1256,7 @@ abstract class Schema
             $out_as = $this->quoteColumnName( $out_as );
         }
         // find the type
-        $dbType = ArrayUtils::get( $field_info, 'db_type' );
+        $dbType = ( isset( $field_info['db_type'] ) ) ? $field_info['db_type'] : null;
 
         switch ( $dbType )
         {

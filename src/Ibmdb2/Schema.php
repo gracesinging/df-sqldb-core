@@ -7,8 +7,6 @@
  */
 namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Library\Utility\Scalar;
 use DreamFactory\Core\SqlDbCore\Expression;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 use DreamFactory\Core\SqlDbCore\ColumnSchema;
@@ -23,20 +21,12 @@ use DreamFactory\Core\SqlDbCore\CommandBuilder;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    //******************************************************************************
-    //* Members
-    //******************************************************************************
-
     /**
      * @type string
      */
     private $_defaultSchema;
 
     private $_isIseries = null;
-
-    //******************************************************************************
-    //* Methods
-    //******************************************************************************
 
     private function isISeries()
     {
@@ -83,7 +73,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     protected function translateSimpleColumnTypes( array &$info )
     {
         // override this in each schema class
-        $type = ArrayUtils::get( $info, 'type' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
         switch ( strtolower( $type ) )
         {
             // some types need massaging, some need other required properties
@@ -106,7 +96,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'timestamp_on_create':
             case 'timestamp_on_update':
                 $info['type'] = 'timestamp';
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( !isset( $default ) )
                 {
                     $default = 'CURRENT_TIMESTAMP';
@@ -138,17 +128,17 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'boolean':
                 $info['type'] = 'smallint';
                 $info['type_extras'] = '(1)';
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) )
                 {
                     // convert to bit 0 or 1, where necessary
-                    $info['default'] = ( Scalar::boolval( $default ) ) ? 1 : 0;
+                    $info['default'] = (int)filter_var( $default, FILTER_VALIDATE_BOOLEAN );
                 }
                 break;
 
             case 'string':
-                $fixed = ArrayUtils::getBool( $info, 'fixed_length' );
-                $national = ArrayUtils::getBool( $info, 'supports_multibyte' );
+                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
+                $national = ( isset( $info['supports_multibyte'] ) ) ? filter_var( $info['supports_multibyte'], FILTER_VALIDATE_BOOLEAN ) : false;
                 if ( $fixed )
                 {
                     $info['type'] = ( $national ) ? 'graphic' : 'character';
@@ -168,7 +158,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 break;
 
             case 'binary':
-                $fixed = ArrayUtils::getBool( $info, 'fixed_length' );
+                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
                 $info['type'] = ( $fixed ) ? 'binary' : 'varbinary';
                 break;
 
@@ -178,7 +168,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     protected function validateColumnSettings( array &$info )
     {
         // override this in each schema class
-        $type = ArrayUtils::get( $info, 'type' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
         switch ( strtolower( $type ) )
         {
             // some types need massaging, some need other required properties
@@ -187,14 +177,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'bigint':
                 if ( !isset( $info['type_extras'] ) )
                 {
-                    $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'precision' ) );
+                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
                     if ( !empty( $length ) )
                     {
                         $info['type_extras'] = "($length)"; // sets the viewable length
                     }
                 }
 
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) && is_numeric( $default ) )
                 {
                     $info['default'] = intval( $default );
@@ -207,15 +197,15 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'double':
                 if ( !isset( $info['type_extras'] ) )
                 {
-                    $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'precision' ) );
+                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
                     if ( !empty( $length ) )
                     {
-                        $scale = ArrayUtils::get( $info, 'scale', ArrayUtils::get( $info, 'decimals' ) );
+                        $scale = ( isset( $info['decimals'] ) ) ? $info['decimals'] : ( ( isset( $info['scale'] ) ) ? $info['scale'] : null );
                         $info['type_extras'] = ( !empty( $scale ) ) ? "($length,$scale)" : "($length)";
                     }
                 }
 
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) && is_numeric( $default ) )
                 {
                     $info['default'] = floatval( $default );
@@ -231,7 +221,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'clob':
             case 'dbclob':
             case 'blob':
-                $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'size' ) );
+                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
                 if ( isset( $length ) )
                 {
                     $info['type_extras'] = "($length)";
@@ -241,14 +231,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'time':
             case 'timestamp':
             case 'datetime':
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( '0000-00-00 00:00:00' == $default )
                 {
                     // read back from MySQL has formatted zeros, can't send that back
                     $info['default'] = 0;
                 }
 
-                $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'size' ) );
+                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
                 if ( isset( $length ) )
                 {
                     $info['type_extras'] = "($length)";
@@ -265,19 +255,18 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function buildColumnDefinition( array $info )
     {
-        // This works for most except Oracle
-        $type = ArrayUtils::get( $info, 'type' );
-        $typeExtras = ArrayUtils::get( $info, 'type_extras' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
+        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ArrayUtils::getBool( $info, 'allow_null', true );
+        $allowNull = ( isset( $info['allow_null'] ) ) ? filter_var( $info['allow_null'], FILTER_VALIDATE_BOOLEAN ) : false;
         $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
 
-        $default = ArrayUtils::get( $info, 'default' );
+        $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
         if ( isset( $default ) )
         {
-            $quoteDefault = ArrayUtils::getBool( $info, 'quote_default', false );
+            $quoteDefault = ( isset( $info['quote_default'] ) ) ? filter_var( $info['quote_default'], FILTER_VALIDATE_BOOLEAN ) : false;
             if ( $quoteDefault )
             {
                 $default = "'" . $default . "'";
@@ -286,13 +275,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             $definition .= ' DEFAULT ' . $default;
         }
 
-        if ( ArrayUtils::getBool( $info, 'auto_increment', false ) )
+        $auto = ( isset( $info['auto_increment'] ) ) ? filter_var( $info['auto_increment'], FILTER_VALIDATE_BOOLEAN ) : false;
+        if ( $auto )
         {
             $definition .= ' AUTO_INCREMENT';
         }
 
-        $isUniqueKey = ArrayUtils::getBool( $info, 'is_unique', false );
-        $isPrimaryKey = ArrayUtils::getBool( $info, 'is_primary_key', false );
+        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
+        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
         if ( $isPrimaryKey && $isUniqueKey )
         {
             throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
@@ -1110,12 +1100,12 @@ SQL;
 
     public function parseValueForSet( $value, $field_info )
     {
-        $_type = ArrayUtils::get( $field_info, 'type' );
+        $_type = ( isset( $field_info['type'] ) ) ? $field_info['type'] : null;
 
         switch ( $_type )
         {
             case 'boolean':
-                $value = ( Scalar::boolval( $value ) ? 1 : 0 );
+                $value = ( filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 1 : 0 );
                 break;
         }
 

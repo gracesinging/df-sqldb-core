@@ -355,7 +355,7 @@ class ColumnSchema
         }
         if ( $value === '' && $this->allowNull )
         {
-            return ($this->phpType === 'string') ? '' : null;
+            return ( $this->phpType === 'string' ) ? '' : null;
         }
         switch ( $this->phpType )
         {
@@ -441,9 +441,11 @@ class ColumnSchema
         return true;
     }
 
+    // Utility methods, remove when this code is reworked, or make it dependent on php-utils
+
     public static function camelize( $string, $separator = null, $preserveWhiteSpace = false, $isKey = false )
     {
-        empty( $separator ) && $separator = array('_', '-');
+        empty( $separator ) && $separator = [ '_', '-' ];
 
         $_newString = ucwords( str_replace( $separator, ' ', $string ) );
 
@@ -453,4 +455,5 @@ class ColumnSchema
         }
 
         return ( false === $preserveWhiteSpace ? str_replace( ' ', null, $_newString ) : $_newString );
-    }}
+    }
+}

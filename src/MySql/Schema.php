@@ -4,13 +4,11 @@
  *
  * @author    Qiang Xue <qiang.xue@gmail.com>
  * @link      http://www.yiiframework.com/
- * @copyright Copyright &copy; 2008-2011 Yii Software LLC
+ * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
 namespace DreamFactory\Core\SqlDbCore\Mysql;
 
-use DreamFactory\Library\Utility\ArrayUtils;
-use DreamFactory\Library\Utility\Scalar;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 use DreamFactory\Core\SqlDbCore\ColumnSchema;
 use DreamFactory\Core\SqlDbCore\CommandBuilder;
@@ -24,23 +22,15 @@ use DreamFactory\Core\SqlDbCore\CommandBuilder;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    //******************************************************************************
-    //* Members
-    //******************************************************************************
-
     /**
      * @type string
      */
     private $_defaultSchema;
 
-    //******************************************************************************
-    //* Methods
-    //******************************************************************************
-
     protected function translateSimpleColumnTypes( array &$info )
     {
         // override this in each schema class
-        $type = ArrayUtils::get( $info, 'type' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
         switch ( $type )
         {
             // some types need massaging, some need other required properties
@@ -64,7 +54,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'timestamp_on_create':
             case 'timestamp_on_update':
                 $info['type'] = 'timestamp';
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( !isset( $default ) )
                 {
                     $default = 'CURRENT_TIMESTAMP';
@@ -72,18 +62,18 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     {
                         $default .= ' ON UPDATE CURRENT_TIMESTAMP';
                     }
-                    $info['default'] = array( 'expression' => $default );
+                    $info['default'] = [ 'expression' => $default ];
                 }
                 break;
 
             case 'boolean':
                 $info['type'] = 'tinyint';
                 $info['type_extras'] = '(1)';
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) )
                 {
                     // convert to bit 0 or 1, where necessary
-                    $info['default'] = ( Scalar::boolval( $default ) ) ? 1 : 0;
+                    $info['default'] = (int)filter_var( $default, FILTER_VALIDATE_BOOLEAN );
                 }
                 break;
 
@@ -93,8 +83,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 break;
 
             case 'string':
-                $fixed = ArrayUtils::getBool( $info, 'fixed_length' );
-                $national = ArrayUtils::getBool( $info, 'supports_multibyte' );
+                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
+                $national = ( isset( $info['supports_multibyte'] ) ) ? filter_var( $info['supports_multibyte'], FILTER_VALIDATE_BOOLEAN ) : false;
                 if ( $fixed )
                 {
                     $info['type'] = ( $national ) ? 'nchar' : 'char';
@@ -110,7 +100,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 break;
 
             case 'binary':
-                $fixed = ArrayUtils::getBool( $info, 'fixed_length' );
+                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
                 $info['type'] = ( $fixed ) ? 'binary' : 'varbinary';
                 break;
         }
@@ -119,7 +109,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     protected function validateColumnSettings( array &$info )
     {
         // override this in each schema class
-        $type = ArrayUtils::get( $info, 'type' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
         switch ( $type )
         {
             // some types need massaging, some need other required properties
@@ -131,14 +121,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'bigint':
                 if ( !isset( $info['type_extras'] ) )
                 {
-                    $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'precision' ) );
+                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
                     if ( !empty( $length ) )
                     {
                         $info['type_extras'] = "($length)"; // sets the viewable length
                     }
                 }
 
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) && is_numeric( $default ) )
                 {
                     $info['default'] = intval( $default );
@@ -152,15 +142,15 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'double':
                 if ( !isset( $info['type_extras'] ) )
                 {
-                    $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'precision' ) );
+                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
                     if ( !empty( $length ) )
                     {
-                        $scale = ArrayUtils::get( $info, 'scale', ArrayUtils::get( $info, 'decimals' ) );
+                        $scale = ( isset( $info['decimals'] ) ) ? $info['decimals'] : ( ( isset( $info['scale'] ) ) ? $info['scale'] : null );
                         $info['type_extras'] = ( !empty( $scale ) ) ? "($length,$scale)" : "($length)";
                     }
                 }
 
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( isset( $default ) && is_numeric( $default ) )
                 {
                     $info['default'] = floatval( $default );
@@ -170,7 +160,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'char':
             case 'nchar':
             case 'binary':
-                $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'size' ) );
+                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
                 if ( isset( $length ) )
                 {
                     $info['type_extras'] = "($length)";
@@ -180,7 +170,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'varchar':
             case 'nvarchar':
             case 'varbinary':
-                $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'size' ) );
+                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
                 if ( isset( $length ) )
                 {
                     $info['type_extras'] = "($length)";
@@ -194,14 +184,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'time':
             case 'timestamp':
             case 'datetime':
-                $default = ArrayUtils::get( $info, 'default' );
+                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
                 if ( '0000-00-00 00:00:00' == $default )
                 {
                     // read back from MySQL has formatted zeros, can't send that back
                     $info['default'] = 0;
                 }
 
-                $length = ArrayUtils::get( $info, 'length', ArrayUtils::get( $info, 'size' ) );
+                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
                 if ( isset( $length ) )
                 {
                     $info['type_extras'] = "($length)";
@@ -218,20 +208,21 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function buildColumnDefinition( array $info )
     {
-        $type = ArrayUtils::get( $info, 'type' );
-        $typeExtras = ArrayUtils::get( $info, 'type_extras' );
+        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
+        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ArrayUtils::getBool( $info, 'allow_null', true );
+        $allowNull = ( isset( $info['allow_null'] ) ) ? filter_var( $info['allow_null'], FILTER_VALIDATE_BOOLEAN ) : false;
         $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
 
-        $default = ArrayUtils::get( $info, 'default' );
+        $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
         if ( isset( $default ) )
         {
             if ( is_array( $default ) )
             {
-                if ( null !== $expression = ArrayUtils::get( $default, 'expression' ) )
+                $expression = ( isset( $default['expression'] ) ) ? $default['expression'] : null;
+                if ( null !== $expression )
                 {
                     $definition .= ' DEFAULT ' . $expression;
                 }
@@ -243,13 +234,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             }
         }
 
-        if ( ArrayUtils::getBool( $info, 'auto_increment', false ) )
+        $auto = ( isset( $info['auto_increment'] ) ) ? filter_var( $info['auto_increment'], FILTER_VALIDATE_BOOLEAN ) : false;
+        if ( $auto )
         {
             $definition .= ' AUTO_INCREMENT';
         }
 
-        $isUniqueKey = ArrayUtils::getBool( $info, 'is_unique', false );
-        $isPrimaryKey = ArrayUtils::getBool( $info, 'is_primary_key', false );
+        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
+        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
         if ( $isPrimaryKey && $isUniqueKey )
         {
             throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
@@ -314,8 +306,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * The sequence will be reset such that the primary key of the next new row inserted
      * will have the specified value or max value of a primary key plus one (i.e. sequence trimming).
      *
-     * @param TableSchema $table the table schema whose primary key sequence will be reset
-     * @param integer|null   $value the value for the primary key of the next new row inserted.
+     * @param TableSchema  $table   the table schema whose primary key sequence will be reset
+     * @param integer|null $value   the value for the primary key of the next new row inserted.
      *                              If this is not set, the next new row's primary key will have the max value of a
      *                              primary key plus one (i.e. sequence trimming).
      *
@@ -342,7 +334,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             <<<MYSQL
 ALTER TABLE {$table->rawName} AUTO_INCREMENT = :value
 MYSQL
-        )->execute( array( ':value' => $value ) );
+        )->execute( [ ':value' => $value ] );
     }
 
     /**
@@ -384,11 +376,11 @@ MYSQL
      * Generates various kinds of table names.
      *
      * @param TableSchema $table the table instance
-     * @param string         $name  the unquoted table name
+     * @param string      $name  the unquoted table name
      */
     protected function resolveTableNames( $table, $name )
     {
-        $parts = explode( '.', str_replace( array( '`', '"' ), '', $name ) );
+        $parts = explode( '.', str_replace( [ '`', '"' ], '', $name ) );
         if ( isset( $parts[1] ) )
         {
             $table->schemaName = $parts[0];
@@ -434,7 +426,7 @@ MYSQL
                 }
                 elseif ( is_string( $table->primaryKey ) )
                 {
-                    $table->primaryKey = array( $table->primaryKey, $c->name );
+                    $table->primaryKey = [ $table->primaryKey, $c->name ];
                 }
                 else
                 {
@@ -489,12 +481,12 @@ MYSQL
         {
             if ( 0 === strcasecmp( strval( $column['Extra'] ), 'on update CURRENT_TIMESTAMP' ) )
             {
-                $c->defaultValue = array( 'expression' => 'CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP' );
+                $c->defaultValue = [ 'expression' => 'CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP' ];
                 $c->type = 'timestamp_on_update';
             }
             else
             {
-                $c->defaultValue = array( 'expression' => 'CURRENT_TIMESTAMP' );
+                $c->defaultValue = [ 'expression' => 'CURRENT_TIMESTAMP' ];
                 $c->type = 'timestamp_on_create';
             }
         }
@@ -512,7 +504,7 @@ MYSQL
     protected function getServerVersion()
     {
         $version = $this->getDbConnection()->getAttribute( \PDO::ATTR_SERVER_VERSION );
-        $digits = array();
+        $digits = [ ];
         preg_match( '/(\d+)\.(\d+)\.(\d+)/', $version, $digits );
 
         return floatval( $digits[1] . '.' . $digits[2] . $digits[3] );
@@ -528,7 +520,7 @@ MYSQL
     {
         $defaultSchema = $this->getDefaultSchema();
         $tableSchema = ( !empty( $table->schemaName ) ) ? $table->schemaName : $this->getDefaultSchema();
-        $columns = array();
+        $columns = [ ];
         foreach ( $this->getSchemaNames() as $schema )
         {
             $sql = <<<MYSQL
@@ -552,7 +544,7 @@ MYSQL;
             {
                 $name = ( $rts == $defaultSchema ) ? $rtn : $rts . '.' . $rtn;
 
-                $table->foreignKeys[$cn] = array( $name, $rcn );
+                $table->foreignKeys[$cn] = [ $name, $rcn ];
                 if ( isset( $table->columns[$cn] ) )
                 {
                     $table->columns[$cn]->isForeignKey = true;
@@ -679,7 +671,7 @@ MYSQL;
         $_paramStr = '';
         $_pre = '';
         $_post = '';
-        $_bindings = array();
+        $_bindings = [ ];
         foreach ( $params as $_key => $_param )
         {
             $_pName = ( isset( $_param['name'] ) && !empty( $_param['name'] ) ) ? $_param['name'] : "p$_key";
@@ -728,7 +720,7 @@ MYSQL;
         if ( $_reader->nextResult() )
         {
             // more data coming, make room
-            $_result = array( $_result );
+            $_result = [ $_result ];
             try
             {
                 do
@@ -799,7 +791,7 @@ MYSQL;
     public function callFunction( $name, &$params )
     {
         $name = $this->getDbConnection()->quoteTableName( $name );
-        $_bindings = array();
+        $_bindings = [ ];
         foreach ( $params as $_key => $_param )
         {
             $_name = ( isset( $_param['name'] ) && !empty( $_param['name'] ) ) ? ':' . $_param['name'] : ":p$_key";
@@ -821,7 +813,7 @@ MYSQL;
         if ( $_reader->nextResult() )
         {
             // more data coming, make room
-            $_result = array( $_result );
+            $_result = [ $_result ];
             try
             {
                 do
@@ -1001,7 +993,7 @@ WHERE
     {$_schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand( $_sql )->queryColumn( array( ':routine_type' => $type ) );
+        return $this->getDbConnection()->createCommand( $_sql )->queryColumn( [ ':routine_type' => $type ] );
     }
 
     /**
@@ -1032,12 +1024,12 @@ MYSQL;
 
     public function parseValueForSet( $value, $field_info )
     {
-        $_type = ArrayUtils::get( $field_info, 'type' );
+        $_type = ( isset( $field_info['type'] ) ) ? $field_info['type'] : null;
 
         switch ( $_type )
         {
             case 'boolean':
-                $value = ( Scalar::boolval( $value ) ? 1 : 0 );
+                $value = ( filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 1 : 0 );
                 break;
         }
 

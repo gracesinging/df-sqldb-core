@@ -9,8 +9,6 @@
  */
 namespace DreamFactory\Core\SqlDbCore;
 
-use DreamFactory\Library\Utility\Inflector;
-
 /**
  * TableSchema is the base class for representing the metadata of a database table.
  *
@@ -135,8 +133,8 @@ class TableSchema
             $relations[] = $relation->toArray();
         }
 
-        $label = Inflector::camelize( $this->displayName, '_', true );
-        $plural = Inflector::pluralize( $label );
+        $label = static::camelize( $this->displayName, '_', true );
+        $plural = static::pluralize( $label );
 
         return [
             'name'        => $this->displayName,
@@ -146,5 +144,164 @@ class TableSchema
             'field'       => $fields,
             'related'     => $relations
         ];
+    }
+
+    // Utility methods, remove when this code is reworked, or make it dependent on php-utils
+
+    public static function camelize( $string, $separator = null, $preserveWhiteSpace = false, $isKey = false )
+    {
+        empty( $separator ) && $separator = [ '_', '-' ];
+
+        $_newString = ucwords( str_replace( $separator, ' ', $string ) );
+
+        if ( false !== $isKey )
+        {
+            $_newString = lcfirst( $_newString );
+        }
+
+        return ( false === $preserveWhiteSpace ? str_replace( ' ', null, $_newString ) : $_newString );
+    }
+
+
+    /**
+     * Converts a word to its plural form. Totally swiped from Yii
+     *
+     * @param string $name the word to be pluralized
+     *
+     * @return string the pluralized word
+     */
+    public static function pluralize( $name )
+    {
+        /** @noinspection SpellCheckingInspection */
+        static $_blacklist = array(
+            'Amoyese',
+            'bison',
+            'Borghese',
+            'bream',
+            'breeches',
+            'britches',
+            'buffalo',
+            'cantus',
+            'carp',
+            'chassis',
+            'clippers',
+            'cod',
+            'coitus',
+            'Congoese',
+            'contretemps',
+            'corps',
+            'debris',
+            'deer',
+            'diabetes',
+            'djinn',
+            'eland',
+            'elk',
+            'equipment',
+            'Faroese',
+            'flounder',
+            'Foochowese',
+            'gallows',
+            'Genevese',
+            'geese',
+            'Genoese',
+            'Gilbertese',
+            'graffiti',
+            'headquarters',
+            'herpes',
+            'hijinks',
+            'Hottentotese',
+            'information',
+            'innings',
+            'jackanapes',
+            'Kiplingese',
+            'Kongoese',
+            'Lucchese',
+            'mackerel',
+            'Maltese',
+            '.*?media',
+            'metadata',
+            'mews',
+            'moose',
+            'mumps',
+            'Nankingese',
+            'news',
+            'nexus',
+            'Niasese',
+            'Pekingese',
+            'Piedmontese',
+            'pincers',
+            'Pistoiese',
+            'pliers',
+            'Portuguese',
+            'proceedings',
+            'rabies',
+            'rice',
+            'rhinoceros',
+            'salmon',
+            'Sarawakese',
+            'scissors',
+            'sea[- ]bass',
+            'series',
+            'Shavese',
+            'shears',
+            'siemens',
+            'species',
+            'swine',
+            'testes',
+            'trousers',
+            'trout',
+            'tuna',
+            'Vermontese',
+            'Wenchowese',
+            'whiting',
+            'wildebeest',
+            'Yengeese',
+        );
+        /** @noinspection SpellCheckingInspection */
+        static $_rules = array(
+            '/(s)tatus$/i'                                                                 => '\1\2tatuses',
+            '/(quiz)$/i'                                                                   => '\1zes',
+            '/^(ox)$/i'                                                                    => '\1en',
+            '/(matr|vert|ind)(ix|ex)$/i'                                                   => '\1ices',
+            '/([m|l])ouse$/i'                                                              => '\1ice',
+            '/(x|ch|ss|sh|us|as|is|os)$/i'                                                 => '\1es',
+            '/(shea|lea|loa|thie)f$/i'                                                     => '\1ves',
+            '/(buffal|tomat|potat|ech|her|vet)o$/i'                                        => '\1oes',
+            '/([^aeiouy]|qu)ies$/i'                                                        => '\1y',
+            '/([^aeiouy]|qu)y$/i'                                                          => '\1ies',
+            '/(?:([^f])fe|([lre])f)$/i'                                                    => '\1\2ves',
+            '/([ti])um$/i'                                                                 => '\1a',
+            '/sis$/i'                                                                      => 'ses',
+            '/move$/i'                                                                     => 'moves',
+            '/foot$/i'                                                                     => 'feet',
+            '/human$/i'                                                                    => 'humans',
+            '/tooth$/i'                                                                    => 'teeth',
+            '/(bu)s$/i'                                                                    => '\1ses',
+            '/(hive)$/i'                                                                   => '\1s',
+            '/(p)erson$/i'                                                                 => '\1eople',
+            '/(m)an$/i'                                                                    => '\1en',
+            '/(c)hild$/i'                                                                  => '\1hildren',
+            '/(alumn|bacill|cact|foc|fung|nucle|octop|radi|stimul|syllab|termin|vir)us$/i' => '\1i',
+            '/us$/i'                                                                       => 'uses',
+            '/(alias)$/i'                                                                  => '\1es',
+            '/(ax|cris|test)is$/i'                                                         => '\1es',
+            '/s$/'                                                                         => 's',
+            '/$/'                                                                          => 's',
+        );
+
+        if ( empty( $name ) || in_array( strtolower( $name ), $_blacklist ) )
+        {
+            return $name;
+        }
+
+        foreach ( $_rules as $_rule => $_replacement )
+        {
+            if ( preg_match( $_rule, $name ) )
+            {
+                return preg_replace( $_rule, $_replacement, $name );
+            }
+        }
+
+        return $name;
     }
 }
