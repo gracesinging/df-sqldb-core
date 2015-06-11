@@ -16,16 +16,16 @@
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\Expression;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
-use DreamFactory\Rave\SqlDbCore\CommandBuilder;
+use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     const DEFAULT_SCHEMA = 'dbo';
 

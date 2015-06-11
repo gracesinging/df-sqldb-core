@@ -7,14 +7,14 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Oci;
+namespace DreamFactory\Core\SqlDbCore\Oci;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\Expression;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
-use DreamFactory\Rave\SqlDbCore\CommandBuilder;
+use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from an Oracle database.
@@ -24,7 +24,7 @@ use DreamFactory\Rave\SqlDbCore\CommandBuilder;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     private $_defaultSchema = '';
 

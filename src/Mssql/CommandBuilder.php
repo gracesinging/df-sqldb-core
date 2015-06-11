@@ -18,16 +18,16 @@
  * @author  Wei Zhuo <weizhuo[at]gmail[dot]com>
  * @package system.db.schema.mssql
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
-use DreamFactory\Rave\SqlDbCore\Schema;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
-use DreamFactory\Rave\SqlDbCore\Criteria;
-use DreamFactory\Rave\SqlDbCore\Expression;
-use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Core\SqlDbCore\Schema;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\Criteria;
+use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\Command;
 
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
     /**
      * Creates a COUNT(*) command for a single table.

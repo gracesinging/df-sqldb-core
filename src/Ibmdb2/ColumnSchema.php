@@ -5,7 +5,7 @@
  * @author Edgard L. Messias <edgardmessias@gmail.com>
  * @link   https://github.com/edgardmessias/yiidb2
  */
-namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
+namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
 /**
  * ColumnSchema class describes the column meta data of a DB2 table.
@@ -13,7 +13,7 @@ namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-class ColumnSchema extends \DreamFactory\Rave\SqlDbCore\ColumnSchema
+class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
 {
 
 }

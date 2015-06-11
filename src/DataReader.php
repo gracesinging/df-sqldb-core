@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore;
+namespace DreamFactory\Core\SqlDbCore;
 
 /**
  * DataReader represents a forward-only stream of rows from a query result set.

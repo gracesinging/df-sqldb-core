@@ -15,10 +15,10 @@
  * @package system.db.schema.mssql
  * @since   1.0
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 
-class ProcedureSchema extends \DreamFactory\Rave\SqlDbCore\ProcedureSchema
+class ProcedureSchema extends \DreamFactory\Core\SqlDbCore\ProcedureSchema
 {
     /**
      * @var string name of the schema (database) that this procedure belongs to.

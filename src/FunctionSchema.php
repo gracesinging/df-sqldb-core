@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2014 DreamFactory Software LLC
  * @license http://www.dreamfactory.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore;
+namespace DreamFactory\Core\SqlDbCore;
 
 /**
  * FunctionSchema is the base class for representing the metadata of a database table.

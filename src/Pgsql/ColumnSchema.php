@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Pgsql;
+namespace DreamFactory\Core\SqlDbCore\Pgsql;
 
 /**
  * ColumnSchema class describes the column meta data of a PostgreSQL table.
@@ -16,7 +16,7 @@ namespace DreamFactory\Rave\SqlDbCore\Pgsql;
  * @package system.db.schema.pgsql
  * @since   1.0
  */
-class ColumnSchema extends \DreamFactory\Rave\SqlDbCore\ColumnSchema
+class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

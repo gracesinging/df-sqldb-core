@@ -7,10 +7,10 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Oci;
+namespace DreamFactory\Core\SqlDbCore\Oci;
 
-use DreamFactory\Rave\SqlDbCore\Command;
-use DreamFactory\Rave\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\Command;
+use DreamFactory\Core\SqlDbCore\Expression;
 
 /**
  * CommandBuilder provides basic methods to create query commands for tables.
@@ -18,7 +18,7 @@ use DreamFactory\Rave\SqlDbCore\Expression;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
     /**
      * @var integer the last insertion ID

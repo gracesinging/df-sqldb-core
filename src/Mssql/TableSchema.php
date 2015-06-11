@@ -8,7 +8,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 /**
  * TableSchema represents the metadata for a MSSQL table.
@@ -17,7 +17,7 @@ namespace DreamFactory\Rave\SqlDbCore\Mssql;
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-class TableSchema extends \DreamFactory\Rave\SqlDbCore\TableSchema
+class TableSchema extends \DreamFactory\Core\SqlDbCore\TableSchema
 {
     /**
      * @var string name of the catalog (database) that this table belongs to.

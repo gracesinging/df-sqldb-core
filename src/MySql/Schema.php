@@ -7,13 +7,13 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Mysql;
+namespace DreamFactory\Core\SqlDbCore\Mysql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
-use DreamFactory\Rave\SqlDbCore\CommandBuilder;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from a MySQL database (version 4.1.x and 5.x).
@@ -22,7 +22,7 @@ use DreamFactory\Rave\SqlDbCore\CommandBuilder;
  * @package system.db.schema.mysql
  * @since   1.0
  */
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     //******************************************************************************
     //* Members

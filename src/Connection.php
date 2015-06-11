@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore;
+namespace DreamFactory\Core\SqlDbCore;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 
@@ -167,16 +167,16 @@ class Connection
      * @since 1.1.6
      */
     public static $driverSchemaMap = [
-        'pgsql'   => 'DreamFactory\Rave\SqlDbCore\Pgsql\Schema',    // PostgreSQL
-        'mysqli'  => 'DreamFactory\Rave\SqlDbCore\Mysql\Schema',   // MySQL
-        'mysql'   => 'DreamFactory\Rave\SqlDbCore\MySql\Schema',    // MySQL
-        'sqlite'  => 'DreamFactory\Rave\SqlDbCore\Sqllite\Schema',  // sqlite 3
-        'sqlite2' => 'DreamFactory\Rave\SqlDbCore\Sqllite\Schema', // sqlite 2
-        'mssql'   => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',    // Mssql driver on windows hosts
-        'dblib'   => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv'  => 'DreamFactory\Rave\SqlDbCore\Mssql\Schema',   // Mssql
-        'oci'     => 'DreamFactory\Rave\SqlDbCore\Oci\Schema',        // Oracle driver
-        'ibm'     => 'DreamFactory\Rave\SqlDbCore\Ibmdb2\Schema',     // IBM DB2 driver
+        'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',    // PostgreSQL
+        'mysqli'  => 'DreamFactory\Core\SqlDbCore\Mysql\Schema',   // MySQL
+        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',    // MySQL
+        'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',  // sqlite 3
+        'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema', // sqlite 2
+        'mssql'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',    // Mssql driver on windows hosts
+        'dblib'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',    // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv'  => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',   // Mssql
+        'oci'     => 'DreamFactory\Core\SqlDbCore\Oci\Schema',        // Oracle driver
+        'ibm'     => 'DreamFactory\Core\SqlDbCore\Ibmdb2\Schema',     // IBM DB2 driver
     ];
 
     /**
@@ -191,10 +191,10 @@ class Connection
      * @since 1.1.6
      */
     public static $driverAdapterMap = [
-        'mssql'  => 'DreamFactory\Rave\SqlDbCore\Mssql\PdoAdapter',    // Mssql driver on windows hosts
-        'dblib'  => 'DreamFactory\Rave\SqlDbCore\Mssql\PdoAdapter',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv' => 'DreamFactory\Rave\SqlDbCore\Mssql\SqlsrvPdoAdapter',   // Mssql
-        'oci'    => 'DreamFactory\Rave\SqlDbCore\Oci\PdoAdapter',        // Oracle driver
+        'mssql'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',    // Mssql driver on windows hosts
+        'dblib'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',    // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv' => 'DreamFactory\Core\SqlDbCore\Mssql\SqlsrvPdoAdapter',   // Mssql
+        'oci'    => 'DreamFactory\Core\SqlDbCore\Oci\PdoAdapter',        // Oracle driver
     ];
 
     private $_attributes = [ ];

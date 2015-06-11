@@ -7,10 +7,10 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Sqlite;
+namespace DreamFactory\Core\SqlDbCore\Sqlite;
 
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\Command;
 
 /**
  * CommandBuilder provides basic methods to create query commands for SQLite tables.
@@ -19,7 +19,7 @@ use DreamFactory\Rave\SqlDbCore\Command;
  * @package system.db.schema.sqlite
  * @since   1.0
  */
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
     /**
      * Generates the expression for selecting rows with specified composite key values.

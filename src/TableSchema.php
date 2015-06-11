@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore;
+namespace DreamFactory\Core\SqlDbCore;
 
 use DreamFactory\Library\Utility\Inflector;
 

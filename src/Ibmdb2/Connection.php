@@ -5,7 +5,7 @@
  * @author Edgard L. Messias <edgardmessias@gmail.com>
  * @link   https://github.com/edgardmessias/yiidb2
  */
-namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
+namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
 /**
  * Connection represents a connection to a IBM DB2 database.
@@ -13,7 +13,7 @@ namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-class Connection extends \DreamFactory\Rave\SqlDbCore\Connection
+class Connection extends \DreamFactory\Core\SqlDbCore\Connection
 {
 
     protected function initConnection( $pdo )

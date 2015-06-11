@@ -8,7 +8,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 /**
  * ColumnSchema class describes the column meta data of a MSSQL table.
@@ -17,7 +17,7 @@ namespace DreamFactory\Rave\SqlDbCore\Mssql;
  * @author  Christophe Boulain <Christophe.Boulain@gmail.com>
  * @package system.db.schema.mssql
  */
-class ColumnSchema extends \DreamFactory\Rave\SqlDbCore\ColumnSchema
+class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

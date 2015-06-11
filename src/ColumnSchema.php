@@ -7,9 +7,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore;
-
-use DreamFactory\Library\Utility\Inflector;
+namespace DreamFactory\Core\SqlDbCore;
 
 /**
  * ColumnSchema class describes the column meta data of a database table.
@@ -410,7 +408,7 @@ class ColumnSchema
     {
         return [
             'name'               => $this->name,
-            'label'              => Inflector::camelize( $this->name, '_', true ),
+            'label'              => static::camelize( $this->name, '_', true ),
             'type'               => $this->type,
             'db_type'            => $this->dbType,
             'php_type'           => $this->phpType,
@@ -442,4 +440,17 @@ class ColumnSchema
 
         return true;
     }
-}
+
+    public static function camelize( $string, $separator = null, $preserveWhiteSpace = false, $isKey = false )
+    {
+        empty( $separator ) && $separator = array('_', '-');
+
+        $_newString = ucwords( str_replace( $separator, ' ', $string ) );
+
+        if ( false !== $isKey )
+        {
+            $_newString = lcfirst( $_newString );
+        }
+
+        return ( false === $preserveWhiteSpace ? str_replace( ' ', null, $_newString ) : $_newString );
+    }}

@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\MySql;
+namespace DreamFactory\Core\SqlDbCore\MySql;
 
 /**
  * CommandBuilder provides basic methods to create query commands for tables.
@@ -16,7 +16,7 @@ namespace DreamFactory\Rave\SqlDbCore\MySql;
  * @package system.db.schema.mysql
  * @since   1.1.13
  */
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
     /**
      * Alters the SQL to apply JOIN clause.

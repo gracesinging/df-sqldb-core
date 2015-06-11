@@ -7,12 +7,12 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Sqlite;
+namespace DreamFactory\Core\SqlDbCore\Sqlite;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
 
 /**
  * Schema is the class for retrieving metadata information from a SQLite (2/3) database.
@@ -21,7 +21,7 @@ use DreamFactory\Rave\SqlDbCore\ColumnSchema;
  * @package system.db.schema.sqlite
  * @since   1.0
  */
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     protected function translateSimpleColumnTypes( array &$info )
     {

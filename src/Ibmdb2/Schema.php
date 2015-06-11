@@ -5,14 +5,14 @@
  * @author Edgard L. Messias <edgardmessias@gmail.com>
  * @link   https://github.com/edgardmessias/yiidb2
  */
-namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
+namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\Expression;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
-use DreamFactory\Rave\SqlDbCore\CommandBuilder;
+use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from a IBM DB2 database.
@@ -21,7 +21,7 @@ use DreamFactory\Rave\SqlDbCore\CommandBuilder;
  * @author  Lee Hicks <leehicks@dreamfactory.com>
  * @package system.db.schema.ibmdb2
  */
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     //******************************************************************************
     //* Members

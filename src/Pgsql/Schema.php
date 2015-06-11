@@ -7,12 +7,12 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Pgsql;
+namespace DreamFactory\Core\SqlDbCore\Pgsql;
 
 use DreamFactory\Library\Utility\ArrayUtils;
 use DreamFactory\Library\Utility\Scalar;
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\ColumnSchema;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\ColumnSchema;
 
 /**
  * Schema is the class for retrieving metadata information from a PostgreSQL database.
@@ -21,7 +21,7 @@ use DreamFactory\Rave\SqlDbCore\ColumnSchema;
  * @package system.db.schema.pgsql
  * @since   1.0
  */
-class Schema extends \DreamFactory\Rave\SqlDbCore\Schema
+class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     const DEFAULT_SCHEMA = 'public';
 

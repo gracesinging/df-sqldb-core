@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Sqlite;
+namespace DreamFactory\Core\SqlDbCore\Sqlite;
 
 /**
  * ColumnSchema class describes the column meta data of a SQLite table.
@@ -16,7 +16,7 @@ namespace DreamFactory\Rave\SqlDbCore\Sqlite;
  * @package system.db.schema.sqlite
  * @since   1.0
  */
-class ColumnSchema extends \DreamFactory\Rave\SqlDbCore\ColumnSchema
+class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
 {
     /**
      * Extracts the default value for the column.

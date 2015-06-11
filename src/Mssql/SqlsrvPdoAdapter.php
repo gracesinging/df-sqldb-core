@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2012 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Mssql;
+namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 /**
  * This is an extension of default PDO class for MSSQL SQLSRV driver only.

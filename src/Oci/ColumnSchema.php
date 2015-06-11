@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Oci;
+namespace DreamFactory\Core\SqlDbCore\Oci;
 
 /**
  * ColumnSchema class describes the column meta data of an Oracle table.
@@ -15,7 +15,7 @@ namespace DreamFactory\Rave\SqlDbCore\Oci;
  * @author  Ricardo Grana <rickgrana@yahoo.com.br>
  * @package system.db.schema.oci
  */
-class ColumnSchema extends \DreamFactory\Rave\SqlDbCore\ColumnSchema
+class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
 {
     /**
      * Extracts the PHP type from DB type.

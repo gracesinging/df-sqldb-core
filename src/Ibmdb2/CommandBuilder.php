@@ -5,11 +5,11 @@
  * @author Edgard L. Messias <edgardmessias@gmail.com>
  * @link   https://github.com/edgardmessias/yiidb2
  */
-namespace DreamFactory\Rave\SqlDbCore\Ibmdb2;
+namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
-use DreamFactory\Rave\SqlDbCore\TableSchema;
-use DreamFactory\Rave\SqlDbCore\Criteria;
-use DreamFactory\Rave\SqlDbCore\Command;
+use DreamFactory\Core\SqlDbCore\TableSchema;
+use DreamFactory\Core\SqlDbCore\Criteria;
+use DreamFactory\Core\SqlDbCore\Command;
 
 /**
  * CommandBuilder provides basic methods to create query commands for tables for IBM DB2 Servers.
@@ -17,7 +17,7 @@ use DreamFactory\Rave\SqlDbCore\Command;
  * @author  Edgard L. Messias <edgardmessias@gmail.com>
  * @package ext.yiidb2
  */
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
 
     /**

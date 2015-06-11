@@ -7,10 +7,10 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Rave\SqlDbCore\Pgsql;
+namespace DreamFactory\Core\SqlDbCore\Pgsql;
 
-use DreamFactory\Rave\SqlDbCore\Command;
-use DreamFactory\Rave\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\Command;
+use DreamFactory\Core\SqlDbCore\Expression;
 
 /**
  * CommandBuilder provides basic methods to create query commands for tables.
@@ -19,7 +19,7 @@ use DreamFactory\Rave\SqlDbCore\Expression;
  * @package system.db.schema.pgsql
  * @since   1.1.14
  */
-class CommandBuilder extends \DreamFactory\Rave\SqlDbCore\CommandBuilder
+class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 {
     /**
      * @var integer the last insertion ID
