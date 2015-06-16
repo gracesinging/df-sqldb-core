@@ -24,17 +24,15 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param string $dbType DB type
      */
-    public function extractType( $dbType )
+    public function extractType($dbType)
     {
-        parent::extractType( $dbType );
+        parent::extractType($dbType);
 
-        if ( ( false !== strpos( $dbType, 'varchar' ) ) && ( null === $this->size ) )
-        {
+        if ((false !== strpos($dbType, 'varchar')) && (null === $this->size)) {
             $this->type = 'text';
         }
         // bigint too big to represent as number in php
-        if ( 0 === strpos( $dbType, 'bigint' ) )
-        {
+        if (0 === strpos($dbType, 'bigint')) {
             $this->phpType = 'string';
             $this->pdoType = 'string';
         }
@@ -46,34 +44,22 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param mixed $defaultValue the default value obtained from metadata
      */
-    public function extractDefault( $defaultValue )
+    public function extractDefault($defaultValue)
     {
-        if ( $defaultValue == '(NULL)' )
-        {
+        if ($defaultValue == '(NULL)') {
             $this->defaultValue = null;
-        }
-        elseif ( $this->type === 'boolean' )
-        {
-            if ( '((1))' === $defaultValue )
-            {
+        } elseif ($this->type === 'boolean') {
+            if ('((1))' === $defaultValue) {
                 $this->defaultValue = true;
-            }
-            elseif ( '((0))' === $defaultValue )
-            {
+            } elseif ('((0))' === $defaultValue) {
                 $this->defaultValue = false;
-            }
-            else
-            {
+            } else {
                 $this->defaultValue = null;
             }
-        }
-        elseif ( $this->type === 'timestamp' )
-        {
+        } elseif ($this->type === 'timestamp') {
             $this->defaultValue = null;
-        }
-        else
-        {
-            parent::extractDefault( str_replace( array( '(', ')', "'" ), '', $defaultValue ) );
+        } else {
+            parent::extractDefault(str_replace(array('(', ')', "'"), '', $defaultValue));
         }
     }
 
@@ -83,7 +69,7 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param string $dbType the column's DB type
      */
-    public function extractLimit( $dbType )
+    public function extractLimit($dbType)
     {
     }
 
@@ -94,15 +80,12 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @return mixed converted value
      */
-    public function typecast( $value )
+    public function typecast($value)
     {
-        if ( $this->phpType === 'boolean' )
-        {
+        if ($this->phpType === 'boolean') {
             return $value ? 1 : 0;
-        }
-        else
-        {
-            return parent::typecast( $value );
+        } else {
+            return parent::typecast($value);
         }
     }
 }

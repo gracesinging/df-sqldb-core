@@ -23,19 +23,14 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param string $dbType DB type
      */
-    public function extractType( $dbType )
+    public function extractType($dbType)
     {
         parent::extractType($dbType);
-        if ( strpos( $dbType, '[' ) !== false || strpos( $dbType, 'char' ) !== false || strpos( $dbType, 'text' ) !== false )
-        {
+        if (strpos($dbType, '[') !== false || strpos($dbType, 'char') !== false || strpos($dbType, 'text') !== false) {
             $this->type = 'string';
-        }
-        elseif ( preg_match( '/(real|float|double)/', $dbType ) )
-        {
+        } elseif (preg_match('/(real|float|double)/', $dbType)) {
             $this->type = 'double';
-        }
-        elseif ( preg_match( '/(integer|oid|serial|smallint)/', $dbType ) )
-        {
+        } elseif (preg_match('/(integer|oid|serial|smallint)/', $dbType)) {
             $this->type = 'integer';
         }
     }
@@ -45,20 +40,15 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param string $dbType the column's DB type
      */
-    public function extractLimit( $dbType )
+    public function extractLimit($dbType)
     {
-        if ( strpos( $dbType, '(' ) )
-        {
-            if ( preg_match( '/^time.*\((.*)\)/', $dbType, $matches ) )
-            {
+        if (strpos($dbType, '(')) {
+            if (preg_match('/^time.*\((.*)\)/', $dbType, $matches)) {
                 $this->precision = (int)$matches[1];
-            }
-            elseif ( preg_match( '/\((.*)\)/', $dbType, $matches ) )
-            {
-                $values = explode( ',', $matches[1] );
+            } elseif (preg_match('/\((.*)\)/', $dbType, $matches)) {
+                $values = explode(',', $matches[1]);
                 $this->size = $this->precision = (int)$values[0];
-                if ( isset( $values[1] ) )
-                {
+                if (isset($values[1])) {
                     $this->scale = (int)$values[1];
                 }
             }
@@ -71,27 +61,18 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param mixed $defaultValue the default value obtained from metadata
      */
-    public function extractDefault( $defaultValue )
+    public function extractDefault($defaultValue)
     {
-        if ( $defaultValue === 'true' )
-        {
+        if ($defaultValue === 'true') {
             $this->defaultValue = true;
-        }
-        elseif ( $defaultValue === 'false' )
-        {
+        } elseif ($defaultValue === 'false') {
             $this->defaultValue = false;
-        }
-        elseif ( strpos( $defaultValue, 'nextval' ) === 0 )
-        {
+        } elseif (strpos($defaultValue, 'nextval') === 0) {
             $this->defaultValue = null;
-        }
-        elseif ( preg_match( '/^\'(.*)\'::/', $defaultValue, $matches ) )
-        {
-            $this->defaultValue = $this->typecast( str_replace( "''", "'", $matches[1] ) );
-        }
-        elseif ( preg_match( '/^(-?\d+(\.\d*)?)(::.*)?$/', $defaultValue, $matches ) )
-        {
-            $this->defaultValue = $this->typecast( $matches[1] );
+        } elseif (preg_match('/^\'(.*)\'::/', $defaultValue, $matches)) {
+            $this->defaultValue = $this->typecast(str_replace("''", "'", $matches[1]));
+        } elseif (preg_match('/^(-?\d+(\.\d*)?)(::.*)?$/', $defaultValue, $matches)) {
+            $this->defaultValue = $this->typecast($matches[1]);
         }
         // else is null
     }

@@ -33,7 +33,7 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @return mixed last insertion id. Null is returned if no sequence name.
      */
-    public function getLastInsertID( $table )
+    public function getLastInsertID($table)
     {
         return $this->returnID;
     }
@@ -42,56 +42,55 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * Creates an INSERT command.
      *
      * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
-     * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the
+     *                     corresponding value will be ignored.
      *
      * @return Command insert command
      */
-    public function createInsertCommand( $table, $data )
+    public function createInsertCommand($table, $data)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
         $fields = array();
         $values = array();
         $placeholders = array();
         $i = 0;
-        foreach ( $data as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null && ( $value !== null || $column->allowNull ) )
-            {
+        foreach ($data as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null && ($value !== null || $column->allowNull)) {
                 $fields[] = $column->rawName;
-                if ( $value instanceof Expression )
-                {
+                if ($value instanceof Expression) {
                     $placeholders[] = $value->expression;
-                    foreach ( $value->params as $n => $v )
-                    {
+                    foreach ($value->params as $n => $v) {
                         $values[$n] = $v;
                     }
-                }
-                else
-                {
+                } else {
                     $placeholders[] = self::PARAM_PREFIX . $i;
-                    $values[self::PARAM_PREFIX . $i] = $column->typecast( $value );
+                    $values[self::PARAM_PREFIX . $i] = $column->typecast($value);
                     $i++;
                 }
             }
         }
 
-        $sql = "INSERT INTO {$table->rawName} (" . implode( ', ', $fields ) . ') VALUES (' . implode( ', ', $placeholders ) . ')';
+        $sql =
+            "INSERT INTO {$table->rawName} (" .
+            implode(', ', $fields) .
+            ') VALUES (' .
+            implode(', ', $placeholders) .
+            ')';
 
-        if ( is_string( $table->primaryKey ) && ( $column = $table->getColumn( $table->primaryKey ) ) !== null && $column->type !== 'string' )
-        {
+        if (is_string($table->primaryKey) &&
+            ($column = $table->getColumn($table->primaryKey)) !== null &&
+            $column->type !== 'string'
+        ) {
             $sql .= ' RETURNING ' . $column->rawName . ' INTO :RETURN_ID';
-            $command = $this->getDbConnection()->createCommand( $sql );
-            $command->bindParam( ':RETURN_ID', $this->returnID, \PDO::PARAM_INT, 12 );
+            $command = $this->getDbConnection()->createCommand($sql);
+            $command->bindParam(':RETURN_ID', $this->returnID, \PDO::PARAM_INT, 12);
             $table->sequenceName = 'RETURN_ID';
-        }
-        else
-        {
-            $command = $this->getDbConnection()->createCommand( $sql );
+        } else {
+            $command = $this->getDbConnection()->createCommand($sql);
         }
 
-        foreach ( $values as $name => $value )
-        {
-            $command->bindValue( $name, $value );
+        foreach ($values as $name => $value) {
+            $command->bindValue($name, $value);
         }
 
         return $command;

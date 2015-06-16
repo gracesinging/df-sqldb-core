@@ -2,10 +2,10 @@
 /**
  * FunctionSchema class file.
  *
- * @author Lee Hicks <leehicks@dreamfactory.com>
- * @link http://www.dreamfactory.com/
+ * @author    Lee Hicks <leehicks@dreamfactory.com>
+ * @link      http://www.dreamfactory.com/
  * @copyright Copyright &copy; 2008-2014 DreamFactory Software LLC
- * @license http://www.dreamfactory.com/license/
+ * @license   http://www.dreamfactory.com/license/
  */
 namespace DreamFactory\Core\SqlDbCore;
 
@@ -21,9 +21,9 @@ namespace DreamFactory\Core\SqlDbCore;
  * </ul>
  *
  *
- * @author Lee Hicks <leehicks@dreamfactory.com>
+ * @author  Lee Hicks <leehicks@dreamfactory.com>
  * @package system.db.schema
- * @since 1.0
+ * @since   1.0
  */
 class FunctionSchema
 {
@@ -36,11 +36,13 @@ class FunctionSchema
      */
     public $name;
     /**
-     * @var string raw name of this function. This is the quoted version of function name with optional schema name. It can be directly used in SQLs.
+     * @var string raw name of this function. This is the quoted version of function name with optional schema name. It
+     *      can be directly used in SQLs.
      */
     public $rawName;
     /**
-     * @var string public display name of this function. This is the function name with optional non-default schema name. It is to be used by clients.
+     * @var string public display name of this function. This is the function name with optional non-default schema
+     *      name. It is to be used by clients.
      */
     public $displayName;
 }

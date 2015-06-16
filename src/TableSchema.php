@@ -41,11 +41,13 @@ class TableSchema
      */
     public $name;
     /**
-     * @var string raw name of this table. This is the quoted version of table name with optional schema name. It can be directly used in SQLs.
+     * @var string raw name of this table. This is the quoted version of table name with optional schema name. It can
+     *      be directly used in SQLs.
      */
     public $rawName;
     /**
-     * @var string public display name of this table. This is the table name with optional non-default schema name. It is to be used by clients.
+     * @var string public display name of this table. This is the table name with optional non-default schema name. It
+     *      is to be used by clients.
      */
     public $displayName;
     /**
@@ -57,17 +59,19 @@ class TableSchema
      */
     public $sequenceName;
     /**
-     * @var array foreign keys of this table. The array is indexed by column name. Each value is an array of foreign table name and foreign column name.
+     * @var array foreign keys of this table. The array is indexed by column name. Each value is an array of foreign
+     *      table name and foreign column name.
      */
-    public $foreignKeys = [ ];
+    public $foreignKeys = [];
     /**
-     * @var array relationship metadata of this table. Each array element is a RelationSchema object, indexed by relation name.
+     * @var array relationship metadata of this table. Each array element is a RelationSchema object, indexed by
+     *      relation name.
      */
-    public $relations = [ ];
+    public $relations = [];
     /**
      * @var array column metadata of this table. Each array element is a ColumnSchema object, indexed by column name.
      */
-    public $columns = [ ];
+    public $columns = [];
 
     /**
      * Gets the named column metadata.
@@ -77,9 +81,9 @@ class TableSchema
      *
      * @return ColumnSchema metadata of the named column. Null if the named column does not exist.
      */
-    public function getColumn( $name )
+    public function getColumn($name)
     {
-        return isset( $this->columns[$name] ) ? $this->columns[$name] : null;
+        return isset($this->columns[$name]) ? $this->columns[$name] : null;
     }
 
     /**
@@ -87,7 +91,7 @@ class TableSchema
      */
     public function getColumnNames()
     {
-        return array_keys( $this->columns );
+        return array_keys($this->columns);
     }
 
     /**
@@ -97,9 +101,9 @@ class TableSchema
      *
      * @return RelationSchema metadata of the named relation. Null if the named relation does not exist.
      */
-    public function getRelation( $name )
+    public function getRelation($name)
     {
-        return isset( $this->relations[$name] ) ? $this->relations[$name] : null;
+        return isset($this->relations[$name]) ? $this->relations[$name] : null;
     }
 
     /**
@@ -107,10 +111,10 @@ class TableSchema
      */
     public function getRelationNames()
     {
-        return array_keys( $this->columns );
+        return array_keys($this->columns);
     }
 
-    public function addReference( $type, $ref_table, $ref_field, $field, $join = null )
+    public function addReference($type, $ref_table, $ref_field, $field, $join = null)
     {
         $relation = new RelationSchema($type, $ref_table, $ref_field, $field, $join);
 
@@ -119,22 +123,20 @@ class TableSchema
 
     public function toArray()
     {
-        $fields = [ ];
+        $fields = [];
         /** @var ColumnSchema $column */
-        foreach ( $this->columns as $column )
-        {
+        foreach ($this->columns as $column) {
             $fields[] = $column->toArray();
         }
 
-        $relations = [ ];
+        $relations = [];
         /** @var RelationSchema $relation */
-        foreach ( $this->relations as $relation )
-        {
+        foreach ($this->relations as $relation) {
             $relations[] = $relation->toArray();
         }
 
-        $label = static::camelize( $this->displayName, '_', true );
-        $plural = static::pluralize( $label );
+        $label = static::camelize($this->displayName, '_', true);
+        $plural = static::pluralize($label);
 
         return [
             'name'        => $this->displayName,
@@ -148,20 +150,18 @@ class TableSchema
 
     // Utility methods, remove when this code is reworked, or make it dependent on php-utils
 
-    public static function camelize( $string, $separator = null, $preserveWhiteSpace = false, $isKey = false )
+    public static function camelize($string, $separator = null, $preserveWhiteSpace = false, $isKey = false)
     {
-        empty( $separator ) && $separator = [ '_', '-' ];
+        empty($separator) && $separator = ['_', '-'];
 
-        $_newString = ucwords( str_replace( $separator, ' ', $string ) );
+        $_newString = ucwords(str_replace($separator, ' ', $string));
 
-        if ( false !== $isKey )
-        {
-            $_newString = lcfirst( $_newString );
+        if (false !== $isKey) {
+            $_newString = lcfirst($_newString);
         }
 
-        return ( false === $preserveWhiteSpace ? str_replace( ' ', null, $_newString ) : $_newString );
+        return (false === $preserveWhiteSpace ? str_replace(' ', null, $_newString) : $_newString);
     }
-
 
     /**
      * Converts a word to its plural form. Totally swiped from Yii
@@ -170,7 +170,7 @@ class TableSchema
      *
      * @return string the pluralized word
      */
-    public static function pluralize( $name )
+    public static function pluralize($name)
     {
         /** @noinspection SpellCheckingInspection */
         static $_blacklist = array(
@@ -289,16 +289,13 @@ class TableSchema
             '/$/'                                                                          => 's',
         );
 
-        if ( empty( $name ) || in_array( strtolower( $name ), $_blacklist ) )
-        {
+        if (empty($name) || in_array(strtolower($name), $_blacklist)) {
             return $name;
         }
 
-        foreach ( $_rules as $_rule => $_replacement )
-        {
-            if ( preg_match( $_rule, $name ) )
-            {
-                return preg_replace( $_rule, $_replacement, $name );
+        foreach ($_rules as $_rule => $_replacement) {
+            if (preg_match($_rule, $name)) {
+                return preg_replace($_rule, $_replacement, $name);
             }
         }
 

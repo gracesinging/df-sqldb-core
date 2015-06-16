@@ -29,13 +29,12 @@ class SqlsrvPdoAdapter extends \PDO
      *
      * @return integer last inserted ID value.
      */
-    public function lastInsertId( $sequence = null )
+    public function lastInsertId($sequence = null)
     {
-        if ( !$sequence )
-        {
+        if (!$sequence) {
             return parent::lastInsertId();
         }
 
-        return parent::lastInsertId( $sequence );
+        return parent::lastInsertId($sequence);
     }
 }

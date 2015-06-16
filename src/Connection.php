@@ -84,10 +84,12 @@ namespace DreamFactory\Core\SqlDbCore;
  * @property Transaction        $currentTransaction The currently active transaction. Null if no active transaction.
  * @property Schema             $schema             The database schema for the current connection.
  * @property CommandBuilder     $commandBuilder     The command builder.
- * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved from the sequence object.
+ * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved
+ *           from the sequence object.
  * @property mixed              $columnCase         The case of the column names.
  * @property mixed              $nullConversion     How the null and empty strings are converted.
- * @property boolean            $autoCommit         Whether creating or updating a DB record will be automatically committed.
+ * @property boolean            $autoCommit         Whether creating or updating a DB record will be automatically
+ *           committed.
  * @property boolean            $persistent         Whether the connection is persistent or not.
  * @property string             $driverName         Name of the DB driver.
  * @property string             $clientVersion      The version information of the DB driver.
@@ -96,7 +98,8 @@ namespace DreamFactory\Core\SqlDbCore;
  * @property string             $serverInfo         The information of DBMS server.
  * @property string             $serverVersion      The version information of DBMS server.
  * @property integer            $timeout            Timeout settings for the connection.
- * @property array              $attributes         Attributes (name=>value) that are previously explicitly set for the DB connection.
+ * @property array              $attributes         Attributes (name=>value) that are previously explicitly set for the
+ *           DB connection.
  * @property array              $stats              The first element indicates the number of SQL statements executed,
  * and the second element the total time spent in SQL execution.
  *
@@ -165,16 +168,26 @@ class Connection
      * @since 1.1.6
      */
     public static $driverSchemaMap = [
-        'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',    // PostgreSQL
-        'mysqli'  => 'DreamFactory\Core\SqlDbCore\Mysql\Schema',   // MySQL
-        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',    // MySQL
-        'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',  // sqlite 3
-        'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema', // sqlite 2
-        'mssql'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',    // Mssql driver on windows hosts
-        'dblib'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv'  => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',   // Mssql
-        'oci'     => 'DreamFactory\Core\SqlDbCore\Oci\Schema',        // Oracle driver
-        'ibm'     => 'DreamFactory\Core\SqlDbCore\Ibmdb2\Schema',     // IBM DB2 driver
+        'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',
+        // PostgreSQL
+        'mysqli'  => 'DreamFactory\Core\SqlDbCore\Mysql\Schema',
+        // MySQL
+        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',
+        // MySQL
+        'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
+        // sqlite 3
+        'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
+        // sqlite 2
+        'mssql'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // Mssql driver on windows hosts
+        'dblib'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv'  => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // Mssql
+        'oci'     => 'DreamFactory\Core\SqlDbCore\Oci\Schema',
+        // Oracle driver
+        'ibm'     => 'DreamFactory\Core\SqlDbCore\Ibmdb2\Schema',
+        // IBM DB2 driver
     ];
 
     /**
@@ -189,13 +202,17 @@ class Connection
      * @since 1.1.6
      */
     public static $driverAdapterMap = [
-        'mssql'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',    // Mssql driver on windows hosts
-        'dblib'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',    // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv' => 'DreamFactory\Core\SqlDbCore\Mssql\SqlsrvPdoAdapter',   // Mssql
-        'oci'    => 'DreamFactory\Core\SqlDbCore\Oci\PdoAdapter',        // Oracle driver
+        'mssql'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',
+        // Mssql driver on windows hosts
+        'dblib'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',
+        // dblib drivers on linux (and maybe others os) hosts
+        'sqlsrv' => 'DreamFactory\Core\SqlDbCore\Mssql\SqlsrvPdoAdapter',
+        // Mssql
+        'oci'    => 'DreamFactory\Core\SqlDbCore\Oci\PdoAdapter',
+        // Oracle driver
     ];
 
-    private $_attributes = [ ];
+    private $_attributes = [];
     private $_active = false;
     private $_pdo;
     private $_transaction;
@@ -207,13 +224,14 @@ class Connection
      * instance is created. Set {@link setActive active} property to true
      * to establish the connection.
      *
-     * @param string $dsn      The Data Source Name, or DSN, contains the information required to connect to the database.
+     * @param string $dsn      The Data Source Name, or DSN, contains the information required to connect to the
+     *                         database.
      * @param string $username The user name for the DSN string.
      * @param string $password The password for the DSN string.
      *
      * @see http://www.php.net/manual/en/function.PDO-construct.php
      */
-    public function __construct( $dsn = '', $username = '', $password = '' )
+    public function __construct($dsn = '', $username = '', $password = '')
     {
         $this->connectionString = $dsn;
         $this->username = $username;
@@ -229,7 +247,7 @@ class Connection
     {
         $this->close();
 
-        return array_keys( get_object_vars( $this ) );
+        return array_keys(get_object_vars($this));
     }
 
     /**
@@ -250,13 +268,11 @@ class Connection
      *
      * @return string name of the DB driver
      */
-    public static function getDriverFromDSN( $dsn )
+    public static function getDriverFromDSN($dsn)
     {
-        if ( is_string( $dsn ) )
-        {
-            if ( ( $pos = strpos( $dsn, ':' ) ) !== false )
-            {
-                return strtolower( substr( $dsn, 0, $pos ) );
+        if (is_string($dsn)) {
+            if (($pos = strpos($dsn, ':')) !== false) {
+                return strtolower(substr($dsn, 0, $pos));
             }
         }
 
@@ -270,7 +286,7 @@ class Connection
      * @return bool Returns true if all required extensions are loaded, otherwise an exception is thrown
      * @throws \Exception
      */
-    public static function requireDriver( $driver, $requires_pdo = true )
+    public static function requireDriver($driver, $requires_pdo = true)
     {
         static $driverExtensionMap = [
             'sqlite' => 'sqlite3',
@@ -283,38 +299,28 @@ class Connection
             'ibm'    => 'ibm_db2',
         ];
 
-        if ( !empty( $driver ) )
-        {
-            if ( isset( $driverExtensionMap[$driver] ) )
-            {
+        if (!empty($driver)) {
+            if (isset($driverExtensionMap[$driver])) {
                 $extension = $driverExtensionMap[$driver];
-                if ( 'mysql' === $extension )
-                {
-                    if ( !extension_loaded( 'mysql' ) && !extension_loaded( 'mysqlnd' ) )
-                    {
-                        throw new \Exception( "Required extension or module '$extension' is not installed or loaded." );
+                if ('mysql' === $extension) {
+                    if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
+                        throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
                     }
-                }
-                elseif ( !extension_loaded( $extension ) )
-                {
-                    throw new \Exception( "Required extension or module '$extension' is not installed or loaded." );
+                } elseif (!extension_loaded($extension)) {
+                    throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
                 }
             }
         }
 
-        if ( $requires_pdo )
-        {
-            if ( !extension_loaded( 'PDO' ) )
-            {
-                throw new \Exception( "Required PDO extension is not installed or loaded." );
+        if ($requires_pdo) {
+            if (!extension_loaded('PDO')) {
+                throw new \Exception("Required PDO extension is not installed or loaded.");
             }
 
-            if ( !empty( $driver ) )
-            {
+            if (!empty($driver)) {
                 $drivers = static::getAvailableDrivers();
-                if ( !in_array( $driver, $drivers ) )
-                {
-                    throw new \Exception( "Required PDO driver '$driver' is not installed or loaded properly." );
+                if (!in_array($driver, $drivers)) {
+                    throw new \Exception("Required PDO driver '$driver' is not installed or loaded properly.");
                 }
             }
         }
@@ -331,9 +337,8 @@ class Connection
      */
     public function init()
     {
-        if ( $this->autoConnect )
-        {
-            $this->setActive( true );
+        if ($this->autoConnect) {
+            $this->setActive(true);
         }
     }
 
@@ -354,16 +359,12 @@ class Connection
      *
      * @throws \Exception if connection fails
      */
-    public function setActive( $value )
+    public function setActive($value)
     {
-        if ( $value != $this->_active )
-        {
-            if ( $value )
-            {
+        if ($value != $this->_active) {
+            if ($value) {
                 $this->open();
-            }
-            else
-            {
+            } else {
                 $this->close();
             }
         }
@@ -376,22 +377,18 @@ class Connection
      */
     protected function open()
     {
-        if ( $this->_pdo === null )
-        {
-            if ( empty( $this->connectionString ) )
-            {
-                throw new \Exception( 'Connection.connectionString cannot be empty.' );
+        if ($this->_pdo === null) {
+            if (empty($this->connectionString)) {
+                throw new \Exception('Connection.connectionString cannot be empty.');
             }
-            try
-            {
+            try {
                 $this->_pdo = $this->createPdoInstance();
-                $this->initConnection( $this->_pdo );
+                $this->initConnection($this->_pdo);
                 $this->_active = true;
-            }
-            catch ( \PDOException $e )
-            {
+            } catch (\PDOException $e) {
                 throw new \Exception(
-                    'Connection failed to open the DB connection: ' . $e->getMessage(), (int)$e->getCode(), $e->errorInfo
+                    'Connection failed to open the DB connection: ' . $e->getMessage(), (int)$e->getCode(),
+                    $e->errorInfo
                 );
             }
         }
@@ -419,28 +416,24 @@ class Connection
     protected function createPdoInstance()
     {
         $pdoClass = $this->pdoClass;
-        if ( null !== ( $driver = static::getDriverFromDSN( $this->connectionString ) ) )
-        {
+        if (null !== ($driver = static::getDriverFromDSN($this->connectionString))) {
             //  Require that the PDO driver and dependencies are loaded
-            static::requireDriver( $driver );
+            static::requireDriver($driver);
 
             //  Detect if we need an adapter for PDO
-            if ( isset( static::$driverAdapterMap[$driver] ) )
-            {
+            if (isset(static::$driverAdapterMap[$driver])) {
                 $pdoClass = static::$driverAdapterMap[$driver];
             }
         }
 
-        if ( !class_exists( $pdoClass ) )
-        {
-            throw new \Exception( 'Connection is unable to find PDO class "{$pdoClass}". Make sure PDO is installed correctly.' );
+        if (!class_exists($pdoClass)) {
+            throw new \Exception('Connection is unable to find PDO class "{$pdoClass}". Make sure PDO is installed correctly.');
         }
 
-        @$instance = new $pdoClass( $this->connectionString, $this->username, $this->password, $this->_attributes );
+        @$instance = new $pdoClass($this->connectionString, $this->username, $this->password, $this->_attributes);
 
-        if ( !$instance )
-        {
-            throw new \Exception( 'Connection failed to open the DB connection.' );
+        if (!$instance) {
+            throw new \Exception('Connection failed to open the DB connection.');
         }
 
         return $instance;
@@ -453,26 +446,21 @@ class Connection
      *
      * @param \PDO $pdo the PDO instance
      */
-    protected function initConnection( $pdo )
+    protected function initConnection($pdo)
     {
-        $pdo->setAttribute( \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION );
-        if ( $this->emulatePrepare !== null && constant( 'PDO::ATTR_EMULATE_PREPARES' ) )
-        {
-            $pdo->setAttribute( \PDO::ATTR_EMULATE_PREPARES, $this->emulatePrepare );
+        $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+        if ($this->emulatePrepare !== null && constant('PDO::ATTR_EMULATE_PREPARES')) {
+            $pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, $this->emulatePrepare);
         }
-        if ( $this->charset !== null )
-        {
-            $driver = strtolower( $pdo->getAttribute( \PDO::ATTR_DRIVER_NAME ) );
-            if ( in_array( $driver, [ 'pgsql', 'mysql', 'mysqli' ] ) )
-            {
-                $pdo->exec( 'SET NAMES ' . $pdo->quote( $this->charset ) );
+        if ($this->charset !== null) {
+            $driver = strtolower($pdo->getAttribute(\PDO::ATTR_DRIVER_NAME));
+            if (in_array($driver, ['pgsql', 'mysql', 'mysqli'])) {
+                $pdo->exec('SET NAMES ' . $pdo->quote($this->charset));
             }
         }
-        if ( $this->initSQLs !== null )
-        {
-            foreach ( $this->initSQLs as $sql )
-            {
-                $pdo->exec( $sql );
+        if ($this->initSQLs !== null) {
+            foreach ($this->initSQLs as $sql) {
+                $pdo->exec($sql);
             }
         }
     }
@@ -491,17 +479,18 @@ class Connection
      * Creates a command for execution.
      *
      * @param mixed $query the DB query to be executed. This can be either a string representing a SQL statement,
-     *                     or an array representing different fragments of a SQL statement. Please refer to {@link Command::__construct}
-     *                     for more details about how to pass an array as the query. If this parameter is not given,
-     *                     you will have to call query builder methods of {@link Command} to build the DB query.
+     *                     or an array representing different fragments of a SQL statement. Please refer to {@link
+     *                     Command::__construct} for more details about how to pass an array as the query. If this
+     *                     parameter is not given, you will have to call query builder methods of {@link Command} to
+     *                     build the DB query.
      *
      * @return Command the DB command
      */
-    public function createCommand( $query = null )
+    public function createCommand($query = null)
     {
-        $this->setActive( true );
+        $this->setActive(true);
 
-        return new Command( $this, $query );
+        return new Command($this, $query);
     }
 
     /**
@@ -511,10 +500,8 @@ class Connection
      */
     public function getCurrentTransaction()
     {
-        if ( $this->_transaction !== null )
-        {
-            if ( $this->_transaction->getActive() )
-            {
+        if ($this->_transaction !== null) {
+            if ($this->_transaction->getActive()) {
                 return $this->_transaction;
             }
         }
@@ -529,10 +516,10 @@ class Connection
      */
     public function beginTransaction()
     {
-        $this->setActive( true );
+        $this->setActive(true);
         $this->_pdo->beginTransaction();
 
-        return $this->_transaction = new Transaction( $this );
+        return $this->_transaction = new Transaction($this);
     }
 
     /**
@@ -543,70 +530,48 @@ class Connection
      */
     public function getSchema()
     {
-        if ( $this->_schema !== null )
-        {
+        if ($this->_schema !== null) {
             return $this->_schema;
-        }
-        else
-        {
+        } else {
             $driver = $this->getDBName();
-            if ( isset( static::$driverSchemaMap[$driver] ) )
-            {
-                return $this->_schema = static::createComponent( static::$driverSchemaMap[$driver], $this );
-            }
-            else
-            {
-                throw new \Exception( "Connection does not support reading schema for '$driver' database." );
+            if (isset(static::$driverSchemaMap[$driver])) {
+                return $this->_schema = static::createComponent(static::$driverSchemaMap[$driver], $this);
+            } else {
+                throw new \Exception("Connection does not support reading schema for '$driver' database.");
             }
         }
     }
 
-    public static function createComponent( $config )
+    public static function createComponent($config)
     {
-        if ( is_string( $config ) )
-        {
+        if (is_string($config)) {
             $type = $config;
-            $config = [ ];
-        }
-        elseif ( isset( $config['class'] ) )
-        {
+            $config = [];
+        } elseif (isset($config['class'])) {
             $type = $config['class'];
-            unset( $config['class'] );
+            unset($config['class']);
+        } else {
+            throw new \Exception('Object configuration must be an array containing a "class" element.');
         }
-        else
-        {
-            throw new \Exception( 'Object configuration must be an array containing a "class" element.' );
-        }
-        if ( ( $n = func_num_args() ) > 1 )
-        {
+        if (($n = func_num_args()) > 1) {
             $args = func_get_args();
-            if ( $n === 2 )
-            {
-                $object = new $type( $args[1] );
-            }
-            elseif ( $n === 3 )
-            {
-                $object = new $type( $args[1], $args[2] );
-            }
-            elseif ( $n === 4 )
-            {
-                $object = new $type( $args[1], $args[2], $args[3] );
-            }
-            else
-            {
-                unset( $args[0] );
-                $class = new \ReflectionClass( $type );
+            if ($n === 2) {
+                $object = new $type($args[1]);
+            } elseif ($n === 3) {
+                $object = new $type($args[1], $args[2]);
+            } elseif ($n === 4) {
+                $object = new $type($args[1], $args[2], $args[3]);
+            } else {
+                unset($args[0]);
+                $class = new \ReflectionClass($type);
                 // Note: ReflectionClass::newInstanceArgs() is available for PHP 5.1.3+
                 // $object=$class->newInstanceArgs($args);
-                $object = call_user_func_array( [ $class, 'newInstance' ], $args );
+                $object = call_user_func_array([$class, 'newInstance'], $args);
             }
-        }
-        else
-        {
+        } else {
             $object = new $type;
         }
-        foreach ( $config as $key => $value )
-        {
+        foreach ($config as $key => $value) {
             $object->$key = $value;
         }
 
@@ -631,11 +596,11 @@ class Connection
      * @return string the row ID of the last row inserted, or the last value retrieved from the sequence object
      * @see http://www.php.net/manual/en/function.PDO-lastInsertId.php
      */
-    public function getLastInsertID( $sequenceName = '' )
+    public function getLastInsertID($sequenceName = '')
     {
-        $this->setActive( true );
+        $this->setActive(true);
 
-        return $this->_pdo->lastInsertId( $sequenceName );
+        return $this->_pdo->lastInsertId($sequenceName);
     }
 
     /**
@@ -646,21 +611,18 @@ class Connection
      * @return string the properly quoted string
      * @see http://www.php.net/manual/en/function.PDO-quote.php
      */
-    public function quoteValue( $str )
+    public function quoteValue($str)
     {
-        if ( is_int( $str ) || is_float( $str ) )
-        {
+        if (is_int($str) || is_float($str)) {
             return $str;
         }
 
-        $this->setActive( true );
-        if ( ( $value = $this->_pdo->quote( $str ) ) !== false )
-        {
+        $this->setActive(true);
+        if (($value = $this->_pdo->quote($str)) !== false) {
             return $value;
-        }
-        else  // the driver doesn't support quote (e.g. oci)
+        } else  // the driver doesn't support quote (e.g. oci)
         {
-            return "'" . addcslashes( str_replace( "'", "''", $str ), "\000\n\r\\\032" ) . "'";
+            return "'" . addcslashes(str_replace("'", "''", $str), "\000\n\r\\\032") . "'";
         }
     }
 
@@ -672,9 +634,9 @@ class Connection
      *
      * @return string the properly quoted table name
      */
-    public function quoteTableName( $name )
+    public function quoteTableName($name)
     {
-        return $this->getSchema()->quoteTableName( $name );
+        return $this->getSchema()->quoteTableName($name);
     }
 
     /**
@@ -685,9 +647,9 @@ class Connection
      *
      * @return string the properly quoted column name
      */
-    public function quoteColumnName( $name )
+    public function quoteColumnName($name)
     {
-        return $this->getSchema()->quoteColumnName( $name );
+        return $this->getSchema()->quoteColumnName($name);
     }
 
     /**
@@ -697,7 +659,7 @@ class Connection
      *
      * @return integer the corresponding PDO type
      */
-    public function getPdoType( $type )
+    public function getPdoType($type)
     {
         static $map = [
             'boolean'  => \PDO::PARAM_BOOL,
@@ -707,7 +669,7 @@ class Connection
             'NULL'     => \PDO::PARAM_NULL,
         ];
 
-        return isset( $map[$type] ) ? $map[$type] : \PDO::PARAM_STR;
+        return isset($map[$type]) ? $map[$type] : \PDO::PARAM_STR;
     }
 
     /**
@@ -718,7 +680,7 @@ class Connection
      */
     public function getColumnCase()
     {
-        return $this->getAttribute( \PDO::ATTR_CASE );
+        return $this->getAttribute(\PDO::ATTR_CASE);
     }
 
     /**
@@ -728,9 +690,9 @@ class Connection
      *
      * @see http://www.php.net/manual/en/pdo.setattribute.php
      */
-    public function setColumnCase( $value )
+    public function setColumnCase($value)
     {
-        $this->setAttribute( \PDO::ATTR_CASE, $value );
+        $this->setAttribute(\PDO::ATTR_CASE, $value);
     }
 
     /**
@@ -741,7 +703,7 @@ class Connection
      */
     public function getNullConversion()
     {
-        return $this->getAttribute( \PDO::ATTR_ORACLE_NULLS );
+        return $this->getAttribute(\PDO::ATTR_ORACLE_NULLS);
     }
 
     /**
@@ -751,9 +713,9 @@ class Connection
      *
      * @see http://www.php.net/manual/en/pdo.setattribute.php
      */
-    public function setNullConversion( $value )
+    public function setNullConversion($value)
     {
-        $this->setAttribute( \PDO::ATTR_ORACLE_NULLS, $value );
+        $this->setAttribute(\PDO::ATTR_ORACLE_NULLS, $value);
     }
 
     /**
@@ -764,7 +726,7 @@ class Connection
      */
     public function getAutoCommit()
     {
-        return $this->getAttribute( \PDO::ATTR_AUTOCOMMIT );
+        return $this->getAttribute(\PDO::ATTR_AUTOCOMMIT);
     }
 
     /**
@@ -773,9 +735,9 @@ class Connection
      *
      * @param boolean $value whether creating or updating a DB record will be automatically committed.
      */
-    public function setAutoCommit( $value )
+    public function setAutoCommit($value)
     {
-        $this->setAttribute( \PDO::ATTR_AUTOCOMMIT, $value );
+        $this->setAttribute(\PDO::ATTR_AUTOCOMMIT, $value);
     }
 
     /**
@@ -786,7 +748,7 @@ class Connection
      */
     public function getPersistent()
     {
-        return $this->getAttribute( \PDO::ATTR_PERSISTENT );
+        return $this->getAttribute(\PDO::ATTR_PERSISTENT);
     }
 
     /**
@@ -795,9 +757,9 @@ class Connection
      *
      * @param boolean $value whether the connection is persistent or not
      */
-    public function setPersistent( $value )
+    public function setPersistent($value)
     {
-        $this->setAttribute( \PDO::ATTR_PERSISTENT, $value );
+        $this->setAttribute(\PDO::ATTR_PERSISTENT, $value);
     }
 
     /**
@@ -807,12 +769,11 @@ class Connection
      */
     public function getDBName()
     {
-        if ( ( $pos = strpos( $this->connectionString, ':' ) ) !== false )
-        {
-            return strtolower( substr( $this->connectionString, 0, $pos ) );
+        if (($pos = strpos($this->connectionString, ':')) !== false) {
+            return strtolower(substr($this->connectionString, 0, $pos));
         }
 
-        return $this->getAttribute( \PDO::ATTR_DRIVER_NAME );
+        return $this->getAttribute(\PDO::ATTR_DRIVER_NAME);
     }
 
     /**
@@ -822,7 +783,7 @@ class Connection
      */
     public function getClientVersion()
     {
-        return $this->getAttribute( \PDO::ATTR_CLIENT_VERSION );
+        return $this->getAttribute(\PDO::ATTR_CLIENT_VERSION);
     }
 
     /**
@@ -833,7 +794,7 @@ class Connection
      */
     public function getConnectionStatus()
     {
-        return $this->getAttribute( \PDO::ATTR_CONNECTION_STATUS );
+        return $this->getAttribute(\PDO::ATTR_CONNECTION_STATUS);
     }
 
     /**
@@ -843,7 +804,7 @@ class Connection
      */
     public function getPrefetch()
     {
-        return $this->getAttribute( \PDO::ATTR_PREFETCH );
+        return $this->getAttribute(\PDO::ATTR_PREFETCH);
     }
 
     /**
@@ -853,7 +814,7 @@ class Connection
      */
     public function getServerInfo()
     {
-        return $this->getAttribute( \PDO::ATTR_SERVER_INFO );
+        return $this->getAttribute(\PDO::ATTR_SERVER_INFO);
     }
 
     /**
@@ -863,7 +824,7 @@ class Connection
      */
     public function getServerVersion()
     {
-        return $this->getAttribute( \PDO::ATTR_SERVER_VERSION );
+        return $this->getAttribute(\PDO::ATTR_SERVER_VERSION);
     }
 
     /**
@@ -873,7 +834,7 @@ class Connection
      */
     public function getTimeout()
     {
-        return $this->getAttribute( \PDO::ATTR_TIMEOUT );
+        return $this->getAttribute(\PDO::ATTR_TIMEOUT);
     }
 
     /**
@@ -884,11 +845,11 @@ class Connection
      * @return mixed the corresponding attribute information
      * @see http://www.php.net/manual/en/function.PDO-getAttribute.php
      */
-    public function getAttribute( $name )
+    public function getAttribute($name)
     {
-        $this->setActive( true );
+        $this->setActive(true);
 
-        return $this->_pdo->getAttribute( $name );
+        return $this->_pdo->getAttribute($name);
     }
 
     /**
@@ -899,14 +860,11 @@ class Connection
      *
      * @see http://www.php.net/manual/en/function.PDO-setAttribute.php
      */
-    public function setAttribute( $name, $value )
+    public function setAttribute($name, $value)
     {
-        if ( $this->_pdo instanceof \PDO )
-        {
-            $this->_pdo->setAttribute( $name, $value );
-        }
-        else
-        {
+        if ($this->_pdo instanceof \PDO) {
+            $this->_pdo->setAttribute($name, $value);
+        } else {
             $this->_attributes[$name] = $value;
         }
     }
@@ -931,10 +889,9 @@ class Connection
      * @see   setAttribute
      * @since 1.1.7
      */
-    public function setAttributes( $values )
+    public function setAttributes($values)
     {
-        foreach ( $values as $name => $value )
-        {
+        foreach ($values as $name => $value) {
             $this->_attributes[$name] = $value;
         }
     }
@@ -950,6 +907,6 @@ class Connection
      */
     public function getStats()
     {
-        return [ ];
+        return [];
     }
 }

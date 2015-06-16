@@ -29,7 +29,7 @@ class CommandBuilder
     /**
      * @param Schema $schema the schema for this command builder
      */
-    public function __construct( $schema )
+    public function __construct($schema)
     {
         $this->_schema = $schema;
         $this->_connection = $schema->getDbConnection();
@@ -58,15 +58,12 @@ class CommandBuilder
      *
      * @return mixed last insertion id. Null is returned if no sequence name.
      */
-    public function getLastInsertID( $table )
+    public function getLastInsertID($table)
     {
-        $this->ensureTable( $table );
-        if ( $table->sequenceName !== null )
-        {
-            return $this->_connection->getLastInsertID( $table->sequenceName );
-        }
-        else
-        {
+        $this->ensureTable($table);
+        if ($table->sequenceName !== null) {
+            return $this->_connection->getLastInsertID($table->sequenceName);
+        } else {
             return null;
         }
     }
@@ -74,43 +71,40 @@ class CommandBuilder
     /**
      * Creates a SELECT command for a single table.
      *
-     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param mixed    $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param Criteria $criteria the query criteria
-     * @param string      $alias    the alias name of the primary table. Defaults to 't'.
+     * @param string   $alias    the alias name of the primary table. Defaults to 't'.
      *
      * @return Command query command.
      */
-    public function createFindCommand( $table, $criteria, $alias = 't' )
+    public function createFindCommand($table, $criteria, $alias = 't')
     {
-        $this->ensureTable( $table );
-        $select = is_array( $criteria->select ) ? implode( ', ', $criteria->select ) : $criteria->select;
-        if ( $criteria->alias != '' )
-        {
+        $this->ensureTable($table);
+        $select = is_array($criteria->select) ? implode(', ', $criteria->select) : $criteria->select;
+        if ($criteria->alias != '') {
             $alias = $criteria->alias;
         }
-        $alias = $this->_schema->quoteTableName( $alias );
+        $alias = $this->_schema->quoteTableName($alias);
 
         // issue 1432: need to expand * when SQL has JOIN
-        if ( $select === '*' && !empty( $criteria->join ) )
-        {
+        if ($select === '*' && !empty($criteria->join)) {
             $prefix = $alias . '.';
             $select = array();
-            foreach ( $table->getColumnNames() as $name )
-            {
-                $select[] = $prefix . $this->_schema->quoteColumnName( $name );
+            foreach ($table->getColumnNames() as $name) {
+                $select[] = $prefix . $this->_schema->quoteColumnName($name);
             }
-            $select = implode( ', ', $select );
+            $select = implode(', ', $select);
         }
 
-        $sql = ( $criteria->distinct ? 'SELECT DISTINCT' : 'SELECT' ) . " {$select} FROM {$table->rawName} $alias";
-        $sql = $this->applyJoin( $sql, $criteria->join );
-        $sql = $this->applyCondition( $sql, $criteria->condition );
-        $sql = $this->applyGroup( $sql, $criteria->group );
-        $sql = $this->applyHaving( $sql, $criteria->having );
-        $sql = $this->applyOrder( $sql, $criteria->order );
-        $sql = $this->applyLimit( $sql, $criteria->limit, $criteria->offset );
-        $command = $this->_connection->createCommand( $sql );
-        $this->bindValues( $command, $criteria->params );
+        $sql = ($criteria->distinct ? 'SELECT DISTINCT' : 'SELECT') . " {$select} FROM {$table->rawName} $alias";
+        $sql = $this->applyJoin($sql, $criteria->join);
+        $sql = $this->applyCondition($sql, $criteria->condition);
+        $sql = $this->applyGroup($sql, $criteria->group);
+        $sql = $this->applyHaving($sql, $criteria->having);
+        $sql = $this->applyOrder($sql, $criteria->order);
+        $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
+        $command = $this->_connection->createCommand($sql);
+        $this->bindValues($command, $criteria->params);
 
         return $command;
     }
@@ -118,95 +112,79 @@ class CommandBuilder
     /**
      * Creates a COUNT(*) command for a single table.
      *
-     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param mixed    $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param Criteria $criteria the query criteria
-     * @param string      $alias    the alias name of the primary table. Defaults to 't'.
+     * @param string   $alias    the alias name of the primary table. Defaults to 't'.
      *
      * @return Command query command.
      */
-    public function createCountCommand( $table, $criteria, $alias = 't' )
+    public function createCountCommand($table, $criteria, $alias = 't')
     {
-        $this->ensureTable( $table );
-        if ( $criteria->alias != '' )
-        {
+        $this->ensureTable($table);
+        if ($criteria->alias != '') {
             $alias = $criteria->alias;
         }
-        $alias = $this->_schema->quoteTableName( $alias );
+        $alias = $this->_schema->quoteTableName($alias);
 
-        if ( !empty( $criteria->group ) || !empty( $criteria->having ) )
-        {
-            $select = is_array( $criteria->select ) ? implode( ', ', $criteria->select ) : $criteria->select;
-            if ( $criteria->alias != '' )
-            {
+        if (!empty($criteria->group) || !empty($criteria->having)) {
+            $select = is_array($criteria->select) ? implode(', ', $criteria->select) : $criteria->select;
+            if ($criteria->alias != '') {
                 $alias = $criteria->alias;
             }
-            $sql = ( $criteria->distinct ? 'SELECT DISTINCT' : 'SELECT' ) . " {$select} FROM {$table->rawName} $alias";
-            $sql = $this->applyJoin( $sql, $criteria->join );
-            $sql = $this->applyCondition( $sql, $criteria->condition );
-            $sql = $this->applyGroup( $sql, $criteria->group );
-            $sql = $this->applyHaving( $sql, $criteria->having );
+            $sql = ($criteria->distinct ? 'SELECT DISTINCT' : 'SELECT') . " {$select} FROM {$table->rawName} $alias";
+            $sql = $this->applyJoin($sql, $criteria->join);
+            $sql = $this->applyCondition($sql, $criteria->condition);
+            $sql = $this->applyGroup($sql, $criteria->group);
+            $sql = $this->applyHaving($sql, $criteria->having);
             $sql = "SELECT COUNT(*) FROM ($sql) sq";
-        }
-        else
-        {
-            if ( is_string( $criteria->select ) && stripos( $criteria->select, 'count' ) === 0 )
-            {
+        } else {
+            if (is_string($criteria->select) && stripos($criteria->select, 'count') === 0) {
                 $sql = "SELECT " . $criteria->select;
-            }
-            elseif ( $criteria->distinct )
-            {
-                if ( is_array( $table->primaryKey ) )
-                {
+            } elseif ($criteria->distinct) {
+                if (is_array($table->primaryKey)) {
                     $pk = array();
-                    foreach ( $table->primaryKey as $key )
-                    {
+                    foreach ($table->primaryKey as $key) {
                         $pk[] = $alias . '.' . $key;
                     }
-                    $pk = implode( ', ', $pk );
-                }
-                else
-                {
+                    $pk = implode(', ', $pk);
+                } else {
                     $pk = $alias . '.' . $table->primaryKey;
                 }
                 $sql = "SELECT COUNT(DISTINCT $pk)";
-            }
-            else
-            {
+            } else {
                 $sql = "SELECT COUNT(*)";
             }
             $sql .= " FROM {$table->rawName} $alias";
-            $sql = $this->applyJoin( $sql, $criteria->join );
-            $sql = $this->applyCondition( $sql, $criteria->condition );
+            $sql = $this->applyJoin($sql, $criteria->join);
+            $sql = $this->applyCondition($sql, $criteria->condition);
         }
 
         // Suppress binding of parameters belonging to the ORDER clause. Issue #1407.
-        if ( $criteria->order && $criteria->params )
-        {
+        if ($criteria->order && $criteria->params) {
             $params1 = array();
-            preg_match_all( '/(:\w+)/', $sql, $params1 );
+            preg_match_all('/(:\w+)/', $sql, $params1);
             $params2 = array();
-            preg_match_all( '/(:\w+)/', $this->applyOrder( $sql, $criteria->order ), $params2 );
-            foreach ( array_diff( $params2[0], $params1[0] ) as $param )
-            {
-                unset( $criteria->params[$param] );
+            preg_match_all('/(:\w+)/', $this->applyOrder($sql, $criteria->order), $params2);
+            foreach (array_diff($params2[0], $params1[0]) as $param) {
+                unset($criteria->params[$param]);
             }
         }
 
         // Do the same for SELECT part.
-        if ( $criteria->select && $criteria->params )
-        {
+        if ($criteria->select && $criteria->params) {
             $params1 = array();
-            preg_match_all( '/(:\w+)/', $sql, $params1 );
+            preg_match_all('/(:\w+)/', $sql, $params1);
             $params2 = array();
-            preg_match_all( '/(:\w+)/', $sql . ' ' . ( is_array( $criteria->select ) ? implode( ', ', $criteria->select ) : $criteria->select ), $params2 );
-            foreach ( array_diff( $params2[0], $params1[0] ) as $param )
-            {
-                unset( $criteria->params[$param] );
+            preg_match_all('/(:\w+)/',
+                $sql . ' ' . (is_array($criteria->select) ? implode(', ', $criteria->select) : $criteria->select),
+                $params2);
+            foreach (array_diff($params2[0], $params1[0]) as $param) {
+                unset($criteria->params[$param]);
             }
         }
 
-        $command = $this->_connection->createCommand( $sql );
-        $this->bindValues( $command, $criteria->params );
+        $command = $this->_connection->createCommand($sql);
+        $this->bindValues($command, $criteria->params);
 
         return $command;
     }
@@ -214,23 +192,23 @@ class CommandBuilder
     /**
      * Creates a DELETE command.
      *
-     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param mixed    $table    the table schema ({@link TableSchema}) or the table name (string).
      * @param Criteria $criteria the query criteria
      *
      * @return Command delete command.
      */
-    public function createDeleteCommand( $table, $criteria )
+    public function createDeleteCommand($table, $criteria)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
         $sql = "DELETE FROM {$table->rawName}";
-        $sql = $this->applyJoin( $sql, $criteria->join );
-        $sql = $this->applyCondition( $sql, $criteria->condition );
-        $sql = $this->applyGroup( $sql, $criteria->group );
-        $sql = $this->applyHaving( $sql, $criteria->having );
-        $sql = $this->applyOrder( $sql, $criteria->order );
-        $sql = $this->applyLimit( $sql, $criteria->limit, $criteria->offset );
-        $command = $this->_connection->createCommand( $sql );
-        $this->bindValues( $command, $criteria->params );
+        $sql = $this->applyJoin($sql, $criteria->join);
+        $sql = $this->applyCondition($sql, $criteria->condition);
+        $sql = $this->applyGroup($sql, $criteria->group);
+        $sql = $this->applyHaving($sql, $criteria->having);
+        $sql = $this->applyOrder($sql, $criteria->order);
+        $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
+        $command = $this->_connection->createCommand($sql);
+        $this->bindValues($command, $criteria->params);
 
         return $command;
     }
@@ -239,53 +217,50 @@ class CommandBuilder
      * Creates an INSERT command.
      *
      * @param mixed $table the table schema ({@link TableSchema}) or the table name (string).
-     * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array $data  data to be inserted (column name=>column value). If a key is not a valid column name, the
+     *                     corresponding value will be ignored.
      *
      * @return Command insert command
      */
-    public function createInsertCommand( $table, $data )
+    public function createInsertCommand($table, $data)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
         $fields = array();
         $values = array();
         $placeholders = array();
         $i = 0;
-        foreach ( $data as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null && ( $value !== null || $column->allowNull ) )
-            {
+        foreach ($data as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null && ($value !== null || $column->allowNull)) {
                 $fields[] = $column->rawName;
-                if ( $value instanceof Expression )
-                {
+                if ($value instanceof Expression) {
                     $placeholders[] = $value->expression;
-                    foreach ( $value->params as $n => $v )
-                    {
+                    foreach ($value->params as $n => $v) {
                         $values[$n] = $v;
                     }
-                }
-                else
-                {
+                } else {
                     $placeholders[] = self::PARAM_PREFIX . $i;
-                    $values[self::PARAM_PREFIX . $i] = $column->typecast( $value );
+                    $values[self::PARAM_PREFIX . $i] = $column->typecast($value);
                     $i++;
                 }
             }
         }
-        if ( $fields === array() )
-        {
-            $pks = is_array( $table->primaryKey ) ? $table->primaryKey : array( $table->primaryKey );
-            foreach ( $pks as $pk )
-            {
-                $fields[] = $table->getColumn( $pk )->rawName;
+        if ($fields === array()) {
+            $pks = is_array($table->primaryKey) ? $table->primaryKey : array($table->primaryKey);
+            foreach ($pks as $pk) {
+                $fields[] = $table->getColumn($pk)->rawName;
                 $placeholders[] = $this->getIntegerPrimaryKeyDefaultValue();
             }
         }
-        $sql = "INSERT INTO {$table->rawName} (" . implode( ', ', $fields ) . ') VALUES (' . implode( ', ', $placeholders ) . ')';
-        $command = $this->_connection->createCommand( $sql );
+        $sql =
+            "INSERT INTO {$table->rawName} (" .
+            implode(', ', $fields) .
+            ') VALUES (' .
+            implode(', ', $placeholders) .
+            ')';
+        $command = $this->_connection->createCommand($sql);
 
-        foreach ( $values as $name => $value )
-        {
-            $command->bindValue( $name, $value );
+        foreach ($values as $name => $value) {
+            $command->bindValue($name, $value);
         }
 
         return $command;
@@ -297,15 +272,15 @@ class CommandBuilder
      * amount of data into the database tables.
      *
      * @param mixed   $table the table schema ({@link TableSchema}) or the table name (string).
-     * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column value).
-     *                       If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column
+     *                       value). If a key is not a valid column name, the corresponding value will be ignored.
      *
      * @return Command multiple insert command
      * @since 1.1.14
      */
-    public function createMultipleInsertCommand( $table, array $data )
+    public function createMultipleInsertCommand($table, array $data)
     {
-        return $this->composeMultipleInsertCommand( $table, $data );
+        return $this->composeMultipleInsertCommand($table, $data);
     }
 
     /**
@@ -314,13 +289,13 @@ class CommandBuilder
      * command for different SQL syntax.
      *
      * @param mixed   $table     the table schema ({@link TableSchema}) or the table name (string).
-     * @param array[] $data      list data to be inserted, each value should be an array in format (column name=>column value).
-     *                           If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array[] $data      list data to be inserted, each value should be an array in format (column name=>column
+     *                           value). If a key is not a valid column name, the corresponding value will be ignored.
      * @param array   $templates templates for the SQL parts.
      *
      * @return Command multiple insert command
      */
-    protected function composeMultipleInsertCommand( $table, array $data, array $templates = array() )
+    protected function composeMultipleInsertCommand($table, array $data, array $templates = array())
     {
         $templates = array_merge(
             array(
@@ -333,51 +308,40 @@ class CommandBuilder
             ),
             $templates
         );
-        $this->ensureTable( $table );
-        $tableName = $this->getDbConnection()->quoteTableName( $table->name );
+        $this->ensureTable($table);
+        $tableName = $this->getDbConnection()->quoteTableName($table->name);
         $params = array();
         $columnInsertNames = array();
         $rowInsertValues = array();
 
         $columns = array();
-        foreach ( $data as $rowData )
-        {
-            foreach ( $rowData as $columnName => $columnValue )
-            {
-                if ( !in_array( $columnName, $columns, true ) )
-                {
-                    if ( $table->getColumn( $columnName ) !== null )
-                    {
+        foreach ($data as $rowData) {
+            foreach ($rowData as $columnName => $columnValue) {
+                if (!in_array($columnName, $columns, true)) {
+                    if ($table->getColumn($columnName) !== null) {
                         $columns[] = $columnName;
                     }
                 }
             }
         }
-        foreach ( $columns as $name )
-        {
-            $columnInsertNames[$name] = $this->getDbConnection()->quoteColumnName( $name );
+        foreach ($columns as $name) {
+            $columnInsertNames[$name] = $this->getDbConnection()->quoteColumnName($name);
         }
-        $columnInsertNamesSqlPart = implode( $templates['columnInsertNameGlue'], $columnInsertNames );
+        $columnInsertNamesSqlPart = implode($templates['columnInsertNameGlue'], $columnInsertNames);
 
-        foreach ( $data as $rowKey => $rowData )
-        {
+        foreach ($data as $rowKey => $rowData) {
             $columnInsertValues = array();
-            foreach ( $columns as $columnName )
-            {
-                $column = $table->getColumn( $columnName );
-                $columnValue = array_key_exists( $columnName, $rowData ) ? $rowData[$columnName] : new Expression( 'NULL' );
-                if ( $columnValue instanceof Expression )
-                {
+            foreach ($columns as $columnName) {
+                $column = $table->getColumn($columnName);
+                $columnValue = array_key_exists($columnName, $rowData) ? $rowData[$columnName] : new Expression('NULL');
+                if ($columnValue instanceof Expression) {
                     $columnInsertValue = $columnValue->expression;
-                    foreach ( $columnValue->params as $columnValueParamName => $columnValueParam )
-                    {
+                    foreach ($columnValue->params as $columnValueParamName => $columnValueParam) {
                         $params[$columnValueParamName] = $columnValueParam;
                     }
-                }
-                else
-                {
+                } else {
                     $columnInsertValue = ':' . $columnName . '_' . $rowKey;
-                    $params[':' . $columnName . '_' . $rowKey] = $column->typecast( $columnValue );
+                    $params[':' . $columnName . '_' . $rowKey] = $column->typecast($columnValue);
                 }
                 $columnInsertValues[] = strtr(
                     $templates['columnInsertValue'],
@@ -392,7 +356,7 @@ class CommandBuilder
                 array(
                     '{{tableName}}'          => $tableName,
                     '{{columnInsertNames}}'  => $columnInsertNamesSqlPart,
-                    '{{columnInsertValues}}' => implode( $templates['columnInsertValueGlue'], $columnInsertValues )
+                    '{{columnInsertValues}}' => implode($templates['columnInsertValueGlue'], $columnInsertValues)
                 )
             );
         }
@@ -402,14 +366,13 @@ class CommandBuilder
             array(
                 '{{tableName}}'         => $tableName,
                 '{{columnInsertNames}}' => $columnInsertNamesSqlPart,
-                '{{rowInsertValues}}'   => implode( $templates['rowInsertValueGlue'], $rowInsertValues ),
+                '{{rowInsertValues}}'   => implode($templates['rowInsertValueGlue'], $rowInsertValues),
             )
         );
-        $command = $this->getDbConnection()->createCommand( $sql );
+        $command = $this->getDbConnection()->createCommand($sql);
 
-        foreach ( $params as $name => $value )
-        {
-            $command->bindValue( $name, $value );
+        foreach ($params as $name => $value) {
+            $command->bindValue($name, $value);
         }
 
         return $command;
@@ -418,58 +381,49 @@ class CommandBuilder
     /**
      * Creates an UPDATE command.
      *
-     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
-     * @param array       $data     list of columns to be updated (name=>value)
+     * @param mixed    $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param array    $data     list of columns to be updated (name=>value)
      * @param Criteria $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated for the given table
      * @return Command update command.
      */
-    public function createUpdateCommand( $table, $data, $criteria )
+    public function createUpdateCommand($table, $data, $criteria)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
         $fields = array();
         $values = array();
-        $bindByPosition = isset( $criteria->params[0] );
+        $bindByPosition = isset($criteria->params[0]);
         $i = 0;
-        foreach ( $data as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null )
-            {
-                if ( $value instanceof Expression )
-                {
+        foreach ($data as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null) {
+                if ($value instanceof Expression) {
                     $fields[] = $column->rawName . '=' . $value->expression;
-                    foreach ( $value->params as $n => $v )
-                    {
+                    foreach ($value->params as $n => $v) {
                         $values[$n] = $v;
                     }
-                }
-                elseif ( $bindByPosition )
-                {
+                } elseif ($bindByPosition) {
                     $fields[] = $column->rawName . '=?';
-                    $values[] = $column->typecast( $value );
-                }
-                else
-                {
+                    $values[] = $column->typecast($value);
+                } else {
                     $fields[] = $column->rawName . '=' . self::PARAM_PREFIX . $i;
-                    $values[self::PARAM_PREFIX . $i] = $column->typecast( $value );
+                    $values[self::PARAM_PREFIX . $i] = $column->typecast($value);
                     $i++;
                 }
             }
         }
-        if ( $fields === array() )
-        {
-            throw new \Exception( 'No columns are being updated for table "{$table->name}".' );
+        if ($fields === array()) {
+            throw new \Exception('No columns are being updated for table "{$table->name}".');
         }
 
-        $sql = "UPDATE {$table->rawName} SET " . implode( ', ', $fields );
-        $sql = $this->applyJoin( $sql, $criteria->join );
-        $sql = $this->applyCondition( $sql, $criteria->condition );
-        $sql = $this->applyOrder( $sql, $criteria->order );
-        $sql = $this->applyLimit( $sql, $criteria->limit, $criteria->offset );
+        $sql = "UPDATE {$table->rawName} SET " . implode(', ', $fields);
+        $sql = $this->applyJoin($sql, $criteria->join);
+        $sql = $this->applyCondition($sql, $criteria->condition);
+        $sql = $this->applyOrder($sql, $criteria->order);
+        $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
 
-        $command = $this->_connection->createCommand( $sql );
-        $this->bindValues( $command, array_merge( $values, $criteria->params ) );
+        $command = $this->_connection->createCommand($sql);
+        $this->bindValues($command, array_merge($values, $criteria->params));
 
         return $command;
     }
@@ -477,47 +431,39 @@ class CommandBuilder
     /**
      * Creates an UPDATE command that increments/decrements certain columns.
      *
-     * @param mixed       $table    the table schema ({@link TableSchema}) or the table name (string).
-     * @param array       $counters counters to be updated (counter increments/decrements indexed by column names.)
+     * @param mixed    $table    the table schema ({@link TableSchema}) or the table name (string).
+     * @param array    $counters counters to be updated (counter increments/decrements indexed by column names.)
      * @param Criteria $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated for the given table
      * @return Command the created command
      */
-    public function createUpdateCounterCommand( $table, $counters, $criteria )
+    public function createUpdateCounterCommand($table, $counters, $criteria)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
         $fields = array();
-        foreach ( $counters as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null )
-            {
+        foreach ($counters as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null) {
                 $value = (float)$value;
-                if ( $value < 0 )
-                {
-                    $fields[] = "{$column->rawName}={$column->rawName}-" . ( -$value );
-                }
-                else
-                {
+                if ($value < 0) {
+                    $fields[] = "{$column->rawName}={$column->rawName}-" . (-$value);
+                } else {
                     $fields[] = "{$column->rawName}={$column->rawName}+" . $value;
                 }
             }
         }
-        if ( $fields !== array() )
-        {
-            $sql = "UPDATE {$table->rawName} SET " . implode( ', ', $fields );
-            $sql = $this->applyJoin( $sql, $criteria->join );
-            $sql = $this->applyCondition( $sql, $criteria->condition );
-            $sql = $this->applyOrder( $sql, $criteria->order );
-            $sql = $this->applyLimit( $sql, $criteria->limit, $criteria->offset );
-            $command = $this->_connection->createCommand( $sql );
-            $this->bindValues( $command, $criteria->params );
+        if ($fields !== array()) {
+            $sql = "UPDATE {$table->rawName} SET " . implode(', ', $fields);
+            $sql = $this->applyJoin($sql, $criteria->join);
+            $sql = $this->applyCondition($sql, $criteria->condition);
+            $sql = $this->applyOrder($sql, $criteria->order);
+            $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
+            $command = $this->_connection->createCommand($sql);
+            $this->bindValues($command, $criteria->params);
 
             return $command;
-        }
-        else
-        {
-            throw new \Exception( 'No counter columns are being updated for table "{$table->name}".' );
+        } else {
+            throw new \Exception('No counter columns are being updated for table "{$table->name}".');
         }
     }
 
@@ -529,10 +475,10 @@ class CommandBuilder
      *
      * @return Command the created command
      */
-    public function createSqlCommand( $sql, $params = array() )
+    public function createSqlCommand($sql, $params = array())
     {
-        $command = $this->_connection->createCommand( $sql );
-        $this->bindValues( $command, $params );
+        $command = $this->_connection->createCommand($sql);
+        $this->bindValues($command, $params);
 
         return $command;
     }
@@ -545,14 +491,11 @@ class CommandBuilder
      *
      * @return string the altered SQL statement
      */
-    public function applyJoin( $sql, $join )
+    public function applyJoin($sql, $join)
     {
-        if ( $join != '' )
-        {
+        if ($join != '') {
             return $sql . ' ' . $join;
-        }
-        else
-        {
+        } else {
             return $sql;
         }
     }
@@ -565,14 +508,11 @@ class CommandBuilder
      *
      * @return string the altered SQL statement
      */
-    public function applyCondition( $sql, $condition )
+    public function applyCondition($sql, $condition)
     {
-        if ( $condition != '' )
-        {
+        if ($condition != '') {
             return $sql . ' WHERE ' . $condition;
-        }
-        else
-        {
+        } else {
             return $sql;
         }
     }
@@ -585,14 +525,11 @@ class CommandBuilder
      *
      * @return string modified SQL applied with ORDER BY.
      */
-    public function applyOrder( $sql, $orderBy )
+    public function applyOrder($sql, $orderBy)
     {
-        if ( $orderBy != '' )
-        {
+        if ($orderBy != '') {
             return $sql . ' ORDER BY ' . $orderBy;
-        }
-        else
-        {
+        } else {
             return $sql;
         }
     }
@@ -607,14 +544,12 @@ class CommandBuilder
      *
      * @return string SQL with LIMIT and OFFSET
      */
-    public function applyLimit( $sql, $limit, $offset )
+    public function applyLimit($sql, $limit, $offset)
     {
-        if ( $limit >= 0 )
-        {
+        if ($limit >= 0) {
             $sql .= ' LIMIT ' . (int)$limit;
         }
-        if ( $offset > 0 )
-        {
+        if ($offset > 0) {
             $sql .= ' OFFSET ' . (int)$offset;
         }
 
@@ -629,14 +564,11 @@ class CommandBuilder
      *
      * @return string SQL with GROUP BY.
      */
-    public function applyGroup( $sql, $group )
+    public function applyGroup($sql, $group)
     {
-        if ( $group != '' )
-        {
+        if ($group != '') {
             return $sql . ' GROUP BY ' . $group;
-        }
-        else
-        {
+        } else {
             return $sql;
         }
     }
@@ -649,14 +581,11 @@ class CommandBuilder
      *
      * @return string SQL with HAVING
      */
-    public function applyHaving( $sql, $having )
+    public function applyHaving($sql, $having)
     {
-        if ( $having != '' )
-        {
+        if ($having != '') {
             return $sql . ' HAVING ' . $having;
-        }
-        else
-        {
+        } else {
             return $sql;
         }
     }
@@ -665,30 +594,26 @@ class CommandBuilder
      * Binds parameter values for an SQL command.
      *
      * @param Command $command database command
-     * @param array      $values  values for binding (integer-indexed array for question mark placeholders, string-indexed array for named placeholders)
+     * @param array   $values  values for binding (integer-indexed array for question mark placeholders, string-indexed
+     *                         array for named placeholders)
      */
-    public function bindValues( $command, $values )
+    public function bindValues($command, $values)
     {
-        if ( ( $n = count( $values ) ) === 0 )
-        {
+        if (($n = count($values)) === 0) {
             return;
         }
-        if ( isset( $values[0] ) ) // question mark placeholders
+        if (isset($values[0])) // question mark placeholders
         {
-            for ( $i = 0; $i < $n; ++$i )
-            {
-                $command->bindValue( $i + 1, $values[$i] );
+            for ($i = 0; $i < $n; ++$i) {
+                $command->bindValue($i + 1, $values[$i]);
             }
-        }
-        else // named placeholders
+        } else // named placeholders
         {
-            foreach ( $values as $name => $value )
-            {
-                if ( $name[0] !== ':' )
-                {
+            foreach ($values as $name => $value) {
+                if ($name[0] !== ':') {
                     $name = ':' . $name;
                 }
-                $command->bindValue( $name, $value );
+                $command->bindValue($name, $value);
             }
         }
     }
@@ -698,8 +623,8 @@ class CommandBuilder
      *
      * @param mixed $condition query condition or criteria.
      *                         If a string, it is treated as query condition (the WHERE clause);
-     *                         If an array, it is treated as the initial values for constructing a {@link Criteria} object;
-     *                         Otherwise, it should be an instance of {@link Criteria}.
+     *                         If an array, it is treated as the initial values for constructing a {@link Criteria}
+     *                         object; Otherwise, it should be an instance of {@link Criteria}.
      * @param array $params    parameters to be bound to an SQL statement.
      *                         This is only used when the first parameter is a string (query condition).
      *                         In other cases, please use {@link Criteria::params} to set parameters.
@@ -707,18 +632,13 @@ class CommandBuilder
      * @return Criteria the created query criteria
      * @throws \Exception if the condition is not string, array and Criteria
      */
-    public function createCriteria( $condition = '', $params = array() )
+    public function createCriteria($condition = '', $params = array())
     {
-        if ( is_array( $condition ) )
-        {
-            $criteria = new Criteria( $condition );
-        }
-        elseif ( $condition instanceof Criteria )
-        {
+        if (is_array($condition)) {
+            $criteria = new Criteria($condition);
+        } elseif ($condition instanceof Criteria) {
             $criteria = clone $condition;
-        }
-        else
-        {
+        } else {
             $criteria = new Criteria;
             $criteria->condition = $condition;
             $criteria->params = $params;
@@ -731,7 +651,8 @@ class CommandBuilder
      * Creates a query criteria with the specified primary key.
      *
      * @param mixed  $table     the table schema ({@link TableSchema}) or the table name (string).
-     * @param mixed  $pk        primary key value(s). Use array for multiple primary keys. For composite key, each key value must be an array (column name=>column value).
+     * @param mixed  $pk        primary key value(s). Use array for multiple primary keys. For composite key, each key
+     *                          value must be an array (column name=>column value).
      * @param mixed  $condition query condition or criteria.
      *                          If a string, it is treated as query condition;
      *                          If an array, it is treated as the initial values for constructing a {@link Criteria};
@@ -743,29 +664,25 @@ class CommandBuilder
      *
      * @return Criteria the created query criteria
      */
-    public function createPkCriteria( $table, $pk, $condition = '', $params = array(), $prefix = null )
+    public function createPkCriteria($table, $pk, $condition = '', $params = array(), $prefix = null)
     {
-        $this->ensureTable( $table );
-        $criteria = $this->createCriteria( $condition, $params );
-        if ( $criteria->alias != '' )
-        {
-            $prefix = $this->_schema->quoteTableName( $criteria->alias ) . '.';
+        $this->ensureTable($table);
+        $criteria = $this->createCriteria($condition, $params);
+        if ($criteria->alias != '') {
+            $prefix = $this->_schema->quoteTableName($criteria->alias) . '.';
         }
-        if ( !is_array( $pk ) ) // single key
+        if (!is_array($pk)) // single key
         {
-            $pk = array( $pk );
+            $pk = array($pk);
         }
-        if ( is_array( $table->primaryKey ) && !isset( $pk[0] ) && $pk !== array() ) // single composite key
+        if (is_array($table->primaryKey) && !isset($pk[0]) && $pk !== array()) // single composite key
         {
-            $pk = array( $pk );
+            $pk = array($pk);
         }
-        $condition = $this->createInCondition( $table, $table->primaryKey, $pk, $prefix );
-        if ( $criteria->condition != '' )
-        {
+        $condition = $this->createInCondition($table, $table->primaryKey, $pk, $prefix);
+        if ($criteria->condition != '') {
             $criteria->condition = $condition . ' AND (' . $criteria->condition . ')';
-        }
-        else
-        {
+        } else {
             $criteria->condition = $condition;
         }
 
@@ -781,11 +698,11 @@ class CommandBuilder
      *
      * @return string the expression for selection
      */
-    public function createPkCondition( $table, $values, $prefix = null )
+    public function createPkCondition($table, $values, $prefix = null)
     {
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
 
-        return $this->createInCondition( $table, $table->primaryKey, $values, $prefix );
+        return $this->createInCondition($table, $table->primaryKey, $values, $prefix);
     }
 
     /**
@@ -805,64 +722,46 @@ class CommandBuilder
      * @throws \Exception if specified column is not found in given table
      * @return Criteria the created query criteria
      */
-    public function createColumnCriteria( $table, $columns, $condition = '', $params = array(), $prefix = null )
+    public function createColumnCriteria($table, $columns, $condition = '', $params = array(), $prefix = null)
     {
-        $this->ensureTable( $table );
-        $criteria = $this->createCriteria( $condition, $params );
-        if ( $criteria->alias != '' )
-        {
-            $prefix = $this->_schema->quoteTableName( $criteria->alias ) . '.';
+        $this->ensureTable($table);
+        $criteria = $this->createCriteria($condition, $params);
+        if ($criteria->alias != '') {
+            $prefix = $this->_schema->quoteTableName($criteria->alias) . '.';
         }
-        $bindByPosition = isset( $criteria->params[0] );
+        $bindByPosition = isset($criteria->params[0]);
         $conditions = array();
         $values = array();
         $i = 0;
-        if ( $prefix === null )
-        {
+        if ($prefix === null) {
             $prefix = $table->rawName . '.';
         }
-        foreach ( $columns as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null )
-            {
-                if ( is_array( $value ) )
-                {
-                    $conditions[] = $this->createInCondition( $table, $name, $value, $prefix );
-                }
-                elseif ( $value !== null )
-                {
-                    if ( $bindByPosition )
-                    {
+        foreach ($columns as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null) {
+                if (is_array($value)) {
+                    $conditions[] = $this->createInCondition($table, $name, $value, $prefix);
+                } elseif ($value !== null) {
+                    if ($bindByPosition) {
                         $conditions[] = $prefix . $column->rawName . '=?';
                         $values[] = $value;
-                    }
-                    else
-                    {
+                    } else {
                         $conditions[] = $prefix . $column->rawName . '=' . self::PARAM_PREFIX . $i;
                         $values[self::PARAM_PREFIX . $i] = $value;
                         $i++;
                     }
-                }
-                else
-                {
+                } else {
                     $conditions[] = $prefix . $column->rawName . ' IS NULL';
                 }
-            }
-            else
-            {
-                throw new \Exception( 'Table "{$table->name}" does not have a column named "{$name}".' );
+            } else {
+                throw new \Exception('Table "{$table->name}" does not have a column named "{$name}".');
             }
         }
-        $criteria->params = array_merge( $values, $criteria->params );
-        if ( isset( $conditions[0] ) )
-        {
-            if ( $criteria->condition != '' )
-            {
-                $criteria->condition = implode( ' AND ', $conditions ) . ' AND (' . $criteria->condition . ')';
-            }
-            else
-            {
-                $criteria->condition = implode( ' AND ', $conditions );
+        $criteria->params = array_merge($values, $criteria->params);
+        if (isset($conditions[0])) {
+            if ($criteria->condition != '') {
+                $criteria->condition = implode(' AND ', $conditions) . ' AND (' . $criteria->condition . ')';
+            } else {
+                $criteria->condition = implode(' AND ', $conditions);
             }
         }
 
@@ -876,54 +775,54 @@ class CommandBuilder
      *
      * @param mixed   $table         the table schema ({@link TableSchema}) or the table name (string).
      * @param array   $columns       list of column names for potential search condition.
-     * @param mixed   $keywords      search keywords. This can be either a string with space-separated keywords or an array of keywords.
-     * @param string  $prefix        optional column prefix (with dot at the end). If null, the table name will be used as the prefix.
+     * @param mixed   $keywords      search keywords. This can be either a string with space-separated keywords or an
+     *                               array of keywords.
+     * @param string  $prefix        optional column prefix (with dot at the end). If null, the table name will be used
+     *                               as the prefix.
      * @param boolean $caseSensitive whether the search is case-sensitive. Defaults to true.
      *
      * @throws \Exception if specified column is not found in given table
      * @return string SQL search condition matching on a set of columns. An empty string is returned
      * if either the column array or the keywords are empty.
      */
-    public function createSearchCondition( $table, $columns, $keywords, $prefix = null, $caseSensitive = true )
+    public function createSearchCondition($table, $columns, $keywords, $prefix = null, $caseSensitive = true)
     {
-        $this->ensureTable( $table );
-        if ( !is_array( $keywords ) )
-        {
-            $keywords = preg_split( '/\s+/u', $keywords, -1, PREG_SPLIT_NO_EMPTY );
+        $this->ensureTable($table);
+        if (!is_array($keywords)) {
+            $keywords = preg_split('/\s+/u', $keywords, -1, PREG_SPLIT_NO_EMPTY);
         }
-        if ( empty( $keywords ) )
-        {
+        if (empty($keywords)) {
             return '';
         }
-        if ( $prefix === null )
-        {
+        if ($prefix === null) {
             $prefix = $table->rawName . '.';
         }
         $conditions = array();
-        foreach ( $columns as $name )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) === null )
-            {
-                throw new \Exception( 'Table "{$table->name}" does not have a column named "{$name}".' );
+        foreach ($columns as $name) {
+            if (($column = $table->getColumn($name)) === null) {
+                throw new \Exception('Table "{$table->name}" does not have a column named "{$name}".');
             }
 
             $condition = array();
-            foreach ( $keywords as $keyword )
-            {
-                $keyword = '%' . strtr( $keyword, array( '%' => '\%', '_' => '\_' ) ) . '%';
-                if ( $caseSensitive )
-                {
-                    $condition[] = $prefix . $column->rawName . ' LIKE ' . $this->_connection->quoteValue( '%' . $keyword . '%' );
-                }
-                else
-                {
-                    $condition[] = 'LOWER(' . $prefix . $column->rawName . ') LIKE LOWER(' . $this->_connection->quoteValue( '%' . $keyword . '%' ) . ')';
+            foreach ($keywords as $keyword) {
+                $keyword = '%' . strtr($keyword, array('%' => '\%', '_' => '\_')) . '%';
+                if ($caseSensitive) {
+                    $condition[] =
+                        $prefix . $column->rawName . ' LIKE ' . $this->_connection->quoteValue('%' . $keyword . '%');
+                } else {
+                    $condition[] =
+                        'LOWER(' .
+                        $prefix .
+                        $column->rawName .
+                        ') LIKE LOWER(' .
+                        $this->_connection->quoteValue('%' . $keyword . '%') .
+                        ')';
                 }
             }
-            $conditions[] = implode( ' AND ', $condition );
+            $conditions[] = implode(' AND ', $condition);
         }
 
-        return '(' . implode( ' OR ', $conditions ) . ')';
+        return '(' . implode(' OR ', $conditions) . ')';
     }
 
     /**
@@ -938,99 +837,77 @@ class CommandBuilder
      * @throws \Exception if specified column is not found in given table
      * @return string the expression for selection
      */
-    public function createInCondition( $table, $columnName, $values, $prefix = null )
+    public function createInCondition($table, $columnName, $values, $prefix = null)
     {
-        if ( ( $n = count( $values ) ) < 1 )
-        {
+        if (($n = count($values)) < 1) {
             return '0=1';
         }
 
-        $this->ensureTable( $table );
+        $this->ensureTable($table);
 
-        if ( $prefix === null )
-        {
+        if ($prefix === null) {
             $prefix = $table->rawName . '.';
         }
 
         $db = $this->_connection;
 
-        if ( is_array( $columnName ) && count( $columnName ) === 1 )
-        {
-            $columnName = reset( $columnName );
+        if (is_array($columnName) && count($columnName) === 1) {
+            $columnName = reset($columnName);
         }
 
-        if ( is_string( $columnName ) ) // simple key
+        if (is_string($columnName)) // simple key
         {
-            if ( !isset( $table->columns[$columnName] ) )
-            {
-                throw new \Exception( 'Table "{$table->name}" does not have a column named "{$columnName}".' );
+            if (!isset($table->columns[$columnName])) {
+                throw new \Exception('Table "{$table->name}" does not have a column named "{$columnName}".');
             }
 
             $column = $table->columns[$columnName];
 
-            $values = array_values( $values );
-            foreach ( $values as &$value )
-            {
-                $value = $column->typecast( $value );
-                if ( is_string( $value ) )
-                {
-                    $value = $db->quoteValue( $value );
+            $values = array_values($values);
+            foreach ($values as &$value) {
+                $value = $column->typecast($value);
+                if (is_string($value)) {
+                    $value = $db->quoteValue($value);
                 }
             }
-            if ( $n === 1 )
-            {
-                return $prefix . $column->rawName . ( $values[0] === null ? ' IS NULL' : '=' . $values[0] );
+            if ($n === 1) {
+                return $prefix . $column->rawName . ($values[0] === null ? ' IS NULL' : '=' . $values[0]);
+            } else {
+                return $prefix . $column->rawName . ' IN (' . implode(', ', $values) . ')';
             }
-            else
-            {
-                return $prefix . $column->rawName . ' IN (' . implode( ', ', $values ) . ')';
-            }
-        }
-        elseif ( is_array( $columnName ) ) // composite key: $values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
+        } elseif (is_array($columnName)) // composite key: $values=array(array('pk1'=>'v1','pk2'=>'v2'),array(...))
         {
-            foreach ( $columnName as $name )
-            {
-                if ( !isset( $table->columns[$name] ) )
-                {
-                    throw new \Exception( "Table '{$table->name}' does not have a column named '$name'." );
+            foreach ($columnName as $name) {
+                if (!isset($table->columns[$name])) {
+                    throw new \Exception("Table '{$table->name}' does not have a column named '$name'.");
                 }
 
-                for ( $i = 0; $i < $n; ++$i )
-                {
-                    if ( isset( $values[$i][$name] ) )
-                    {
-                        $value = $table->columns[$name]->typecast( $values[$i][$name] );
-                        if ( is_string( $value ) )
-                        {
-                            $values[$i][$name] = $db->quoteValue( $value );
-                        }
-                        else
-                        {
+                for ($i = 0; $i < $n; ++$i) {
+                    if (isset($values[$i][$name])) {
+                        $value = $table->columns[$name]->typecast($values[$i][$name]);
+                        if (is_string($value)) {
+                            $values[$i][$name] = $db->quoteValue($value);
+                        } else {
                             $values[$i][$name] = $value;
                         }
-                    }
-                    else
-                    {
-                        throw new \Exception( "The value for the column '$name' is not supplied when querying the table '{$table->name}'." );
+                    } else {
+                        throw new \Exception("The value for the column '$name' is not supplied when querying the table '{$table->name}'.");
                     }
                 }
             }
-            if ( count( $values ) === 1 )
-            {
+            if (count($values) === 1) {
                 $entries = array();
-                foreach ( $values[0] as $name => $value )
-                {
-                    $entries[] = $prefix . $table->columns[$name]->rawName . ( $value === null ? ' IS NULL' : '=' . $value );
+                foreach ($values[0] as $name => $value) {
+                    $entries[] =
+                        $prefix . $table->columns[$name]->rawName . ($value === null ? ' IS NULL' : '=' . $value);
                 }
 
-                return implode( ' AND ', $entries );
+                return implode(' AND ', $entries);
             }
 
-            return $this->createCompositeInCondition( $table, $values, $prefix );
-        }
-        else
-        {
-            throw new \Exception( 'Column name must be either a string or an array.' );
+            return $this->createCompositeInCondition($table, $values, $prefix);
+        } else {
+            throw new \Exception('Column name must be either a string or an array.');
         }
     }
 
@@ -1038,25 +915,23 @@ class CommandBuilder
      * Generates the expression for selecting rows with specified composite key values.
      *
      * @param TableSchema $table  the table schema
-     * @param array          $values list of primary key values to be selected within
-     * @param string         $prefix column prefix (ended with dot)
+     * @param array       $values list of primary key values to be selected within
+     * @param string      $prefix column prefix (ended with dot)
      *
      * @return string the expression for selection
      */
-    protected function createCompositeInCondition( $table, $values, $prefix )
+    protected function createCompositeInCondition($table, $values, $prefix)
     {
         $keyNames = array();
-        foreach ( array_keys( $values[0] ) as $name )
-        {
+        foreach (array_keys($values[0]) as $name) {
             $keyNames[] = $prefix . $table->columns[$name]->rawName;
         }
         $vs = array();
-        foreach ( $values as $value )
-        {
-            $vs[] = '(' . implode( ', ', $value ) . ')';
+        foreach ($values as $value) {
+            $vs[] = '(' . implode(', ', $value) . ')';
         }
 
-        return '(' . implode( ', ', $keyNames ) . ') IN (' . implode( ', ', $vs ) . ')';
+        return '(' . implode(', ', $keyNames) . ') IN (' . implode(', ', $vs) . ')';
     }
 
     /**
@@ -1068,11 +943,10 @@ class CommandBuilder
      *
      * @throws \Exception if the table name is not valid
      */
-    protected function ensureTable( &$table )
+    protected function ensureTable(&$table)
     {
-        if ( is_string( $table ) && ( $table = $this->_schema->getTable( $tableName = $table ) ) === null )
-        {
-            throw new \Exception( "Table '$tableName' does not exist." );
+        if (is_string($table) && ($table = $this->_schema->getTable($tableName = $table)) === null) {
+            throw new \Exception("Table '$tableName' does not exist.");
         }
     }
 

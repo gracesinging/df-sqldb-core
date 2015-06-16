@@ -22,34 +22,24 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param string $dbType DB type
      */
-    public function extractType( $dbType )
+    public function extractType($dbType)
     {
-        if ( strpos( $dbType, 'FLOAT' ) !== false )
-        {
+        if (strpos($dbType, 'FLOAT') !== false) {
             $this->phpType = 'double';
         }
 
-        if ( strpos( $dbType, 'NUMBER' ) !== false || strpos( $dbType, 'INTEGER' ) !== false )
-        {
-            if ( strpos( $dbType, '(' ) && preg_match( '/\((.*)\)/', $dbType, $matches ) )
-            {
-                $values = explode( ',', $matches[1] );
-                if ( isset( $values[1] ) and ( ( (int)$values[1] ) > 0 ) )
-                {
+        if (strpos($dbType, 'NUMBER') !== false || strpos($dbType, 'INTEGER') !== false) {
+            if (strpos($dbType, '(') && preg_match('/\((.*)\)/', $dbType, $matches)) {
+                $values = explode(',', $matches[1]);
+                if (isset($values[1]) and (((int)$values[1]) > 0)) {
                     $this->phpType = 'double';
-                }
-                else
-                {
+                } else {
                     $this->phpType = 'integer';
                 }
-            }
-            else
-            {
+            } else {
                 $this->phpType = 'double';
             }
-        }
-        else
-        {
+        } else {
             $this->phpType = 'string';
         }
     }
@@ -60,11 +50,12 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
      *
      * @param mixed $defaultValue the default value obtained from metadata
      */
-    public function extractDefault( $defaultValue )
+    public function extractDefault($defaultValue)
     {
-        if ( stripos( $defaultValue, 'timestamp' ) !== false )
+        if (stripos($defaultValue, 'timestamp') !== false) {
             $this->defaultValue = null;
-        else
-            parent::extractDefault( $defaultValue );
+        } else {
+            parent::extractDefault($defaultValue);
+        }
     }
 }

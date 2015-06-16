@@ -35,15 +35,15 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @param TableSchema $table    the table metadata
      * @param Criteria    $criteria the query criteria
-     * @param string         $alias    the alias name of the primary table. Defaults to 't'.
+     * @param string      $alias    the alias name of the primary table. Defaults to 't'.
      *
      * @return Command query command.
      */
-    public function createCountCommand( $table, $criteria, $alias = 't' )
+    public function createCountCommand($table, $criteria, $alias = 't')
     {
         $criteria->order = '';
 
-        return parent::createCountCommand( $table, $criteria, $alias );
+        return parent::createCountCommand($table, $criteria, $alias);
     }
 
     /**
@@ -52,16 +52,15 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @param TableSchema $table    the table metadata
      * @param Criteria    $criteria the query criteria
-     * @param string         $alias    the alias name of the primary table. Defaults to 't'.
+     * @param string      $alias    the alias name of the primary table. Defaults to 't'.
      *
      * @return Command query command.
      */
-    public function createFindCommand( $table, $criteria, $alias = 't' )
+    public function createFindCommand($table, $criteria, $alias = 't')
     {
-        $criteria = $this->checkCriteria( $table, $criteria );
+        $criteria = $this->checkCriteria($table, $criteria);
 
-        return parent::createFindCommand( $table, $criteria, $alias );
-
+        return parent::createFindCommand($table, $criteria, $alias);
     }
 
     /**
@@ -69,54 +68,43 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * Override parent implementation because mssql don't want to update an identity column
      *
      * @param TableSchema $table    the table metadata
-     * @param array          $data     list of columns to be updated (name=>value)
+     * @param array       $data     list of columns to be updated (name=>value)
      * @param Criteria    $criteria the query criteria
      *
      * @throws \Exception if no columns are being updated
      * @return Command update command.
      */
-    public function createUpdateCommand( $table, $data, $criteria )
+    public function createUpdateCommand($table, $data, $criteria)
     {
-        $criteria = $this->checkCriteria( $table, $criteria );
+        $criteria = $this->checkCriteria($table, $criteria);
         $fields = array();
         $values = array();
-        $bindByPosition = isset( $criteria->params[0] );
+        $bindByPosition = isset($criteria->params[0]);
         $i = 0;
-        foreach ( $data as $name => $value )
-        {
-            if ( ( $column = $table->getColumn( $name ) ) !== null )
-            {
-                if ( $table->sequenceName !== null && $column->isPrimaryKey === true )
-                {
+        foreach ($data as $name => $value) {
+            if (($column = $table->getColumn($name)) !== null) {
+                if ($table->sequenceName !== null && $column->isPrimaryKey === true) {
                     continue;
                 }
-                if ( $column->dbType === 'timestamp' )
-                {
+                if ($column->dbType === 'timestamp') {
                     continue;
                 }
-                if ( $value instanceof Expression )
-                {
+                if ($value instanceof Expression) {
                     $fields[] = $column->rawName . '=' . $value->expression;
-                    foreach ( $value->params as $n => $v )
-                    {
+                    foreach ($value->params as $n => $v) {
                         $values[$n] = $v;
                     }
-                }
-                elseif ( $bindByPosition )
-                {
+                } elseif ($bindByPosition) {
                     $fields[] = $column->rawName . '=?';
-                    $values[] = $column->typecast( $value );
-                }
-                else
-                {
+                    $values[] = $column->typecast($value);
+                } else {
                     $fields[] = $column->rawName . '=' . self::PARAM_PREFIX . $i;
-                    $values[self::PARAM_PREFIX . $i] = $column->typecast( $value );
+                    $values[self::PARAM_PREFIX . $i] = $column->typecast($value);
                     $i++;
                 }
             }
         }
-        if ( $fields === array() )
-        {
+        if ($fields === array()) {
             throw new \Exception(
                 Yii::t(
                     'yii',
@@ -125,14 +113,14 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
                 )
             );
         }
-        $sql = "UPDATE {$table->rawName} SET " . implode( ', ', $fields );
-        $sql = $this->applyJoin( $sql, $criteria->join );
-        $sql = $this->applyCondition( $sql, $criteria->condition );
-        $sql = $this->applyOrder( $sql, $criteria->order );
-        $sql = $this->applyLimit( $sql, $criteria->limit, $criteria->offset );
+        $sql = "UPDATE {$table->rawName} SET " . implode(', ', $fields);
+        $sql = $this->applyJoin($sql, $criteria->join);
+        $sql = $this->applyCondition($sql, $criteria->condition);
+        $sql = $this->applyOrder($sql, $criteria->order);
+        $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
 
-        $command = $this->getDbConnection()->createCommand( $sql );
-        $this->bindValues( $command, array_merge( $values, $criteria->params ) );
+        $command = $this->getDbConnection()->createCommand($sql);
+        $this->bindValues($command, array_merge($values, $criteria->params));
 
         return $command;
     }
@@ -146,11 +134,11 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @return Command delete command.
      */
-    public function createDeleteCommand( $table, $criteria )
+    public function createDeleteCommand($table, $criteria)
     {
-        $criteria = $this->checkCriteria( $table, $criteria );
+        $criteria = $this->checkCriteria($table, $criteria);
 
-        return parent::createDeleteCommand( $table, $criteria );
+        return parent::createDeleteCommand($table, $criteria);
     }
 
     /**
@@ -159,16 +147,16 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @param TableSchema $table    the table metadata
      * @param Criteria    $counters the query criteria
-     * @param array          $criteria counters to be updated (counter increments/decrements indexed by column names.)
+     * @param array       $criteria counters to be updated (counter increments/decrements indexed by column names.)
      *
      * @return Command the created command
      * @throws \Exception if no counter is specified
      */
-    public function createUpdateCounterCommand( $table, $counters, $criteria )
+    public function createUpdateCounterCommand($table, $counters, $criteria)
     {
-        $criteria = $this->checkCriteria( $table, $criteria );
+        $criteria = $this->checkCriteria($table, $criteria);
 
-        return parent::createUpdateCounterCommand( $table, $counters, $criteria );
+        return parent::createUpdateCounterCommand($table, $counters, $criteria);
     }
 
     /**
@@ -216,17 +204,15 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @author Wei Zhuo <weizhuo[at]gmail[dot]com>
      */
-    public function applyLimit( $sql, $limit, $offset )
+    public function applyLimit($sql, $limit, $offset)
     {
         $limit = $limit !== null ? (int)$limit : -1;
         $offset = $offset !== null ? (int)$offset : -1;
-        if ( $limit > 0 && $offset <= 0 ) //just limit
+        if ($limit > 0 && $offset <= 0) //just limit
         {
-            $sql = preg_replace( '/^([\s(])*SELECT( DISTINCT)?(?!\s*TOP\s*\()/i', "\\1SELECT\\2 TOP $limit", $sql );
-        }
-        elseif ( $limit > 0 && $offset > 0 )
-        {
-            $sql = $this->rewriteLimitOffsetSql( $sql, $limit, $offset );
+            $sql = preg_replace('/^([\s(])*SELECT( DISTINCT)?(?!\s*TOP\s*\()/i', "\\1SELECT\\2 TOP $limit", $sql);
+        } elseif ($limit > 0 && $offset > 0) {
+            $sql = $this->rewriteLimitOffsetSql($sql, $limit, $offset);
         }
 
         return $sql;
@@ -244,14 +230,15 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @author Wei Zhuo <weizhuo[at]gmail[dot]com>
      */
-    protected function rewriteLimitOffsetSql( $sql, $limit, $offset )
+    protected function rewriteLimitOffsetSql($sql, $limit, $offset)
     {
         $fetch = $limit + $offset;
-        $sql = preg_replace( '/^([\s(])*SELECT( DISTINCT)?(?!\s*TOP\s*\()/i', "\\1SELECT\\2 TOP $fetch", $sql );
-        $ordering = $this->findOrdering( $sql );
-        $orginalOrdering = $this->joinOrdering( $ordering, '[__outer__]' );
-        $reverseOrdering = $this->joinOrdering( $this->reverseDirection( $ordering ), '[__inner__]' );
-        $sql = "SELECT * FROM (SELECT TOP {$limit} * FROM ($sql) as [__inner__] {$reverseOrdering}) as [__outer__] {$orginalOrdering}";
+        $sql = preg_replace('/^([\s(])*SELECT( DISTINCT)?(?!\s*TOP\s*\()/i', "\\1SELECT\\2 TOP $fetch", $sql);
+        $ordering = $this->findOrdering($sql);
+        $orginalOrdering = $this->joinOrdering($ordering, '[__outer__]');
+        $reverseOrdering = $this->joinOrdering($this->reverseDirection($ordering), '[__inner__]');
+        $sql =
+            "SELECT * FROM (SELECT TOP {$limit} * FROM ($sql) as [__inner__] {$reverseOrdering}) as [__outer__] {$orginalOrdering}";
 
         return $sql;
     }
@@ -265,55 +252,44 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @author Wei Zhuo <weizhuo[at]gmail[dot]com>
      */
-    protected function findOrdering( $sql )
+    protected function findOrdering($sql)
     {
-        if ( !preg_match( '/ORDER BY/i', $sql ) )
-        {
+        if (!preg_match('/ORDER BY/i', $sql)) {
             return array();
         }
         $matches = array();
         $ordering = array();
-        preg_match_all( '/(ORDER BY)[\s"\[](.*)(ASC|DESC)?(?:[\s"\[]|$|COMPUTE|FOR)/i', $sql, $matches );
-        if ( count( $matches ) > 1 && count( $matches[2] ) > 0 )
-        {
-            $parts = explode( ',', $matches[2][0] );
-            foreach ( $parts as $part )
-            {
+        preg_match_all('/(ORDER BY)[\s"\[](.*)(ASC|DESC)?(?:[\s"\[]|$|COMPUTE|FOR)/i', $sql, $matches);
+        if (count($matches) > 1 && count($matches[2]) > 0) {
+            $parts = explode(',', $matches[2][0]);
+            foreach ($parts as $part) {
                 $subs = array();
-                if ( preg_match_all( '/(.*)[\s"\]](ASC|DESC)$/i', trim( $part ), $subs ) )
-                {
-                    if ( count( $subs ) > 1 && count( $subs[2] ) > 0 )
-                    {
+                if (preg_match_all('/(.*)[\s"\]](ASC|DESC)$/i', trim($part), $subs)) {
+                    if (count($subs) > 1 && count($subs[2]) > 0) {
                         $name = '';
-                        foreach ( explode( '.', $subs[1][0] ) as $p )
-                        {
-                            if ( $name !== '' )
-                            {
+                        foreach (explode('.', $subs[1][0]) as $p) {
+                            if ($name !== '') {
                                 $name .= '.';
                             }
-                            $name .= '[' . trim( $p, '[]' ) . ']';
+                            $name .= '[' . trim($p, '[]') . ']';
                         }
                         $ordering[$name] = $subs[2][0];
                     }
                     //else what?
-                }
-                else
-                {
-                    $ordering[trim( $part )] = 'ASC';
+                } else {
+                    $ordering[trim($part)] = 'ASC';
                 }
             }
         }
 
         // replacing column names with their alias names
-        foreach ( $ordering as $name => $direction )
-        {
+        foreach ($ordering as $name => $direction) {
             $matches = array();
-            $pattern = '/\s+' . str_replace( array('[', ']'), array('\[', '\]'), $name ) . '\s+AS\s+(\[[^\]]+\])/i';
-            preg_match( $pattern, $sql, $matches );
-            if ( isset( $matches[1] ) )
-            {
+            $pattern = '/\s+' . str_replace(array('[', ']'), array('\[', '\]'), $name) . '\s+AS\s+(\[[^\]]+\])/i';
+            preg_match($pattern, $sql, $matches);
+            if (isset($matches[1])) {
                 $ordering[$matches[1]] = $ordering[$name];
-                unset( $ordering[$name] );
+                unset($ordering[$name]);
             }
         }
 
@@ -328,18 +304,16 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @author Wei Zhuo <weizhuo[at]gmail[dot]com>
      */
-    protected function joinOrdering( $orders, $newPrefix )
+    protected function joinOrdering($orders, $newPrefix)
     {
-        if ( count( $orders ) > 0 )
-        {
+        if (count($orders) > 0) {
             $str = array();
-            foreach ( $orders as $column => $direction )
-            {
+            foreach ($orders as $column => $direction) {
                 $str[] = $column . ' ' . $direction;
             }
-            $orderBy = 'ORDER BY ' . implode( ', ', $str );
+            $orderBy = 'ORDER BY ' . implode(', ', $str);
 
-            return preg_replace( '/\s+\[[^\]]+\]\.(\[[^\]]+\])/i', ' ' . $newPrefix . '.\1', $orderBy );
+            return preg_replace('/\s+\[[^\]]+\]\.(\[[^\]]+\])/i', ' ' . $newPrefix . '.\1', $orderBy);
         }
     }
 
@@ -350,11 +324,10 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      *
      * @author Wei Zhuo <weizhuo[at]gmail[dot]com>
      */
-    protected function reverseDirection( $orders )
+    protected function reverseDirection($orders)
     {
-        foreach ( $orders as $column => $direction )
-        {
-            $orders[$column] = strtolower( trim( $direction ) ) === 'desc' ? 'ASC' : 'DESC';
+        foreach ($orders as $column => $direction) {
+            $orders[$column] = strtolower(trim($direction)) === 'desc' ? 'ASC' : 'DESC';
         }
 
         return $orders;
@@ -366,15 +339,14 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * If not, order it by pk.
      *
      * @param TableSchema $table    table schema
-     * @param Criteria       $criteria criteria
+     * @param Criteria    $criteria criteria
      *
      * @return Criteria the modified criteria
      */
-    protected function checkCriteria( $table, $criteria )
+    protected function checkCriteria($table, $criteria)
     {
-        if ( $criteria->offset > 0 && $criteria->order === '' )
-        {
-            $criteria->order = is_array( $table->primaryKey ) ? implode( ',', $table->primaryKey ) : $table->primaryKey;
+        if ($criteria->offset > 0 && $criteria->order === '') {
+            $criteria->order = is_array($table->primaryKey) ? implode(',', $table->primaryKey) : $table->primaryKey;
         }
 
         return $criteria;
@@ -384,24 +356,22 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * Generates the expression for selecting rows with specified composite key values.
      *
      * @param TableSchema $table  the table schema
-     * @param array          $values list of primary key values to be selected within
-     * @param string         $prefix column prefix (ended with dot)
+     * @param array       $values list of primary key values to be selected within
+     * @param string      $prefix column prefix (ended with dot)
      *
      * @return string the expression for selection
      */
-    protected function createCompositeInCondition( $table, $values, $prefix )
+    protected function createCompositeInCondition($table, $values, $prefix)
     {
         $vs = array();
-        foreach ( $values as $value )
-        {
+        foreach ($values as $value) {
             $c = array();
-            foreach ( $value as $k => $v )
-            {
+            foreach ($value as $k => $v) {
                 $c[] = $prefix . $table->columns[$k]->rawName . '=' . $v;
             }
-            $vs[] = '(' . implode( ' AND ', $c ) . ')';
+            $vs[] = '(' . implode(' AND ', $c) . ')';
         }
 
-        return '(' . implode( ' OR ', $vs ) . ')';
+        return '(' . implode(' OR ', $vs) . ')';
     }
 }

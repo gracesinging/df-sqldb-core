@@ -27,25 +27,23 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * IN expression with composite columns.
      *
      * @param TableSchema $table  the table schema
-     * @param array          $values list of primary key values to be selected within
-     * @param string         $prefix column prefix (ended with dot)
+     * @param array       $values list of primary key values to be selected within
+     * @param string      $prefix column prefix (ended with dot)
      *
      * @return string the expression for selection
      */
-    protected function createCompositeInCondition( $table, $values, $prefix )
+    protected function createCompositeInCondition($table, $values, $prefix)
     {
         $keyNames = array();
-        foreach ( array_keys( $values[0] ) as $name )
-        {
+        foreach (array_keys($values[0]) as $name) {
             $keyNames[] = $prefix . $table->columns[$name]->rawName;
         }
         $vs = array();
-        foreach ( $values as $value )
-        {
-            $vs[] = implode( "||','||", $value );
+        foreach ($values as $value) {
+            $vs[] = implode("||','||", $value);
         }
 
-        return implode( "||','||", $keyNames ) . ' IN (' . implode( ', ', $vs ) . ')';
+        return implode("||','||", $keyNames) . ' IN (' . implode(', ', $vs) . ')';
     }
 
     /**
@@ -55,13 +53,13 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * Note that SQLite does not keep original order of the inserted rows.
      *
      * @param mixed   $table the table schema ({@link TableSchema}) or the table name (string).
-     * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column value).
-     *                       If a key is not a valid column name, the corresponding value will be ignored.
+     * @param array[] $data  list data to be inserted, each value should be an array in format (column name=>column
+     *                       value). If a key is not a valid column name, the corresponding value will be ignored.
      *
      * @return Command multiple insert command
      * @since 1.1.14
      */
-    public function createMultipleInsertCommand( $table, array $data )
+    public function createMultipleInsertCommand($table, array $data)
     {
         $templates = array(
             'main'                  => 'INSERT INTO {{tableName}} ({{columnInsertNames}}) {{rowInsertValues}}',
@@ -72,6 +70,6 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
             'columnInsertNameGlue'  => ', ',
         );
 
-        return $this->composeMultipleInsertCommand( $table, $data, $templates );
+        return $this->composeMultipleInsertCommand($table, $data, $templates);
     }
 }

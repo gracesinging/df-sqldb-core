@@ -30,31 +30,31 @@ abstract class Schema
     /**
      * @var array
      */
-    private $_schemaNames = [ ];
+    private $_schemaNames = [];
     /**
      * @var array
      */
-    private $_tableNames = [ ];
+    private $_tableNames = [];
     /**
      * @var array
      */
-    private $_tables = [ ];
+    private $_tables = [];
     /**
      * @var array
      */
-    private $_procedureNames = [ ];
+    private $_procedureNames = [];
     /**
      * @var array
      */
-    private $_procedures = [ ];
+    private $_procedures = [];
     /**
      * @var array
      */
-    private $_functionNames = [ ];
+    private $_functionNames = [];
     /**
      * @var array
      */
-    private $_functions = [ ];
+    private $_functions = [];
     /**
      * @var Connection
      */
@@ -71,14 +71,14 @@ abstract class Schema
      *
      * @return TableSchema driver dependent table metadata, null if the table does not exist.
      */
-    abstract protected function loadTable( $name );
+    abstract protected function loadTable($name);
 
     /**
      * Constructor.
      *
      * @param Connection $conn database connection.
      */
-    public function __construct( $conn )
+    public function __construct($conn)
     {
         $this->_connection = $conn;
     }
@@ -94,7 +94,7 @@ abstract class Schema
     /**
      * @param $schema
      */
-    public function setDefaultSchema( $schema )
+    public function setDefaultSchema($schema)
     {
     }
 
@@ -113,14 +113,11 @@ abstract class Schema
      *
      * @return array all schema names on the connection.
      */
-    public function getSchemaNames( $refresh = false )
+    public function getSchemaNames($refresh = false)
     {
-        if ( $refresh === false && !empty( $this->_schemaNames ) )
-        {
+        if ($refresh === false && !empty($this->_schemaNames)) {
             return $this->_schemaNames;
-        }
-        else
-        {
+        } else {
             $this->_schemaNames = $this->findSchemaNames();
 
             return $this->_schemaNames;
@@ -138,7 +135,7 @@ abstract class Schema
     protected function findSchemaNames()
     {
 //        throw new \Exception( '{get_class( $this )} does not support fetching all schema names.' );
-        return [ '' ];
+        return [''];
     }
 
     /**
@@ -150,24 +147,18 @@ abstract class Schema
      *
      * @return TableSchema table metadata. Null if the named table does not exist.
      */
-    public function getTable( $name, $refresh = false )
+    public function getTable($name, $refresh = false)
     {
-        if ( $refresh === false && isset( $this->_tables[$name] ) )
-        {
+        if ($refresh === false && isset($this->_tables[$name])) {
             return $this->_tables[$name];
-        }
-        else
-        {
-            if ( $this->_connection->tablePrefix !== null && strpos( $name, '{{' ) !== false )
-            {
-                $realName = preg_replace( '/\{\{(.*?)\}\}/', $this->_connection->tablePrefix . '$1', $name );
-            }
-            else
-            {
+        } else {
+            if ($this->_connection->tablePrefix !== null && strpos($name, '{{') !== false) {
+                $realName = preg_replace('/\{\{(.*?)\}\}/', $this->_connection->tablePrefix . '$1', $name);
+            } else {
                 $realName = $name;
             }
 
-            $this->_tables[$name] = $table = $this->loadTable( $realName );
+            $this->_tables[$name] = $table = $this->loadTable($realName);
 
             return $table;
         }
@@ -185,13 +176,11 @@ abstract class Schema
      * Each array element is an instance of {@link TableSchema} (or its child class).
      * The array keys are table names.
      */
-    public function getTables( $schema = '', $include_views = true, $refresh = false )
+    public function getTables($schema = '', $include_views = true, $refresh = false)
     {
-        $tables = [ ];
-        foreach ( $this->getTableNames( $schema, $include_views, $refresh ) as $name )
-        {
-            if ( ( $table = $this->getTable( $name, $refresh ) ) !== null )
-            {
+        $tables = [];
+        foreach ($this->getTableNames($schema, $include_views, $refresh) as $name) {
+            if (($table = $this->getTable($name, $refresh)) !== null) {
                 $tables[$name] = $table;
             }
         }
@@ -209,42 +198,35 @@ abstract class Schema
      *
      * @return array all table names in the database.
      */
-    public function getTableNames( $schema = '', $include_views = true, $refresh = false )
+    public function getTableNames($schema = '', $include_views = true, $refresh = false)
     {
-        if ( $refresh )
-        {
+        if ($refresh) {
             // go ahead and reset all schemas
-            $this->getCachedTableNames( $include_views, $refresh );
+            $this->getCachedTableNames($include_views, $refresh);
         }
-        if ( empty( $schema ) )
-        {
-            $names = [ ];
-            foreach ( $this->getSchemaNames() as $schema )
-            {
-                if ( !isset( $this->_tableNames[$schema] ) )
-                {
-                    $this->getCachedTableNames( $include_views );
+        if (empty($schema)) {
+            $names = [];
+            foreach ($this->getSchemaNames() as $schema) {
+                if (!isset($this->_tableNames[$schema])) {
+                    $this->getCachedTableNames($include_views);
                 }
 
-                $temp = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : [ ] );
-                $names = array_merge( $names, $temp );
+                $temp = (isset($this->_tableNames[$schema]) ? $this->_tableNames[$schema] : []);
+                $names = array_merge($names, $temp);
             }
 
-            natcasesort( $names );
+            natcasesort($names);
 
-            return array_values( $names );
-        }
-        else
-        {
-            if ( !isset( $this->_tableNames[$schema] ) )
-            {
-                $this->getCachedTableNames( $include_views );
+            return array_values($names);
+        } else {
+            if (!isset($this->_tableNames[$schema])) {
+                $this->getCachedTableNames($include_views);
             }
 
-            $names = ( isset( $this->_tableNames[$schema] ) ? $this->_tableNames[$schema] : [ ] );
-            natcasesort( $names );
+            $names = (isset($this->_tableNames[$schema]) ? $this->_tableNames[$schema] : []);
+            natcasesort($names);
 
-            return array_values( $names );
+            return array_values($names);
         }
     }
 
@@ -254,12 +236,11 @@ abstract class Schema
      *
      * @throws \Exception
      */
-    protected function getCachedTableNames( $include_views = true, $refresh = false )
+    protected function getCachedTableNames($include_views = true, $refresh = false)
     {
-        $names = [ ];
-        foreach ( $this->getSchemaNames( $refresh ) as $temp )
-        {
-            $names[$temp] = $this->findTableNames( $temp, $include_views );
+        $names = [];
+        foreach ($this->getSchemaNames($refresh) as $temp) {
+            $names[$temp] = $this->findTableNames($temp, $include_views);
         }
         $this->_tableNames = $names;
     }
@@ -276,9 +257,9 @@ abstract class Schema
      * @throws \Exception if current schema does not support fetching all table names
      * @return array all table names in the database.
      */
-    protected function findTableNames( $schema = '', $include_views = true )
+    protected function findTableNames($schema = '', $include_views = true)
     {
-        throw new \Exception( '{get_class( $this )} does not support fetching all table names.' );
+        throw new \Exception('{get_class( $this )} does not support fetching all table names.');
     }
 
     /**
@@ -290,17 +271,14 @@ abstract class Schema
      *
      * @return ProcedureSchema stored procedure metadata. Null if the named stored procedure does not exist.
      */
-    public function getProcedure( $name, $refresh = false )
+    public function getProcedure($name, $refresh = false)
     {
-        if ( $refresh === false && isset( $this->_procedures[$name] ) )
-        {
+        if ($refresh === false && isset($this->_procedures[$name])) {
             return $this->_procedures[$name];
-        }
-        else
-        {
+        } else {
             $realName = $name;
 
-            $this->_procedures[$name] = $procedure = $this->loadProcedure( $realName );
+            $this->_procedures[$name] = $procedure = $this->loadProcedure($realName);
 
             return $procedure;
         }
@@ -314,9 +292,9 @@ abstract class Schema
      * @throws \Exception
      * @return ProcedureSchema driver dependent procedure metadata, null if the procedure does not exist.
      */
-    protected function loadProcedure( $name )
+    protected function loadProcedure($name)
     {
-        throw new \Exception( '{get_class( $this )} does not support loading stored procedure.' );
+        throw new \Exception('{get_class( $this )} does not support loading stored procedure.');
     }
 
     /**
@@ -326,27 +304,26 @@ abstract class Schema
      * @return mixed
      * @throws \Exception
      */
-    public function callProcedure( $name, &$params )
+    public function callProcedure($name, &$params)
     {
-        throw new \Exception( '{get_class( $this )} does not support calling stored procedures.' );
+        throw new \Exception('{get_class( $this )} does not support calling stored procedures.');
     }
 
     /**
      * Returns the metadata for all stored procedures in the database.
      *
-     * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default schema.
+     * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default
+     *                       schema.
      *
      * @return array the metadata for all stored procedures in the database.
      * Each array element is an instance of {@link ProcedureSchema} (or its child class).
      * The array keys are procedure names.
      */
-    public function getProcedures( $schema = '' )
+    public function getProcedures($schema = '')
     {
-        $procedures = [ ];
-        foreach ( $this->getProcedureNames( $schema ) as $name )
-        {
-            if ( ( $procedure = $this->getProcedure( $name ) ) !== null )
-            {
+        $procedures = [];
+        foreach ($this->getProcedureNames($schema) as $name) {
+            if (($procedure = $this->getProcedure($name)) !== null) {
                 $procedures[$name] = $procedure;
             }
         }
@@ -357,47 +334,40 @@ abstract class Schema
     /**
      * Returns all stored procedure names in the database.
      *
-     * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default schema.
-     *                       If not empty, the returned procedure names will be prefixed with the schema name.
+     * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default
+     *                       schema. If not empty, the returned procedure names will be prefixed with the schema name.
      *
      * @return array all procedure names in the database.
      */
-    public function getProcedureNames( $schema = '', $refresh = false )
+    public function getProcedureNames($schema = '', $refresh = false)
     {
-        if ( $refresh )
-        {
+        if ($refresh) {
             // go ahead and reset all schemas
-            $this->getCachedProcedureNames( $refresh );
+            $this->getCachedProcedureNames($refresh);
         }
-        if ( empty( $schema ) )
-        {
-            $names = [ ];
-            foreach ( $this->getSchemaNames() as $schema )
-            {
-                if ( !isset( $this->_procedureNames[$schema] ) )
-                {
+        if (empty($schema)) {
+            $names = [];
+            foreach ($this->getSchemaNames() as $schema) {
+                if (!isset($this->_procedureNames[$schema])) {
                     $this->getCachedProcedureNames();
                 }
 
-                $temp = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : [ ] );
-                $names = array_merge( $names, $temp );
+                $temp = (isset($this->_procedureNames[$schema]) ? $this->_procedureNames[$schema] : []);
+                $names = array_merge($names, $temp);
             }
 
-            natcasesort( $names );
+            natcasesort($names);
 
-            return array_values( $names );
-        }
-        else
-        {
-            if ( !isset( $this->_procedureNames[$schema] ) )
-            {
+            return array_values($names);
+        } else {
+            if (!isset($this->_procedureNames[$schema])) {
                 $this->getCachedProcedureNames();
             }
 
-            $names = ( isset( $this->_procedureNames[$schema] ) ? $this->_procedureNames[$schema] : [ ] );
-            natcasesort( $names );
+            $names = (isset($this->_procedureNames[$schema]) ? $this->_procedureNames[$schema] : []);
+            natcasesort($names);
 
-            return array_values( $names );
+            return array_values($names);
         }
     }
 
@@ -406,12 +376,11 @@ abstract class Schema
      *
      * @throws \Exception
      */
-    protected function getCachedProcedureNames( $refresh = false )
+    protected function getCachedProcedureNames($refresh = false)
     {
-        $names = [ ];
-        foreach ( $this->getSchemaNames( $refresh ) as $temp )
-        {
-            $names[$temp] = $this->findProcedureNames( $temp );
+        $names = [];
+        foreach ($this->getSchemaNames($refresh) as $temp) {
+            $names[$temp] = $this->findProcedureNames($temp);
         }
         $this->_procedureNames = $names;
     }
@@ -421,15 +390,16 @@ abstract class Schema
      * This method should be overridden by child classes in order to support this feature
      * because the default implementation simply throws an exception.
      *
-     * @param string $schema the schema of the stored procedure. Defaults to empty string, meaning the current or default schema.
-     *                       If not empty, the returned stored procedure names will be prefixed with the schema name.
+     * @param string $schema the schema of the stored procedure. Defaults to empty string, meaning the current or
+     *                       default schema. If not empty, the returned stored procedure names will be prefixed with
+     *                       the schema name.
      *
      * @throws \Exception if current schema does not support fetching all stored procedure names
      * @return array all stored procedure names in the database.
      */
-    protected function findProcedureNames( $schema = '' )
+    protected function findProcedureNames($schema = '')
     {
-        throw new \Exception( '{get_class( $this )} does not support fetching all stored procedure names.' );
+        throw new \Exception('{get_class( $this )} does not support fetching all stored procedure names.');
     }
 
     /**
@@ -441,16 +411,13 @@ abstract class Schema
      *
      * @return FunctionSchema stored function metadata. Null if the named stored function does not exist.
      */
-    public function getFunction( $name, $refresh = false )
+    public function getFunction($name, $refresh = false)
     {
-        if ( $refresh === false && isset( $this->_functions[$name] ) )
-        {
+        if ($refresh === false && isset($this->_functions[$name])) {
             return $this->_functions[$name];
-        }
-        else
-        {
+        } else {
             $realName = $name;
-            $this->_functions[$name] = $function = $this->loadFunction( $realName );
+            $this->_functions[$name] = $function = $this->loadFunction($realName);
 
             return $function;
         }
@@ -459,19 +426,18 @@ abstract class Schema
     /**
      * Returns the metadata for all stored functions in the database.
      *
-     * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default schema.
+     * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default
+     *                       schema.
      *
      * @return array the metadata for all stored functions in the database.
      * Each array element is an instance of {@link FunctionSchema} (or its child class).
      * The array keys are functions names.
      */
-    public function getFunctions( $schema = '' )
+    public function getFunctions($schema = '')
     {
-        $functions = [ ];
-        foreach ( $this->getFunctionNames( $schema ) as $name )
-        {
-            if ( ( $procedure = $this->getFunction( $name ) ) !== null )
-            {
+        $functions = [];
+        foreach ($this->getFunctionNames($schema) as $name) {
+            if (($procedure = $this->getFunction($name)) !== null) {
                 $functions[$name] = $procedure;
             }
         }
@@ -482,47 +448,40 @@ abstract class Schema
     /**
      * Returns all stored functions names in the database.
      *
-     * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default schema.
-     *                       If not empty, the returned functions names will be prefixed with the schema name.
+     * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default
+     *                       schema. If not empty, the returned functions names will be prefixed with the schema name.
      *
      * @return array all stored functions names in the database.
      */
-    public function getFunctionNames( $schema = '', $refresh = false )
+    public function getFunctionNames($schema = '', $refresh = false)
     {
-        if ( $refresh )
-        {
+        if ($refresh) {
             // go ahead and reset all schemas
-            $this->getCachedFunctionNames( $refresh );
+            $this->getCachedFunctionNames($refresh);
         }
-        if ( empty( $schema ) )
-        {
-            $names = [ ];
-            foreach ( $this->getSchemaNames() as $schema )
-            {
-                if ( !isset( $this->_functionNames[$schema] ) )
-                {
+        if (empty($schema)) {
+            $names = [];
+            foreach ($this->getSchemaNames() as $schema) {
+                if (!isset($this->_functionNames[$schema])) {
                     $this->getCachedFunctionNames();
                 }
 
-                $temp = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : [ ] );
-                $names = array_merge( $names, $temp );
+                $temp = (isset($this->_functionNames[$schema]) ? $this->_functionNames[$schema] : []);
+                $names = array_merge($names, $temp);
             }
 
-            natcasesort( $names );
+            natcasesort($names);
 
-            return array_values( $names );
-        }
-        else
-        {
-            if ( !isset( $this->_functionNames[$schema] ) )
-            {
+            return array_values($names);
+        } else {
+            if (!isset($this->_functionNames[$schema])) {
                 $this->getCachedFunctionNames();
             }
 
-            $names = ( isset( $this->_functionNames[$schema] ) ? $this->_functionNames[$schema] : [ ] );
-            natcasesort( $names );
+            $names = (isset($this->_functionNames[$schema]) ? $this->_functionNames[$schema] : []);
+            natcasesort($names);
 
-            return array_values( $names );
+            return array_values($names);
         }
     }
 
@@ -531,12 +490,11 @@ abstract class Schema
      *
      * @throws \Exception
      */
-    protected function getCachedFunctionNames( $refresh = false )
+    protected function getCachedFunctionNames($refresh = false)
     {
-        $names = [ ];
-        foreach ( $this->getSchemaNames( $refresh ) as $temp )
-        {
-            $names[$temp] = $this->findFunctionNames( $temp );
+        $names = [];
+        foreach ($this->getSchemaNames($refresh) as $temp) {
+            $names[$temp] = $this->findFunctionNames($temp);
         }
         $this->_functionNames = $names;
     }
@@ -546,15 +504,16 @@ abstract class Schema
      * This method should be overridden by child classes in order to support this feature
      * because the default implementation simply throws an exception.
      *
-     * @param string $schema the schema of the stored function. Defaults to empty string, meaning the current or default schema.
-     *                       If not empty, the returned stored function names will be prefixed with the schema name.
+     * @param string $schema the schema of the stored function. Defaults to empty string, meaning the current or
+     *                       default schema. If not empty, the returned stored function names will be prefixed with the
+     *                       schema name.
      *
      * @throws \Exception if current schema does not support fetching all stored function names
      * @return array all stored function names in the database.
      */
-    protected function findFunctionNames( $schema = '' )
+    protected function findFunctionNames($schema = '')
     {
-        throw new \Exception( '{get_class( $this )} does not support fetching all stored function names.' );
+        throw new \Exception('{get_class( $this )} does not support fetching all stored function names.');
     }
 
     /**
@@ -565,9 +524,9 @@ abstract class Schema
      * @throws \Exception
      * @return FunctionSchema driver dependent function metadata, null if the function does not exist.
      */
-    protected function loadFunction( $name )
+    protected function loadFunction($name)
     {
-        throw new \Exception( '{get_class( $this )} does not support loading stored functions.' );
+        throw new \Exception('{get_class( $this )} does not support loading stored functions.');
     }
 
     /**
@@ -577,9 +536,9 @@ abstract class Schema
      * @return mixed
      * @throws \Exception
      */
-    public function callFunction( $name, &$params )
+    public function callFunction($name, &$params)
     {
-        throw new \Exception( '{get_class( $this )} does not support calling stored functions.' );
+        throw new \Exception('{get_class( $this )} does not support calling stored functions.');
     }
 
     /**
@@ -587,12 +546,9 @@ abstract class Schema
      */
     public function getCommandBuilder()
     {
-        if ( $this->_builder !== null )
-        {
+        if ($this->_builder !== null) {
             return $this->_builder;
-        }
-        else
-        {
+        } else {
             return $this->_builder = $this->createCommandBuilder();
         }
     }
@@ -604,13 +560,13 @@ abstract class Schema
      */
     public function refresh()
     {
-        $this->_tables = [ ];
-        $this->_tableNames = [ ];
-        $this->_procedures = [ ];
-        $this->_procedureNames = [ ];
-        $this->_functions = [ ];
-        $this->_functionNames = [ ];
-        $this->_schemaNames = [ ];
+        $this->_tables = [];
+        $this->_tableNames = [];
+        $this->_procedures = [];
+        $this->_procedureNames = [];
+        $this->_functions = [];
+        $this->_functionNames = [];
+        $this->_schemaNames = [];
         $this->_builder = null;
     }
 
@@ -623,19 +579,17 @@ abstract class Schema
      * @return string the properly quoted table name
      * @see quoteSimpleTableName
      */
-    public function quoteTableName( $name )
+    public function quoteTableName($name)
     {
-        if ( strpos( $name, '.' ) === false )
-        {
-            return $this->quoteSimpleTableName( $name );
+        if (strpos($name, '.') === false) {
+            return $this->quoteSimpleTableName($name);
         }
-        $parts = explode( '.', $name );
-        foreach ( $parts as $i => $part )
-        {
-            $parts[$i] = $this->quoteSimpleTableName( $part );
+        $parts = explode('.', $name);
+        foreach ($parts as $i => $part) {
+            $parts[$i] = $this->quoteSimpleTableName($part);
         }
 
-        return implode( '.', $parts );
+        return implode('.', $parts);
     }
 
     /**
@@ -647,7 +601,7 @@ abstract class Schema
      * @return string the properly quoted table name
      * @since 1.1.6
      */
-    public function quoteSimpleTableName( $name )
+    public function quoteSimpleTableName($name)
     {
         return "'" . $name . "'";
     }
@@ -661,19 +615,16 @@ abstract class Schema
      * @return string the properly quoted column name
      * @see quoteSimpleColumnName
      */
-    public function quoteColumnName( $name )
+    public function quoteColumnName($name)
     {
-        if ( ( $pos = strrpos( $name, '.' ) ) !== false )
-        {
-            $prefix = $this->quoteTableName( substr( $name, 0, $pos ) ) . '.';
-            $name = substr( $name, $pos + 1 );
-        }
-        else
-        {
+        if (($pos = strrpos($name, '.')) !== false) {
+            $prefix = $this->quoteTableName(substr($name, 0, $pos)) . '.';
+            $name = substr($name, $pos + 1);
+        } else {
             $prefix = '';
         }
 
-        return $prefix . ( $name === '*' ? $name : $this->quoteSimpleColumnName( $name ) );
+        return $prefix . ($name === '*' ? $name : $this->quoteSimpleColumnName($name));
     }
 
     /**
@@ -685,7 +636,7 @@ abstract class Schema
      * @return string the properly quoted column name
      * @since 1.1.6
      */
-    public function quoteSimpleColumnName( $name )
+    public function quoteSimpleColumnName($name)
     {
         return '"' . $name . '"';
     }
@@ -700,27 +651,22 @@ abstract class Schema
      *
      * @return boolean whether the two table names refer to the same table.
      */
-    public function compareTableNames( $name1, $name2 )
+    public function compareTableNames($name1, $name2)
     {
-        $name1 = str_replace( [ '"', '`', "'" ], '', $name1 );
-        $name2 = str_replace( [ '"', '`', "'" ], '', $name2 );
-        if ( ( $pos = strrpos( $name1, '.' ) ) !== false )
-        {
-            $name1 = substr( $name1, $pos + 1 );
+        $name1 = str_replace(['"', '`', "'"], '', $name1);
+        $name2 = str_replace(['"', '`', "'"], '', $name2);
+        if (($pos = strrpos($name1, '.')) !== false) {
+            $name1 = substr($name1, $pos + 1);
         }
-        if ( ( $pos = strrpos( $name2, '.' ) ) !== false )
-        {
-            $name2 = substr( $name2, $pos + 1 );
+        if (($pos = strrpos($name2, '.')) !== false) {
+            $name2 = substr($name2, $pos + 1);
         }
-        if ( $this->_connection->tablePrefix !== null )
-        {
-            if ( strpos( $name1, '{' ) !== false )
-            {
-                $name1 = $this->_connection->tablePrefix . str_replace( [ '{', '}' ], '', $name1 );
+        if ($this->_connection->tablePrefix !== null) {
+            if (strpos($name1, '{') !== false) {
+                $name1 = $this->_connection->tablePrefix . str_replace(['{', '}'], '', $name1);
             }
-            if ( strpos( $name2, '{' ) !== false )
-            {
-                $name2 = $this->_connection->tablePrefix . str_replace( [ '{', '}' ], '', $name2 );
+            if (strpos($name2, '{') !== false) {
+                $name2 = $this->_connection->tablePrefix . str_replace(['{', '}'], '', $name2);
             }
         }
 
@@ -734,12 +680,12 @@ abstract class Schema
      *
      * @param TableSchema  $table   the table schema whose primary key sequence will be reset
      * @param integer|null $value   the value for the primary key of the next new row inserted.
-     *                              If this is not set, the next new row's primary key will have the max value of a primary
-     *                              key plus one (i.e. sequence trimming).
+     *                              If this is not set, the next new row's primary key will have the max value of a
+     *                              primary key plus one (i.e. sequence trimming).
      *
      * @since 1.1
      */
-    public function resetSequence( $table, $value = null )
+    public function resetSequence($table, $value = null)
     {
     }
 
@@ -751,7 +697,7 @@ abstract class Schema
      *
      * @since 1.1
      */
-    public function checkIntegrity( $check = true, $schema = '' )
+    public function checkIntegrity($check = true, $schema = '')
     {
     }
 
@@ -763,20 +709,20 @@ abstract class Schema
      */
     protected function createCommandBuilder()
     {
-        return new CommandBuilder( $this );
+        return new CommandBuilder($this);
     }
 
     /**
      * @param array $info
      */
-    protected function translateSimpleColumnTypes( array &$info )
+    protected function translateSimpleColumnTypes(array &$info)
     {
     }
 
     /**
      * @param array $info
      */
-    protected function validateColumnSettings( array &$info )
+    protected function validateColumnSettings(array &$info)
     {
     }
 
@@ -786,47 +732,39 @@ abstract class Schema
      * @return string
      * @throws \Exception
      */
-    protected function buildColumnDefinition( array $info )
+    protected function buildColumnDefinition(array $info)
     {
         // This works for most except Oracle
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        $typeExtras = (isset($info['type_extras'])) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ( isset( $info['allow_null'] ) ) ? $info['allow_null'] : null;
-        $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
+        $allowNull = (isset($info['allow_null'])) ? $info['allow_null'] : null;
+        $definition .= ($allowNull) ? ' NULL' : ' NOT NULL';
 
-        $default = ( isset( $info['db_type'] ) ) ? $info['db_type'] : null;
-        if ( isset( $default ) )
-        {
-            if ( is_array( $default ) )
-            {
-                $expression = ( isset( $default['expression'] ) ) ? $default['expression'] : null;
-                if ( null !== $expression )
-                {
+        $default = (isset($info['db_type'])) ? $info['db_type'] : null;
+        if (isset($default)) {
+            if (is_array($default)) {
+                $expression = (isset($default['expression'])) ? $default['expression'] : null;
+                if (null !== $expression) {
                     $definition .= ' DEFAULT ' . $expression;
                 }
-            }
-            else
-            {
-                $default = $this->getDbConnection()->quoteValue( $default );
+            } else {
+                $default = $this->getDbConnection()->quoteValue($default);
                 $definition .= ' DEFAULT ' . $default;
             }
         }
 
-        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
-        if ( $isPrimaryKey && $isUniqueKey )
-        {
-            throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
+        $isUniqueKey = (isset($info['is_unique'])) ? filter_var($info['is_unique'], FILTER_VALIDATE_BOOLEAN) : false;
+        $isPrimaryKey =
+            (isset($info['is_primary_key'])) ? filter_var($info['is_primary_key'], FILTER_VALIDATE_BOOLEAN) : false;
+        if ($isPrimaryKey && $isUniqueKey) {
+            throw new \Exception('Unique and Primary designations not allowed simultaneously.');
         }
-        if ( $isUniqueKey )
-        {
+        if ($isUniqueKey) {
             $definition .= ' UNIQUE KEY';
-        }
-        elseif ( $isPrimaryKey )
-        {
+        } elseif ($isPrimaryKey) {
             $definition .= ' PRIMARY KEY';
         }
 
@@ -839,7 +777,8 @@ abstract class Schema
      * These abstract column types are supported (using MySQL as example to explain the corresponding
      * physical types):
      * <ul>
-     * <li>pk: an auto-incremental primary key type, will be converted into "int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY"</li>
+     * <li>pk: an auto-incremental primary key type, will be converted into "int(11) NOT NULL AUTO_INCREMENT PRIMARY
+     * KEY"</li>
      * <li>string: string type, will be converted into "varchar(255)"</li>
      * <li>text: a long string type, will be converted into "text"</li>
      * <li>integer: integer type, will be converted into "int(11)"</li>
@@ -853,9 +792,9 @@ abstract class Schema
      * <li>binary: binary data type, will be converted into "blob"</li>
      * </ul>
      *
-     * If the abstract type contains two or more parts separated by spaces or '(' (e.g. "string NOT NULL" or "decimal(10,2)"),
-     * then only the first part will be converted, and the rest of the parts will be appended to the conversion result.
-     * For example, 'string NOT NULL' is converted to 'varchar(255) NOT NULL'.
+     * If the abstract type contains two or more parts separated by spaces or '(' (e.g. "string NOT NULL" or
+     * "decimal(10,2)"), then only the first part will be converted, and the rest of the parts will be appended to the
+     * conversion result. For example, 'string NOT NULL' is converted to 'varchar(255) NOT NULL'.
      *
      * @param string $info abstract column type
      *
@@ -863,51 +802,43 @@ abstract class Schema
      * @throws \Exception
      * @since 1.1.6
      */
-    protected function getColumnType( $info )
+    protected function getColumnType($info)
     {
-        $out = [ ];
+        $out = [];
         $type = '';
-        if ( is_string( $info ) )
-        {
-            $type = trim( $info ); // cleanup
-        }
-        elseif ( is_array( $info ) )
-        {
-            $sql = ( isset( $info['sql'] ) ) ? $info['sql'] : null;
-            if ( !empty( $sql ) )
-            {
+        if (is_string($info)) {
+            $type = trim($info); // cleanup
+        } elseif (is_array($info)) {
+            $sql = (isset($info['sql'])) ? $info['sql'] : null;
+            if (!empty($sql)) {
                 return $sql; // raw SQL statement given, pass it on.
             }
 
             $out = $info;
-            $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-            if ( empty( $type ) )
-            {
-                $type = ( isset( $info['db_type'] ) ) ? $info['db_type'] : null;
-                if ( empty( $type ) )
-                {
-                    throw new \Exception( "Invalid schema detected - no type or db_type element." );
+            $type = (isset($info['type'])) ? $info['type'] : null;
+            if (empty($type)) {
+                $type = (isset($info['db_type'])) ? $info['db_type'] : null;
+                if (empty($type)) {
+                    throw new \Exception("Invalid schema detected - no type or db_type element.");
                 }
             }
-            $type = trim( $type ); // cleanup
+            $type = trim($type); // cleanup
         }
 
-        if ( empty( $type ) )
-        {
-            throw new \Exception( "Invalid schema detected - no type definition." );
+        if (empty($type)) {
+            throw new \Exception("Invalid schema detected - no type definition.");
         }
 
         //  If there are extras, then pass it on through
-        if ( ( false !== strpos( $type, ' ' ) ) || ( false !== strpos( $type, '(' ) ) )
-        {
+        if ((false !== strpos($type, ' ')) || (false !== strpos($type, '('))) {
             return $type;
         }
 
         $out['type'] = $type;
-        $this->translateSimpleColumnTypes( $out );
-        $this->validateColumnSettings( $out );
+        $this->translateSimpleColumnTypes($out);
+        $this->validateColumnSettings($out);
 
-        return $this->buildColumnDefinition( $out );
+        return $this->buildColumnDefinition($out);
     }
 
     /**
@@ -928,21 +859,17 @@ abstract class Schema
      * @return string the SQL statement for creating a new DB table.
      * @since 1.1.6
      */
-    public function createTable( $table, $columns, $options = null )
+    public function createTable($table, $columns, $options = null)
     {
-        $cols = [ ];
-        foreach ( $columns as $name => $type )
-        {
-            if ( is_string( $name ) )
-            {
-                $cols[] = "\t" . $this->quoteColumnName( $name ) . ' ' . $this->getColumnType( $type );
-            }
-            else
-            {
+        $cols = [];
+        foreach ($columns as $name => $type) {
+            if (is_string($name)) {
+                $cols[] = "\t" . $this->quoteColumnName($name) . ' ' . $this->getColumnType($type);
+            } else {
                 $cols[] = "\t" . $type;
             }
         }
-        $sql = "CREATE TABLE " . $this->quoteTableName( $table ) . " (\n" . implode( ",\n", $cols ) . "\n)";
+        $sql = "CREATE TABLE " . $this->quoteTableName($table) . " (\n" . implode(",\n", $cols) . "\n)";
 
         return $options === null ? $sql : $sql . ' ' . $options;
     }
@@ -956,9 +883,9 @@ abstract class Schema
      * @return string the SQL statement for renaming a DB table.
      * @since 1.1.6
      */
-    public function renameTable( $table, $newName )
+    public function renameTable($table, $newName)
     {
-        return 'RENAME TABLE ' . $this->quoteTableName( $table ) . ' TO ' . $this->quoteTableName( $newName );
+        return 'RENAME TABLE ' . $this->quoteTableName($table) . ' TO ' . $this->quoteTableName($newName);
     }
 
     /**
@@ -969,9 +896,9 @@ abstract class Schema
      * @return string the SQL statement for dropping a DB table.
      * @since 1.1.6
      */
-    public function dropTable( $table )
+    public function dropTable($table)
     {
-        return "DROP TABLE " . $this->quoteTableName( $table );
+        return "DROP TABLE " . $this->quoteTableName($table);
     }
 
     /**
@@ -982,26 +909,34 @@ abstract class Schema
      * @return string the SQL statement for truncating a DB table.
      * @since 1.1.6
      */
-    public function truncateTable( $table )
+    public function truncateTable($table)
     {
-        return "TRUNCATE TABLE " . $this->quoteTableName( $table );
+        return "TRUNCATE TABLE " . $this->quoteTableName($table);
     }
 
     /**
      * Builds a SQL statement for adding a new DB column.
      *
-     * @param string $table  the table that the new column will be added to. The table name will be properly quoted by the method.
+     * @param string $table  the table that the new column will be added to. The table name will be properly quoted by
+     *                       the method.
      * @param string $column the name of the new column. The name will be properly quoted by the method.
-     * @param string $type   the column type. The {@link getColumnType} method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
+     * @param string $type   the column type. The {@link getColumnType} method will be invoked to convert abstract
+     *                       column type (if any) into the physical one. Anything that is not recognized as abstract
+     *                       type will be kept in the generated SQL. For example, 'string' will be turned into
+     *                       'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
      *
      * @return string the SQL statement for adding a new column.
      * @since 1.1.6
      */
-    public function addColumn( $table, $column, $type )
+    public function addColumn($table, $column, $type)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' ADD ' . $this->quoteColumnName( $column ) . ' ' . $this->getColumnType( $type );
+        return
+            'ALTER TABLE ' .
+            $this->quoteTableName($table) .
+            ' ADD ' .
+            $this->quoteColumnName($column) .
+            ' ' .
+            $this->getColumnType($type);
     }
 
     /**
@@ -1013,9 +948,9 @@ abstract class Schema
      * @return string the SQL statement for dropping a DB column.
      * @since 1.1.6
      */
-    public function dropColumn( $table, $column )
+    public function dropColumn($table, $column)
     {
-        return "ALTER TABLE " . $this->quoteTableName( $table ) . " DROP COLUMN " . $this->quoteColumnName( $column );
+        return "ALTER TABLE " . $this->quoteTableName($table) . " DROP COLUMN " . $this->quoteColumnName($column);
     }
 
     /**
@@ -1028,45 +963,48 @@ abstract class Schema
      * @return string the SQL statement for renaming a DB column.
      * @since 1.1.6
      */
-    public function renameColumn( $table, $name, $newName )
+    public function renameColumn($table, $name, $newName)
     {
         return
             "ALTER TABLE " .
-            $this->quoteTableName( $table ) .
+            $this->quoteTableName($table) .
             " RENAME COLUMN " .
-            $this->quoteColumnName( $name ) .
+            $this->quoteColumnName($name) .
             " TO " .
-            $this->quoteColumnName( $newName );
+            $this->quoteColumnName($newName);
     }
 
     /**
      * Builds a SQL statement for changing the definition of a column.
      *
-     * @param string $table      the table whose column is to be changed. The table name will be properly quoted by the method.
+     * @param string $table      the table whose column is to be changed. The table name will be properly quoted by the
+     *                           method.
      * @param string $column     the name of the column to be changed. The name will be properly quoted by the method.
-     * @param string $definition the new column type. The {@link getColumnType} method will be invoked to convert abstract column type (if any)
-     *                           into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                           For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
+     * @param string $definition the new column type. The {@link getColumnType} method will be invoked to convert
+     *                           abstract column type (if any) into the physical one. Anything that is not recognized
+     *                           as abstract type will be kept in the generated SQL. For example, 'string' will be
+     *                           turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not
+     *                           null'.
      *
      * @return string the SQL statement for changing the definition of a column.
      * @since 1.1.6
      */
-    public function alterColumn( $table, $column, $definition )
+    public function alterColumn($table, $column, $definition)
     {
         return
             'ALTER TABLE ' .
-            $this->quoteTableName( $table ) .
+            $this->quoteTableName($table) .
             ' CHANGE ' .
-            $this->quoteColumnName( $column ) .
+            $this->quoteColumnName($column) .
             ' ' .
-            $this->quoteColumnName( $column ) .
+            $this->quoteColumnName($column) .
             ' ' .
-            $this->getColumnType( $definition );
+            $this->getColumnType($definition);
     }
 
-    public function makeConstraintName( $prefix, $table, $column )
+    public function makeConstraintName($prefix, $table, $column)
     {
-        $_temp = $prefix . '_' . str_replace( '.', '_', $table ) . '_' . $column;
+        $_temp = $prefix . '_' . str_replace('.', '_', $table) . '_' . $column;
 
         return $_temp;
     }
@@ -1077,46 +1015,46 @@ abstract class Schema
      *
      * @param string $name       the name of the foreign key constraint.
      * @param string $table      the table that the foreign key constraint will be added to.
-     * @param string $columns    the name of the column to that the constraint will be added on. If there are multiple columns, separate them with commas.
+     * @param string $columns    the name of the column to that the constraint will be added on. If there are multiple
+     *                           columns, separate them with commas.
      * @param string $refTable   the table that the foreign key references to.
-     * @param string $refColumns the name of the column that the foreign key references to. If there are multiple columns, separate them with commas.
-     * @param string $delete     the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
-     * @param string $update     the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     * @param string $refColumns the name of the column that the foreign key references to. If there are multiple
+     *                           columns, separate them with commas.
+     * @param string $delete     the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION,
+     *                           SET DEFAULT, SET NULL
+     * @param string $update     the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION,
+     *                           SET DEFAULT, SET NULL
      *
      * @return string the SQL statement for adding a foreign key constraint to an existing table.
      * @since 1.1.6
      */
-    public function addForeignKey( $name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null )
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
-        $columns = preg_split( '/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY );
-        foreach ( $columns as $i => $col )
-        {
-            $columns[$i] = $this->quoteColumnName( $col );
+        $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($columns as $i => $col) {
+            $columns[$i] = $this->quoteColumnName($col);
         }
-        $refColumns = preg_split( '/\s*,\s*/', $refColumns, -1, PREG_SPLIT_NO_EMPTY );
-        foreach ( $refColumns as $i => $col )
-        {
-            $refColumns[$i] = $this->quoteColumnName( $col );
+        $refColumns = preg_split('/\s*,\s*/', $refColumns, -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($refColumns as $i => $col) {
+            $refColumns[$i] = $this->quoteColumnName($col);
         }
         $sql =
             'ALTER TABLE ' .
-            $this->quoteTableName( $table ) .
+            $this->quoteTableName($table) .
             ' ADD CONSTRAINT ' .
-            $this->quoteColumnName( $name ) .
+            $this->quoteColumnName($name) .
             ' FOREIGN KEY (' .
-            implode( ', ', $columns ) .
+            implode(', ', $columns) .
             ')' .
             ' REFERENCES ' .
-            $this->quoteTableName( $refTable ) .
+            $this->quoteTableName($refTable) .
             ' (' .
-            implode( ', ', $refColumns ) .
+            implode(', ', $refColumns) .
             ')';
-        if ( $delete !== null )
-        {
+        if ($delete !== null) {
             $sql .= ' ON DELETE ' . $delete;
         }
-        if ( $update !== null )
-        {
+        if ($update !== null) {
             $sql .= ' ON UPDATE ' . $update;
         }
 
@@ -1126,52 +1064,51 @@ abstract class Schema
     /**
      * Builds a SQL statement for dropping a foreign key constraint.
      *
-     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by the method.
+     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by
+     *                      the method.
      * @param string $table the table whose foreign is to be dropped. The name will be properly quoted by the method.
      *
      * @return string the SQL statement for dropping a foreign key constraint.
      * @since 1.1.6
      */
-    public function dropForeignKey( $name, $table )
+    public function dropForeignKey($name, $table)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' DROP CONSTRAINT ' . $this->quoteColumnName( $name );
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP CONSTRAINT ' . $this->quoteColumnName($name);
     }
 
     /**
      * Builds a SQL statement for creating a new index.
      *
      * @param string  $name   the name of the index. The name will be properly quoted by the method.
-     * @param string  $table  the table that the new index will be created for. The table name will be properly quoted by the method.
-     * @param string  $column the column(s) that should be included in the index. If there are multiple columns, please separate them
-     *                        by commas. Each column name will be properly quoted by the method, unless a parenthesis is found in the name.
+     * @param string  $table  the table that the new index will be created for. The table name will be properly quoted
+     *                        by the method.
+     * @param string  $column the column(s) that should be included in the index. If there are multiple columns, please
+     *                        separate them by commas. Each column name will be properly quoted by the method, unless a
+     *                        parenthesis is found in the name.
      * @param boolean $unique whether to add UNIQUE constraint on the created index.
      *
      * @return string the SQL statement for creating a new index.
      * @since 1.1.6
      */
-    public function createIndex( $name, $table, $column, $unique = false )
+    public function createIndex($name, $table, $column, $unique = false)
     {
-        $cols = [ ];
-        $columns = preg_split( '/\s*,\s*/', $column, -1, PREG_SPLIT_NO_EMPTY );
-        foreach ( $columns as $col )
-        {
-            if ( strpos( $col, '(' ) !== false )
-            {
+        $cols = [];
+        $columns = preg_split('/\s*,\s*/', $column, -1, PREG_SPLIT_NO_EMPTY);
+        foreach ($columns as $col) {
+            if (strpos($col, '(') !== false) {
                 $cols[] = $col;
-            }
-            else
-            {
-                $cols[] = $this->quoteColumnName( $col );
+            } else {
+                $cols[] = $this->quoteColumnName($col);
             }
         }
 
         return
-            ( $unique ? 'CREATE UNIQUE INDEX ' : 'CREATE INDEX ' ) .
-            $this->quoteTableName( $name ) .
+            ($unique ? 'CREATE UNIQUE INDEX ' : 'CREATE INDEX ') .
+            $this->quoteTableName($name) .
             ' ON ' .
-            $this->quoteTableName( $table ) .
+            $this->quoteTableName($table) .
             ' (' .
-            implode( ', ', $cols ) .
+            implode(', ', $cols) .
             ')';
     }
 
@@ -1184,9 +1121,9 @@ abstract class Schema
      * @return string the SQL statement for dropping an index.
      * @since 1.1.6
      */
-    public function dropIndex( $name, $table )
+    public function dropIndex($name, $table)
     {
-        return 'DROP INDEX ' . $this->quoteTableName( $name ) . ' ON ' . $this->quoteTableName( $table );
+        return 'DROP INDEX ' . $this->quoteTableName($name) . ' ON ' . $this->quoteTableName($table);
     }
 
     /**
@@ -1200,24 +1137,22 @@ abstract class Schema
      * @return string the SQL statement for adding a primary key constraint to an existing table.
      * @since 1.1.13
      */
-    public function addPrimaryKey( $name, $table, $columns )
+    public function addPrimaryKey($name, $table, $columns)
     {
-        if ( is_string( $columns ) )
-        {
-            $columns = preg_split( '/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY );
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
         }
-        foreach ( $columns as $i => $col )
-        {
-            $columns[$i] = $this->quoteColumnName( $col );
+        foreach ($columns as $i => $col) {
+            $columns[$i] = $this->quoteColumnName($col);
         }
 
         return
             'ALTER TABLE ' .
-            $this->quoteTableName( $table ) .
+            $this->quoteTableName($table) .
             ' ADD CONSTRAINT ' .
-            $this->quoteColumnName( $name ) .
+            $this->quoteColumnName($name) .
             '  PRIMARY KEY (' .
-            implode( ', ', $columns ) .
+            implode(', ', $columns) .
             ' )';
     }
 
@@ -1230,14 +1165,14 @@ abstract class Schema
      * @return string the SQL statement for removing a primary key constraint from an existing table.
      * @since 1.1.13
      */
-    public function dropPrimaryKey( $name, $table )
+    public function dropPrimaryKey($name, $table)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' DROP CONSTRAINT ' . $this->quoteColumnName( $name );
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP CONSTRAINT ' . $this->quoteColumnName($name);
     }
 
-    public function getPrimaryKeyCommands( $table, $column )
+    public function getPrimaryKeyCommands($table, $column)
     {
-        return [ ];
+        return [];
     }
 
     /**
@@ -1248,22 +1183,19 @@ abstract class Schema
      *
      * @return string
      */
-    public function parseFieldsForSelect( $context, $field_info, $as_quoted_string = false, $out_as = '' )
+    public function parseFieldsForSelect($context, $field_info, $as_quoted_string = false, $out_as = '')
     {
-        if ( $as_quoted_string )
-        {
-            $context = $this->quoteColumnName( $context );
-            $out_as = $this->quoteColumnName( $out_as );
+        if ($as_quoted_string) {
+            $context = $this->quoteColumnName($context);
+            $out_as = $this->quoteColumnName($out_as);
         }
         // find the type
-        $dbType = ( isset( $field_info['db_type'] ) ) ? $field_info['db_type'] : null;
+        $dbType = (isset($field_info['db_type'])) ? $field_info['db_type'] : null;
 
-        switch ( $dbType )
-        {
+        switch ($dbType) {
             default :
                 $out = $context;
-                if ( !empty( $as ) )
-                {
+                if (!empty($as)) {
                     $out .= ' AS ' . $out_as;
                 }
                 break;
@@ -1277,14 +1209,13 @@ abstract class Schema
      *
      * @return mixed
      */
-    public function getTimestampForSet( $update = false )
+    public function getTimestampForSet($update = false)
     {
-        return new Expression( '(NOW())' );
+        return new Expression('(NOW())');
     }
 
-    public function parseValueForSet( $value, $field_info )
+    public function parseValueForSet($value, $field_info)
     {
         return $value;
     }
-
 }

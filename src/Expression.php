@@ -2,10 +2,10 @@
 /**
  * Expression class file.
  *
- * @author Qiang Xue <qiang.xue@gmail.com>
- * @link http://www.yiiframework.com/
+ * @author    Qiang Xue <qiang.xue@gmail.com>
+ * @link      http://www.yiiframework.com/
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
- * @license http://www.yiiframework.com/license/
+ * @license   http://www.yiiframework.com/license/
  */
 namespace DreamFactory\Core\SqlDbCore;
 
@@ -22,40 +22,42 @@ namespace DreamFactory\Core\SqlDbCore;
  * for the expression. For example, if the expression is 'LOWER(:value)', then
  * one can set {@link params} to be <code>array(':value'=>$value)</code>.
  *
- * @author Qiang Xue <qiang.xue@gmail.com>
+ * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
  */
 class Expression
 {
-	/**
-	 * @var string the DB expression
-	 */
-	public $expression;
-	/**
-	 * @var array list of parameters that should be bound for this expression.
-	 * The keys are placeholders appearing in {@link expression}, while the values
-	 * are the corresponding parameter values.
-	 * @since 1.1.1
-	 */
-	public $params=array();
+    /**
+     * @var string the DB expression
+     */
+    public $expression;
+    /**
+     * @var array list of parameters that should be bound for this expression.
+     * The keys are placeholders appearing in {@link expression}, while the values
+     * are the corresponding parameter values.
+     * @since 1.1.1
+     */
+    public $params = array();
 
-	/**
-	 * Constructor.
-	 * @param string $expression the DB expression
-	 * @param array $params parameters
-	 */
-	public function __construct($expression,$params=array())
-	{
-		$this->expression=$expression;
-		$this->params=$params;
-	}
+    /**
+     * Constructor.
+     *
+     * @param string $expression the DB expression
+     * @param array  $params     parameters
+     */
+    public function __construct($expression, $params = array())
+    {
+        $this->expression = $expression;
+        $this->params = $params;
+    }
 
-	/**
-	 * String magic method
-	 * @return string the DB expression
-	 */
-	public function __toString()
-	{
-		return $this->expression;
-	}
+    /**
+     * String magic method
+     *
+     * @return string the DB expression
+     */
+    public function __toString()
+    {
+        return $this->expression;
+    }
 }

@@ -21,22 +21,22 @@ class ColumnSchema
     /**
      * The followings are the supported abstract column data types.
      */
-    const TYPE_ID = 'id';
-    const TYPE_REF = 'reference';
-    const TYPE_STRING = 'string';
-    const TYPE_TEXT = 'text';
-    const TYPE_INTEGER = 'integer';
-    const TYPE_BIGINT = 'bigint';
-    const TYPE_FLOAT = 'float';
-    const TYPE_DOUBLE = 'double';
-    const TYPE_DECIMAL = 'decimal';
-    const TYPE_DATETIME = 'datetime';
+    const TYPE_ID        = 'id';
+    const TYPE_REF       = 'reference';
+    const TYPE_STRING    = 'string';
+    const TYPE_TEXT      = 'text';
+    const TYPE_INTEGER   = 'integer';
+    const TYPE_BIGINT    = 'bigint';
+    const TYPE_FLOAT     = 'float';
+    const TYPE_DOUBLE    = 'double';
+    const TYPE_DECIMAL   = 'decimal';
+    const TYPE_DATETIME  = 'datetime';
     const TYPE_TIMESTAMP = 'timestamp';
-    const TYPE_TIME = 'time';
-    const TYPE_DATE = 'date';
-    const TYPE_BINARY = 'binary';
-    const TYPE_BOOLEAN = 'boolean';
-    const TYPE_MONEY = 'money';
+    const TYPE_TIME      = 'time';
+    const TYPE_DATE      = 'date';
+    const TYPE_BINARY    = 'binary';
+    const TYPE_BOOLEAN   = 'boolean';
+    const TYPE_MONEY     = 'money';
 
     /**
      * @var string name of this column (without quotes).
@@ -136,10 +136,9 @@ class ColumnSchema
      *
      * @return string
      */
-    public static function extractPhpType( $type )
+    public static function extractPhpType($type)
     {
-        switch ( $type )
-        {
+        switch ($type) {
             case static::TYPE_BOOLEAN:
                 return 'boolean';
 
@@ -166,10 +165,9 @@ class ColumnSchema
      *
      * @return int|null
      */
-    public static function extractPdoType( $type )
+    public static function extractPdoType($type)
     {
-        switch ( $type )
-        {
+        switch ($type) {
             case static::TYPE_BOOLEAN:
                 return \PDO::PARAM_BOOL;
 
@@ -190,29 +188,23 @@ class ColumnSchema
      *
      * @param string $dbType DB type
      */
-    public function extractType( $dbType )
+    public function extractType($dbType)
     {
-        $_simpleType = strstr( $dbType, '(', true );
-        $_simpleType = strtolower( $_simpleType ?: $dbType );
+        $_simpleType = strstr($dbType, '(', true);
+        $_simpleType = strtolower($_simpleType ?: $dbType);
 
-        switch ( $_simpleType )
-        {
+        switch ($_simpleType) {
             case 'bit':
-            case ( false !== strpos( $_simpleType, 'bool' ) ):
+            case (false !== strpos($_simpleType, 'bool')):
                 $this->type = static::TYPE_BOOLEAN;
                 break;
 
             case 'number': // Oracle for boolean, integers and decimals
-                if ( $this->size == 1 )
-                {
+                if ($this->size == 1) {
                     $this->type = static::TYPE_BOOLEAN;
-                }
-                elseif ( empty( $this->scale ) )
-                {
+                } elseif (empty($this->scale)) {
                     $this->type = static::TYPE_INTEGER;
-                }
-                else
-                {
+                } else {
                     $this->type = static::TYPE_DECIMAL;
                 }
                 break;
@@ -223,23 +215,20 @@ class ColumnSchema
                 $this->type = static::TYPE_DECIMAL;
                 break;
 
-            case ( false !== strpos( $_simpleType, 'double' ) ):
+            case (false !== strpos($_simpleType, 'double')):
                 $this->type = static::TYPE_DOUBLE;
                 break;
 
             case 'real':
-            case ( false !== strpos( $_simpleType, 'float' ) ):
-                if ( $this->size == 53 )
-                {
+            case (false !== strpos($_simpleType, 'float')):
+                if ($this->size == 53) {
                     $this->type = static::TYPE_DOUBLE;
-                }
-                else
-                {
+                } else {
                     $this->type = static::TYPE_FLOAT;
                 }
                 break;
 
-            case ( false !== strpos( $_simpleType, 'money' ) ):
+            case (false !== strpos($_simpleType, 'money')):
                 $this->type = static::TYPE_MONEY;
                 break;
 
@@ -250,22 +239,19 @@ class ColumnSchema
             case 'int':
             case 'integer':
                 // watch out for point here!
-                if ( $this->size == 1 )
-                {
+                if ($this->size == 1) {
                     $this->type = static::TYPE_BOOLEAN;
-                }
-                else
-                {
+                } else {
                     $this->type = static::TYPE_INTEGER;
                 }
                 break;
 
-            case ( false !== strpos( $_simpleType, 'timestamp' ) ):
+            case (false !== strpos($_simpleType, 'timestamp')):
             case 'datetimeoffset': //  MSSQL
                 $this->type = static::TYPE_TIMESTAMP;
                 break;
 
-            case ( false !== strpos( $_simpleType, 'datetime' ) ):
+            case (false !== strpos($_simpleType, 'datetime')):
                 $this->type = static::TYPE_DATETIME;
                 break;
 
@@ -273,41 +259,38 @@ class ColumnSchema
                 $this->type = static::TYPE_DATE;
                 break;
 
-            case ( false !== strpos( $_simpleType, 'time' ) ):
+            case (false !== strpos($_simpleType, 'time')):
                 $this->type = static::TYPE_TIME;
                 break;
 
-            case ( false !== strpos( $_simpleType, 'binary' ) ):
-            case ( false !== strpos( $_simpleType, 'blob' ) ):
+            case (false !== strpos($_simpleType, 'binary')):
+            case (false !== strpos($_simpleType, 'blob')):
                 $this->type = static::TYPE_BINARY;
                 break;
 
             //	String types
-            case ( false !== strpos( $_simpleType, 'clob' ) ):
-            case ( false !== strpos( $_simpleType, 'text' ) ):
+            case (false !== strpos($_simpleType, 'clob')):
+            case (false !== strpos($_simpleType, 'text')):
                 $this->type = static::TYPE_TEXT;
                 break;
 
             case 'varchar':
-                if ( $this->size == -1 )
-                {
+                if ($this->size == -1) {
                     $this->type = static::TYPE_TEXT; // varchar(max) in MSSQL
-                }
-                else
-                {
+                } else {
                     $this->type = static::TYPE_STRING;
                 }
                 break;
 
             case 'string':
-            case ( false !== strpos( $_simpleType, 'char' ) ):
+            case (false !== strpos($_simpleType, 'char')):
             default:
                 $this->type = static::TYPE_STRING;
                 break;
         }
 
-        $this->phpType = static::extractPhpType( $this->type );
-        $this->pdoType = static::extractPdoType( $this->type );
+        $this->phpType = static::extractPhpType($this->type);
+        $this->pdoType = static::extractPdoType($this->type);
     }
 
     /**
@@ -315,14 +298,12 @@ class ColumnSchema
      *
      * @param string $dbType the column's DB type
      */
-    public function extractLimit( $dbType )
+    public function extractLimit($dbType)
     {
-        if ( strpos( $dbType, '(' ) && preg_match( '/\((.*)\)/', $dbType, $matches ) )
-        {
-            $values = explode( ',', $matches[1] );
+        if (strpos($dbType, '(') && preg_match('/\((.*)\)/', $dbType, $matches)) {
+            $values = explode(',', $matches[1]);
             $this->size = (int)$values[0];
-            if ( isset( $values[1] ) )
-            {
+            if (isset($values[1])) {
                 $this->precision = (int)$values[0];
                 $this->scale = (int)$values[1];
             }
@@ -335,9 +316,9 @@ class ColumnSchema
      *
      * @param mixed $defaultValue the default value obtained from metadata
      */
-    public function extractDefault( $defaultValue )
+    public function extractDefault($defaultValue)
     {
-        $this->defaultValue = $this->typecast( $defaultValue );
+        $this->defaultValue = $this->typecast($defaultValue);
     }
 
     /**
@@ -347,18 +328,15 @@ class ColumnSchema
      *
      * @return mixed converted value
      */
-    public function typecast( $value )
+    public function typecast($value)
     {
-        if ( gettype( $value ) === $this->phpType || $value === null || $value instanceof Expression )
-        {
+        if (gettype($value) === $this->phpType || $value === null || $value instanceof Expression) {
             return $value;
         }
-        if ( $value === '' && $this->allowNull )
-        {
-            return ( $this->phpType === 'string' ) ? '' : null;
+        if ($value === '' && $this->allowNull) {
+            return ($this->phpType === 'string') ? '' : null;
         }
-        switch ( $this->phpType )
-        {
+        switch ($this->phpType) {
             case 'string':
                 return (string)$value;
             case 'integer':
@@ -376,13 +354,12 @@ class ColumnSchema
      *
      * @return bool
      */
-    public function extractMultiByteSupport( $dbType )
+    public function extractMultiByteSupport($dbType)
     {
-        switch ( $dbType )
-        {
-            case ( false !== strpos( $dbType, 'national' ) ):
-            case ( false !== strpos( $dbType, 'nchar' ) ):
-            case ( false !== strpos( $dbType, 'nvarchar' ) ):
+        switch ($dbType) {
+            case (false !== strpos($dbType, 'national')):
+            case (false !== strpos($dbType, 'nchar')):
+            case (false !== strpos($dbType, 'nvarchar')):
                 $this->supportsMultibyte = true;
                 break;
         }
@@ -393,11 +370,10 @@ class ColumnSchema
      *
      * @return bool
      */
-    public function extractFixedLength( $dbType )
+    public function extractFixedLength($dbType)
     {
-        switch ( $dbType )
-        {
-            case ( ( false !== strpos( $dbType, 'char' ) ) && ( false === strpos( $dbType, 'var' ) ) ):
+        switch ($dbType) {
+            case ((false !== strpos($dbType, 'char')) && (false === strpos($dbType, 'var'))):
             case 'binary':
                 $this->fixedLength = true;
                 break;
@@ -408,7 +384,7 @@ class ColumnSchema
     {
         return [
             'name'               => $this->name,
-            'label'              => static::camelize( $this->name, '_', true ),
+            'label'              => static::camelize($this->name, '_', true),
             'type'               => $this->type,
             'db_type'            => $this->dbType,
             'php_type'           => $this->phpType,
@@ -433,8 +409,7 @@ class ColumnSchema
 
     public function determineRequired()
     {
-        if ( $this->allowNull || ( isset( $this->defaultValue ) ) || $this->autoIncrement )
-        {
+        if ($this->allowNull || (isset($this->defaultValue)) || $this->autoIncrement) {
             return false;
         }
 
@@ -443,17 +418,16 @@ class ColumnSchema
 
     // Utility methods, remove when this code is reworked, or make it dependent on php-utils
 
-    public static function camelize( $string, $separator = null, $preserveWhiteSpace = false, $isKey = false )
+    public static function camelize($string, $separator = null, $preserveWhiteSpace = false, $isKey = false)
     {
-        empty( $separator ) && $separator = [ '_', '-' ];
+        empty($separator) && $separator = ['_', '-'];
 
-        $_newString = ucwords( str_replace( $separator, ' ', $string ) );
+        $_newString = ucwords(str_replace($separator, ' ', $string));
 
-        if ( false !== $isKey )
-        {
-            $_newString = lcfirst( $_newString );
+        if (false !== $isKey) {
+            $_newString = lcfirst($_newString);
         }
 
-        return ( false === $preserveWhiteSpace ? str_replace( ' ', null, $_newString ) : $_newString );
+        return (false === $preserveWhiteSpace ? str_replace(' ', null, $_newString) : $_newString);
     }
 }

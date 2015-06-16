@@ -26,9 +26,9 @@ class PdoAdapter extends \PDO
      *
      * @return integer last inserted id
      */
-    public function lastInsertId( $sequence = null )
+    public function lastInsertId($sequence = null)
     {
-        return $this->query( 'SELECT CAST(COALESCE(SCOPE_IDENTITY(), @@IDENTITY) AS bigint)' )->fetchColumn();
+        return $this->query('SELECT CAST(COALESCE(SCOPE_IDENTITY(), @@IDENTITY) AS bigint)')->fetchColumn();
     }
 
     /**
@@ -41,7 +41,7 @@ class PdoAdapter extends \PDO
      */
     public function beginTransaction()
     {
-        $this->exec( 'BEGIN TRANSACTION' );
+        $this->exec('BEGIN TRANSACTION');
 
         return true;
     }
@@ -56,7 +56,7 @@ class PdoAdapter extends \PDO
      */
     public function commit()
     {
-        $this->exec( 'COMMIT TRANSACTION' );
+        $this->exec('COMMIT TRANSACTION');
 
         return true;
     }
@@ -71,7 +71,7 @@ class PdoAdapter extends \PDO
      */
     public function rollBack()
     {
-        $this->exec( 'ROLLBACK TRANSACTION' );
+        $this->exec('ROLLBACK TRANSACTION');
 
         return true;
     }

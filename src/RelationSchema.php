@@ -19,11 +19,13 @@ class RelationSchema
      * The followings are the supported abstract relationship types.
      */
     /**
-     * @var string Represents that this table is related to another by a local reference/foreign key field, reverse of has_many
+     * @var string Represents that this table is related to another by a local reference/foreign key field, reverse of
+     *      has_many
      */
     const BELONGS_TO = 'belongs_to';
     /**
-     * @var string Represents that another table has a reference/foreign key field linked to this table, reverse of belongs_to
+     * @var string Represents that another table has a reference/foreign key field linked to this table, reverse of
+     *      belongs_to
      */
     const HAS_MANY = 'has_many';
     /**
@@ -56,10 +58,9 @@ class RelationSchema
      */
     public $join;
 
-    public function __construct( $type, $ref_table, $ref_field, $field, $join = null )
+    public function __construct($type, $ref_table, $ref_field, $field, $join = null)
     {
-        switch ( $type )
-        {
+        switch ($type) {
             case static::BELONGS_TO:
                 $name = $ref_table . '_by_' . $field;
                 break;
@@ -67,7 +68,7 @@ class RelationSchema
                 $name = $ref_table . '_by_' . $ref_field;
                 break;
             case static::MANY_MANY:
-                $name = $ref_table . '_by_' . substr( $join, 0, strpos( $join, '(' ) );
+                $name = $ref_table . '_by_' . substr($join, 0, strpos($join, '('));
                 break;
             default:
                 $name = null;

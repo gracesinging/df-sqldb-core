@@ -35,11 +35,13 @@ class ProcedureSchema
      */
     public $name;
     /**
-     * @var string raw name of this procedure. This is the quoted version of procedure name with optional schema name. It can be directly used in SQLs.
+     * @var string raw name of this procedure. This is the quoted version of procedure name with optional schema name.
+     *      It can be directly used in SQLs.
      */
     public $rawName;
     /**
-     * @var string public display name of this procedure. This is the procedure name with optional non-default schema name. It is to be used by clients.
+     * @var string public display name of this procedure. This is the procedure name with optional non-default schema
+     *      name. It is to be used by clients.
      */
     public $displayName;
 

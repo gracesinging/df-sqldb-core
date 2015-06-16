@@ -27,12 +27,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     private $_defaultSchema;
 
-    protected function translateSimpleColumnTypes( array &$info )
+    protected function translateSimpleColumnTypes(array &$info)
     {
         // override this in each schema class
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        switch ( $type )
-        {
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        switch ($type) {
             // some types need massaging, some need other required properties
             case 'pk':
             case 'id':
@@ -54,26 +53,23 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'timestamp_on_create':
             case 'timestamp_on_update':
                 $info['type'] = 'timestamp';
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( !isset( $default ) )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (!isset($default)) {
                     $default = 'CURRENT_TIMESTAMP';
-                    if ( 'timestamp_on_update' === $type )
-                    {
+                    if ('timestamp_on_update' === $type) {
                         $default .= ' ON UPDATE CURRENT_TIMESTAMP';
                     }
-                    $info['default'] = [ 'expression' => $default ];
+                    $info['default'] = ['expression' => $default];
                 }
                 break;
 
             case 'boolean':
                 $info['type'] = 'tinyint';
                 $info['type_extras'] = '(1)';
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default)) {
                     // convert to bit 0 or 1, where necessary
-                    $info['default'] = (int)filter_var( $default, FILTER_VALIDATE_BOOLEAN );
+                    $info['default'] = (int)filter_var($default, FILTER_VALIDATE_BOOLEAN);
                 }
                 break;
 
@@ -83,35 +79,33 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 break;
 
             case 'string':
-                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
-                $national = ( isset( $info['supports_multibyte'] ) ) ? filter_var( $info['supports_multibyte'], FILTER_VALIDATE_BOOLEAN ) : false;
-                if ( $fixed )
-                {
-                    $info['type'] = ( $national ) ? 'nchar' : 'char';
-                }
-                elseif ( $national )
-                {
+                $fixed =
+                    (isset($info['fixed_length'])) ? filter_var($info['fixed_length'], FILTER_VALIDATE_BOOLEAN) : false;
+                $national =
+                    (isset($info['supports_multibyte'])) ? filter_var($info['supports_multibyte'],
+                        FILTER_VALIDATE_BOOLEAN) : false;
+                if ($fixed) {
+                    $info['type'] = ($national) ? 'nchar' : 'char';
+                } elseif ($national) {
                     $info['type'] = 'nvarchar';
-                }
-                else
-                {
+                } else {
                     $info['type'] = 'varchar';
                 }
                 break;
 
             case 'binary':
-                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
-                $info['type'] = ( $fixed ) ? 'binary' : 'varbinary';
+                $fixed =
+                    (isset($info['fixed_length'])) ? filter_var($info['fixed_length'], FILTER_VALIDATE_BOOLEAN) : false;
+                $info['type'] = ($fixed) ? 'binary' : 'varbinary';
                 break;
         }
     }
 
-    protected function validateColumnSettings( array &$info )
+    protected function validateColumnSettings(array &$info)
     {
         // override this in each schema class
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        switch ( $type )
-        {
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        switch ($type) {
             // some types need massaging, some need other required properties
             case 'bit':
             case 'tinyint':
@@ -119,19 +113,20 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'mediumint':
             case 'int':
             case 'bigint':
-                if ( !isset( $info['type_extras'] ) )
-                {
-                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
-                    if ( !empty( $length ) )
-                    {
+                if (!isset($info['type_extras'])) {
+                    $length =
+                        (isset($info['length']))
+                            ? $info['length']
+                            : ((isset($info['precision'])) ? $info['precision']
+                            : null);
+                    if (!empty($length)) {
                         $info['type_extras'] = "($length)"; // sets the viewable length
                     }
                 }
 
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) && is_numeric( $default ) )
-                {
-                    $info['default'] = intval( $default );
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default) && is_numeric($default)) {
+                    $info['default'] = intval($default);
                 }
                 break;
 
@@ -140,29 +135,33 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'real':
             case 'float':
             case 'double':
-                if ( !isset( $info['type_extras'] ) )
-                {
-                    $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['precision'] ) ) ? $info['precision'] : null );
-                    if ( !empty( $length ) )
-                    {
-                        $scale = ( isset( $info['decimals'] ) ) ? $info['decimals'] : ( ( isset( $info['scale'] ) ) ? $info['scale'] : null );
-                        $info['type_extras'] = ( !empty( $scale ) ) ? "($length,$scale)" : "($length)";
+                if (!isset($info['type_extras'])) {
+                    $length =
+                        (isset($info['length']))
+                            ? $info['length']
+                            : ((isset($info['precision'])) ? $info['precision']
+                            : null);
+                    if (!empty($length)) {
+                        $scale =
+                            (isset($info['decimals']))
+                                ? $info['decimals']
+                                : ((isset($info['scale'])) ? $info['scale']
+                                : null);
+                        $info['type_extras'] = (!empty($scale)) ? "($length,$scale)" : "($length)";
                     }
                 }
 
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) && is_numeric( $default ) )
-                {
-                    $info['default'] = floatval( $default );
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default) && is_numeric($default)) {
+                    $info['default'] = floatval($default);
                 }
                 break;
 
             case 'char':
             case 'nchar':
             case 'binary':
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
                 }
                 break;
@@ -170,12 +169,10 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'varchar':
             case 'nvarchar':
             case 'varbinary':
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
-                }
-                else // requires a max length
+                } else // requires a max length
                 {
                     $info['type_extras'] = '(' . static::DEFAULT_STRING_MAX_SIZE . ')';
                 }
@@ -184,16 +181,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'time':
             case 'timestamp':
             case 'datetime':
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( '0000-00-00 00:00:00' == $default )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if ('0000-00-00 00:00:00' == $default) {
                     // read back from MySQL has formatted zeros, can't send that back
                     $info['default'] = 0;
                 }
 
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
                 }
                 break;
@@ -206,52 +201,43 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string
      * @throws \Exception
      */
-    protected function buildColumnDefinition( array $info )
+    protected function buildColumnDefinition(array $info)
     {
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        $typeExtras = (isset($info['type_extras'])) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ( isset( $info['allow_null'] ) ) ? filter_var( $info['allow_null'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
+        $allowNull = (isset($info['allow_null'])) ? filter_var($info['allow_null'], FILTER_VALIDATE_BOOLEAN) : false;
+        $definition .= ($allowNull) ? ' NULL' : ' NOT NULL';
 
-        $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-        if ( isset( $default ) )
-        {
-            if ( is_array( $default ) )
-            {
-                $expression = ( isset( $default['expression'] ) ) ? $default['expression'] : null;
-                if ( null !== $expression )
-                {
+        $default = (isset($info['default'])) ? $info['default'] : null;
+        if (isset($default)) {
+            if (is_array($default)) {
+                $expression = (isset($default['expression'])) ? $default['expression'] : null;
+                if (null !== $expression) {
                     $definition .= ' DEFAULT ' . $expression;
                 }
-            }
-            else
-            {
-                $default = $this->getDbConnection()->quoteValue( $default );
+            } else {
+                $default = $this->getDbConnection()->quoteValue($default);
                 $definition .= ' DEFAULT ' . $default;
             }
         }
 
-        $auto = ( isset( $info['auto_increment'] ) ) ? filter_var( $info['auto_increment'], FILTER_VALIDATE_BOOLEAN ) : false;
-        if ( $auto )
-        {
+        $auto = (isset($info['auto_increment'])) ? filter_var($info['auto_increment'], FILTER_VALIDATE_BOOLEAN) : false;
+        if ($auto) {
             $definition .= ' AUTO_INCREMENT';
         }
 
-        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
-        if ( $isPrimaryKey && $isUniqueKey )
-        {
-            throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
+        $isUniqueKey = (isset($info['is_unique'])) ? filter_var($info['is_unique'], FILTER_VALIDATE_BOOLEAN) : false;
+        $isPrimaryKey =
+            (isset($info['is_primary_key'])) ? filter_var($info['is_primary_key'], FILTER_VALIDATE_BOOLEAN) : false;
+        if ($isPrimaryKey && $isUniqueKey) {
+            throw new \Exception('Unique and Primary designations not allowed simultaneously.');
         }
-        if ( $isUniqueKey )
-        {
+        if ($isUniqueKey) {
             $definition .= ' UNIQUE KEY';
-        }
-        elseif ( $isPrimaryKey )
-        {
+        } elseif ($isPrimaryKey) {
             $definition .= ' PRIMARY KEY';
         }
 
@@ -267,7 +253,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the properly quoted table name
      * @since 1.1.6
      */
-    public function quoteSimpleTableName( $name )
+    public function quoteSimpleTableName($name)
     {
         return '`' . $name . '`';
     }
@@ -281,7 +267,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the properly quoted column name
      * @since 1.1.6
      */
-    public function quoteSimpleColumnName( $name )
+    public function quoteSimpleColumnName($name)
     {
         return '`' . $name . '`';
     }
@@ -296,9 +282,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @return boolean whether the two table names refer to the same table.
      */
-    public function compareTableNames( $name1, $name2 )
+    public function compareTableNames($name1, $name2)
     {
-        return parent::compareTableNames( strtolower( $name1 ), strtolower( $name2 ) );
+        return parent::compareTableNames(strtolower($name1), strtolower($name2));
     }
 
     /**
@@ -314,27 +300,27 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return int|void
      * @since 1.1
      */
-    public function resetSequence( $table, $value = null )
+    public function resetSequence($table, $value = null)
     {
-        if ( $table->sequenceName === null )
-        {
+        if ($table->sequenceName === null) {
             return;
         }
 
-        if ( $value !== null )
-        {
+        if ($value !== null) {
             $value = (int)$value;
-        }
-        else
-        {
-            $value = (int)$this->getDbConnection()->createCommand( 'SELECT MAX(`' . $table->primaryKey . '`) + 1 FROM ' . $table->rawName )->queryScalar();
+        } else {
+            $value =
+                (int)$this->getDbConnection()->createCommand('SELECT MAX(`' .
+                    $table->primaryKey .
+                    '`) + 1 FROM ' .
+                    $table->rawName)->queryScalar();
         }
 
         $this->getDbConnection()->createCommand(
             <<<MYSQL
 ALTER TABLE {$table->rawName} AUTO_INCREMENT = :value
 MYSQL
-        )->execute( [ ':value' => $value ] );
+        )->execute([':value' => $value]);
     }
 
     /**
@@ -345,9 +331,9 @@ MYSQL
      *
      * @since 1.1
      */
-    public function checkIntegrity( $check = true, $schema = '' )
+    public function checkIntegrity($check = true, $schema = '')
     {
-        $this->getDbConnection()->createCommand( 'SET FOREIGN_KEY_CHECKS=' . ( $check ? 1 : 0 ) )->execute();
+        $this->getDbConnection()->createCommand('SET FOREIGN_KEY_CHECKS=' . ($check ? 1 : 0))->execute();
     }
 
     /**
@@ -357,17 +343,16 @@ MYSQL
      *
      * @return TableSchema driver dependent table metadata. Null if the table does not exist.
      */
-    protected function loadTable( $name )
+    protected function loadTable($name)
     {
         $table = new TableSchema;
-        $this->resolveTableNames( $table, $name );
+        $this->resolveTableNames($table, $name);
 
-        if ( !$this->findColumns( $table ) )
-        {
+        if (!$this->findColumns($table)) {
             return null;
         }
 
-        $this->findConstraints( $table );
+        $this->findConstraints($table);
 
         return $table;
     }
@@ -378,20 +363,22 @@ MYSQL
      * @param TableSchema $table the table instance
      * @param string      $name  the unquoted table name
      */
-    protected function resolveTableNames( $table, $name )
+    protected function resolveTableNames($table, $name)
     {
-        $parts = explode( '.', str_replace( [ '`', '"' ], '', $name ) );
-        if ( isset( $parts[1] ) )
-        {
+        $parts = explode('.', str_replace(['`', '"'], '', $name));
+        if (isset($parts[1])) {
             $table->schemaName = $parts[0];
             $table->name = $parts[1];
-            $table->rawName = $this->quoteTableName( $table->schemaName ) . '.' . $this->quoteTableName( $table->name );
-            $table->displayName = ( $table->schemaName === $this->getDefaultSchema() ) ? $table->name : ( $table->schemaName . '.' . $table->name );
-        }
-        else
-        {
+            $table->rawName = $this->quoteTableName($table->schemaName) . '.' . $this->quoteTableName($table->name);
+            $table->displayName =
+                ($table->schemaName === $this->getDefaultSchema())
+                    ? $table->name
+                    : ($table->schemaName .
+                    '.' .
+                    $table->name);
+        } else {
             $table->name = $parts[0];
-            $table->rawName = $this->quoteTableName( $table->name );
+            $table->rawName = $this->quoteTableName($table->name);
             $table->displayName = $table->name;
         }
     }
@@ -403,37 +390,26 @@ MYSQL
      *
      * @return boolean whether the table exists in the database
      */
-    protected function findColumns( $table )
+    protected function findColumns($table)
     {
         $sql = 'SHOW FULL COLUMNS FROM ' . $table->rawName;
-        try
-        {
-            $columns = $this->getDbConnection()->createCommand( $sql )->queryAll();
-        }
-        catch ( \Exception $e )
-        {
+        try {
+            $columns = $this->getDbConnection()->createCommand($sql)->queryAll();
+        } catch (\Exception $e) {
             return false;
         }
-        foreach ( $columns as $column )
-        {
-            $c = $this->createColumn( $column );
+        foreach ($columns as $column) {
+            $c = $this->createColumn($column);
             $table->columns[$c->name] = $c;
-            if ( $c->isPrimaryKey )
-            {
-                if ( $table->primaryKey === null )
-                {
+            if ($c->isPrimaryKey) {
+                if ($table->primaryKey === null) {
                     $table->primaryKey = $c->name;
-                }
-                elseif ( is_string( $table->primaryKey ) )
-                {
-                    $table->primaryKey = [ $table->primaryKey, $c->name ];
-                }
-                else
-                {
+                } elseif (is_string($table->primaryKey)) {
+                    $table->primaryKey = [$table->primaryKey, $c->name];
+                } else {
                     $table->primaryKey[] = $c->name;
                 }
-                if ( $c->autoIncrement )
-                {
+                if ($c->autoIncrement) {
                     $table->sequenceName = '';
                 }
             }
@@ -449,50 +425,41 @@ MYSQL
      *
      * @return ColumnSchema normalized column metadata
      */
-    protected function createColumn( $column )
+    protected function createColumn($column)
     {
         $c = new ColumnSchema;
         $c->name = $column['Field'];
-        $c->rawName = $this->quoteColumnName( $c->name );
+        $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = $column['Null'] === 'YES';
-        $c->isPrimaryKey = strpos( $column['Key'], 'PRI' ) !== false;
-        $c->isUnique = strpos( $column['Key'], 'UNI' ) !== false;
-        $c->isIndex = strpos( $column['Key'], 'MUL' ) !== false;
-        $c->autoIncrement = strpos( strtolower( $column['Extra'] ), 'auto_increment' ) !== false;
+        $c->isPrimaryKey = strpos($column['Key'], 'PRI') !== false;
+        $c->isUnique = strpos($column['Key'], 'UNI') !== false;
+        $c->isIndex = strpos($column['Key'], 'MUL') !== false;
+        $c->autoIncrement = strpos(strtolower($column['Extra']), 'auto_increment') !== false;
         $c->dbType = $column['Type'];
-        if ( isset( $column['Collation'] ) && !empty( $column['Collation'] ) )
-        {
+        if (isset($column['Collation']) && !empty($column['Collation'])) {
             $collation = $column['Collation'];
-            if ( 0 === stripos( $collation, 'utf' ) || 0 === stripos( $collation, 'ucs' ) )
-            {
+            if (0 === stripos($collation, 'utf') || 0 === stripos($collation, 'ucs')) {
                 $c->supportsMultibyte = true;
             }
         }
-        if ( isset( $column['Comment'] ) )
-        {
+        if (isset($column['Comment'])) {
             $c->comment = $column['Comment'];
         }
-        $c->extractLimit( $column['Type'] );
-        $c->extractFixedLength( $column['Type'] );
+        $c->extractLimit($column['Type']);
+        $c->extractFixedLength($column['Type']);
 //        $c->extractMultiByteSupport( $column['Type'] );
-        $c->extractType( $column['Type'] );
+        $c->extractType($column['Type']);
 
-        if ( $c->dbType === 'timestamp' && ( 0 === strcasecmp( strval( $column['Default'] ), 'CURRENT_TIMESTAMP' ) ) )
-        {
-            if ( 0 === strcasecmp( strval( $column['Extra'] ), 'on update CURRENT_TIMESTAMP' ) )
-            {
-                $c->defaultValue = [ 'expression' => 'CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP' ];
+        if ($c->dbType === 'timestamp' && (0 === strcasecmp(strval($column['Default']), 'CURRENT_TIMESTAMP'))) {
+            if (0 === strcasecmp(strval($column['Extra']), 'on update CURRENT_TIMESTAMP')) {
+                $c->defaultValue = ['expression' => 'CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP'];
                 $c->type = 'timestamp_on_update';
-            }
-            else
-            {
-                $c->defaultValue = [ 'expression' => 'CURRENT_TIMESTAMP' ];
+            } else {
+                $c->defaultValue = ['expression' => 'CURRENT_TIMESTAMP'];
                 $c->type = 'timestamp_on_create';
             }
-        }
-        else
-        {
-            $c->extractDefault( $column['Default'] );
+        } else {
+            $c->extractDefault($column['Default']);
         }
 
         return $c;
@@ -503,11 +470,11 @@ MYSQL
      */
     protected function getServerVersion()
     {
-        $version = $this->getDbConnection()->getAttribute( \PDO::ATTR_SERVER_VERSION );
-        $digits = [ ];
-        preg_match( '/(\d+)\.(\d+)\.(\d+)/', $version, $digits );
+        $version = $this->getDbConnection()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        $digits = [];
+        preg_match('/(\d+)\.(\d+)\.(\d+)/', $version, $digits);
 
-        return floatval( $digits[1] . '.' . $digits[2] . $digits[3] );
+        return floatval($digits[1] . '.' . $digits[2] . $digits[3]);
     }
 
     /**
@@ -516,75 +483,65 @@ MYSQL
      *
      * @param TableSchema $table the table metadata
      */
-    protected function findConstraints( $table )
+    protected function findConstraints($table)
     {
         $defaultSchema = $this->getDefaultSchema();
-        $tableSchema = ( !empty( $table->schemaName ) ) ? $table->schemaName : $this->getDefaultSchema();
-        $columns = [ ];
-        foreach ( $this->getSchemaNames() as $schema )
-        {
+        $tableSchema = (!empty($table->schemaName)) ? $table->schemaName : $this->getDefaultSchema();
+        $columns = [];
+        foreach ($this->getSchemaNames() as $schema) {
             $sql = <<<MYSQL
 SELECT table_schema, table_name, column_name, referenced_table_schema, referenced_table_name, referenced_column_name
 FROM information_schema.KEY_COLUMN_USAGE WHERE referenced_table_name IS NOT NULL AND table_schema = '$schema';
 MYSQL;
 
-            $columns = array_merge( $columns, $this->getDbConnection()->createCommand( $sql )->queryAll() );
+            $columns = array_merge($columns, $this->getDbConnection()->createCommand($sql)->queryAll());
         }
 
         $columns2 = $columns;
-        foreach ( $columns as $key => $column )
-        {
+        foreach ($columns as $key => $column) {
             $ts = $column['table_schema'];
             $tn = $column['table_name'];
             $cn = $column['column_name'];
             $rts = $column['referenced_table_schema'];
             $rtn = $column['referenced_table_name'];
             $rcn = $column['referenced_column_name'];
-            if ( ( 0 == strcasecmp( $tn, $table->name ) ) && ( 0 == strcasecmp( $ts, $tableSchema ) ) )
-            {
-                $name = ( $rts == $defaultSchema ) ? $rtn : $rts . '.' . $rtn;
+            if ((0 == strcasecmp($tn, $table->name)) && (0 == strcasecmp($ts, $tableSchema))) {
+                $name = ($rts == $defaultSchema) ? $rtn : $rts . '.' . $rtn;
 
-                $table->foreignKeys[$cn] = [ $name, $rcn ];
-                if ( isset( $table->columns[$cn] ) )
-                {
+                $table->foreignKeys[$cn] = [$name, $rcn];
+                if (isset($table->columns[$cn])) {
                     $table->columns[$cn]->isForeignKey = true;
                     $table->columns[$cn]->refTable = $name;
                     $table->columns[$cn]->refFields = $rcn;
-                    if ( 'integer' === $table->columns[$cn]->type )
-                    {
+                    if ('integer' === $table->columns[$cn]->type) {
                         $table->columns[$cn]->type = 'reference';
                     }
                 }
 
                 // Add it to our foreign references as well
-                $table->addReference( 'belongs_to', $name, $rcn, $cn );
-            }
-            elseif ( ( 0 == strcasecmp( $rtn, $table->name ) ) && ( 0 == strcasecmp( $rts, $tableSchema ) ) )
-            {
-                $name = ( $ts == $defaultSchema ) ? $tn : $ts . '.' . $tn;
-                $table->addReference( 'has_many', $name, $cn, $rcn );
+                $table->addReference('belongs_to', $name, $rcn, $cn);
+            } elseif ((0 == strcasecmp($rtn, $table->name)) && (0 == strcasecmp($rts, $tableSchema))) {
+                $name = ($ts == $defaultSchema) ? $tn : $ts . '.' . $tn;
+                $table->addReference('has_many', $name, $cn, $rcn);
 
                 // if other has foreign keys to other tables, we can say these are related as well
-                foreach ( $columns2 as $key2 => $column2 )
-                {
-                    if ( 0 != strcasecmp( $key, $key2 ) ) // not same key
+                foreach ($columns2 as $key2 => $column2) {
+                    if (0 != strcasecmp($key, $key2)) // not same key
                     {
                         $ts2 = $column2['table_schema'];
                         $tn2 = $column2['table_name'];
                         $cn2 = $column2['column_name'];
-                        if ( ( 0 == strcasecmp( $ts2, $ts ) ) && ( 0 == strcasecmp( $tn2, $tn ) )
-                        )
-                        {
+                        if ((0 == strcasecmp($ts2, $ts)) && (0 == strcasecmp($tn2, $tn))
+                        ) {
                             $rts2 = $column2['referenced_table_schema'];
                             $rtn2 = $column2['referenced_table_name'];
                             $rcn2 = $column2['referenced_column_name'];
-                            if ( ( 0 != strcasecmp( $rts2, $tableSchema ) ) || ( 0 != strcasecmp( $rtn2, $table->name ) )
-                            )
-                            {
-                                $name2 = ( $rts2 == $defaultSchema ) ? $rtn2 : $rts2 . '.' . $rtn2;
+                            if ((0 != strcasecmp($rts2, $tableSchema)) || (0 != strcasecmp($rtn2, $table->name))
+                            ) {
+                                $name2 = ($rts2 == $defaultSchema) ? $rtn2 : $rts2 . '.' . $rtn2;
                                 // not same as parent, i.e. via reference back to self
                                 // not the same key
-                                $table->addReference( 'many_many', $name2, $rcn2, $rcn, "$name($cn,$cn2)" );
+                                $table->addReference('many_many', $name2, $rcn2, $rcn, "$name($cn,$cn2)");
                             }
                         }
                     }
@@ -604,7 +561,7 @@ MYSQL;
 SHOW DATABASES WHERE `Database` NOT IN ('information_schema','mysql','performance_schema','phpmyadmin')
 MYSQL;
 
-        return $this->getDbConnection()->createCommand( $sql )->queryColumn();
+        return $this->getDbConnection()->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -616,28 +573,24 @@ MYSQL;
      *
      * @return array all table names in the database.
      */
-    protected function findTableNames( $schema = '', $include_views = true )
+    protected function findTableNames($schema = '', $include_views = true)
     {
         $defaultSchema = $this->getDefaultSchema();
 
         $sql = 'SHOW FULL TABLES';
 
-        if ( !empty( $schema ) )
-        {
-            $sql .= ' FROM ' . $this->quoteTableName( $schema );
+        if (!empty($schema)) {
+            $sql .= ' FROM ' . $this->quoteTableName($schema);
         }
 
-        if ( !$include_views )
-        {
+        if (!$include_views) {
             $sql .= " WHERE TABLE_TYPE = 'BASE TABLE'";
         }
 
-        $names = $this->getDbConnection()->createCommand( $sql )->queryColumn();
+        $names = $this->getDbConnection()->createCommand($sql)->queryColumn();
 
-        if ( !empty( $schema ) && $defaultSchema != $schema )
-        {
-            foreach ( $names as &$name )
-            {
+        if (!empty($schema) && $defaultSchema != $schema) {
+            foreach ($names as &$name) {
                 $name = $schema . '.' . $name;
             }
         }
@@ -648,14 +601,15 @@ MYSQL;
     /**
      * Returns all stored procedure names in the database.
      *
-     * @param string $schema the schema of the stored procedures. Defaults to empty string, meaning the current or default schema.
-     *                       If not empty, the returned stored procedure names will be prefixed with the schema name.
+     * @param string $schema the schema of the stored procedures. Defaults to empty string, meaning the current or
+     *                       default schema. If not empty, the returned stored procedure names will be prefixed with
+     *                       the schema name.
      *
      * @return array all stored procedure names in the database.
      */
-    protected function findProcedureNames( $schema = '' )
+    protected function findProcedureNames($schema = '')
     {
-        return $this->_findRoutines( 'procedure', $schema );
+        return $this->_findRoutines('procedure', $schema);
     }
 
     /**
@@ -665,37 +619,34 @@ MYSQL;
      * @throws \Exception
      * @return mixed
      */
-    public function callProcedure( $name, &$params )
+    public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName( $name );
+        $name = $this->getDbConnection()->quoteTableName($name);
         $_paramStr = '';
         $_pre = '';
         $_post = '';
-        $_bindings = [ ];
-        foreach ( $params as $_key => $_param )
-        {
-            $_pName = ( isset( $_param['name'] ) && !empty( $_param['name'] ) ) ? $_param['name'] : "p$_key";
-            $_pValue = isset( $_param['value'] ) ? $_param['value'] : null;
+        $_bindings = [];
+        foreach ($params as $_key => $_param) {
+            $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
+            $_pValue = isset($_param['value']) ? $_param['value'] : null;
 
-            if ( !empty( $_paramStr ) )
-            {
+            if (!empty($_paramStr)) {
                 $_paramStr .= ', ';
             }
 
-            switch ( strtoupper( strval( isset( $_param['param_type'] ) ? $_param['param_type'] : 'IN' ) ) )
-            {
+            switch (strtoupper(strval(isset($_param['param_type']) ? $_param['param_type'] : 'IN'))) {
                 case 'INOUT':
                     // not using binding for out or inout params here due to earlier (<5.5.3) mysql library bug
                     // since binding isn't working, set the values via statements, get the values via select
                     $_pre .= "SET @$_pName = $_pValue; ";
-                    $_post .= ( empty( $_post ) ) ? "SELECT @$_pName" : ", @$_pName";
+                    $_post .= (empty($_post)) ? "SELECT @$_pName" : ", @$_pName";
                     $_paramStr .= "@$_pName";
                     break;
 
                 case 'OUT':
                     // not using binding for out or inout params here due to earlier (<5.5.3) mysql library bug
                     // since binding isn't working, get the values via select
-                    $_post .= ( empty( $_post ) ) ? "SELECT @$_pName" : ", @$_pName";
+                    $_post .= (empty($_post)) ? "SELECT @$_pName" : ", @$_pName";
                     $_paramStr .= "@$_pName";
                     break;
 
@@ -706,57 +657,45 @@ MYSQL;
             }
         }
 
-        !empty( $_pre ) && $this->getDbConnection()->createCommand( $_pre )->execute();
+        !empty($_pre) && $this->getDbConnection()->createCommand($_pre)->execute();
 
         $_sql = "CALL $name($_paramStr);";
-        $_command = $this->getDbConnection()->createCommand( $_sql );
+        $_command = $this->getDbConnection()->createCommand($_sql);
 
         // do binding
-        $_command->bindValues( $_bindings );
+        $_command->bindValues($_bindings);
 
         // Move to the next result and get results
         $_reader = $_command->query();
         $_result = $_reader->readAll();
-        if ( $_reader->nextResult() )
-        {
+        if ($_reader->nextResult()) {
             // more data coming, make room
-            $_result = [ $_result ];
-            try
-            {
-                do
-                {
+            $_result = [$_result];
+            try {
+                do {
                     $_result[] = $_reader->readAll();
-                }
-                while ( $_reader->nextResult() );
-            }
-            catch ( \Exception $ex )
-            {
+                } while ($_reader->nextResult());
+            } catch (\Exception $ex) {
                 // mysql via pdo has issue of nextRowSet returning true one too many times
-                if ( false !== strpos( $ex->getMessage(), 'General Error' ) )
-                {
+                if (false !== strpos($ex->getMessage(), 'General Error')) {
                     throw $ex;
                 }
 
                 // if there is only one data set, just return it
-                if ( 1 == count( $_result ) )
-                {
+                if (1 == count($_result)) {
                     $_result = $_result[0];
                 }
             }
         }
 
-        if ( !empty( $_post ) )
-        {
-            $_out = $this->getDbConnection()->createCommand( $_post . ';' )->queryRow();
-            foreach ( $params as $_key => &$_param )
-            {
+        if (!empty($_post)) {
+            $_out = $this->getDbConnection()->createCommand($_post . ';')->queryRow();
+            foreach ($params as $_key => &$_param) {
                 $_pName = '@' . $_param['name'];
-                switch ( strtoupper( strval( isset( $_param['param_type'] ) ? $_param['param_type'] : 'IN' ) ) )
-                {
+                switch (strtoupper(strval(isset($_param['param_type']) ? $_param['param_type'] : 'IN'))) {
                     case 'INOUT':
                     case 'OUT':
-                        if ( isset( $_out, $_out[$_pName] ) )
-                        {
+                        if (isset($_out, $_out[$_pName])) {
                             $_param['value'] = $_out[$_pName];
                         }
                         break;
@@ -776,9 +715,9 @@ MYSQL;
      *
      * @return array all stored function names in the database.
      */
-    protected function findFunctionNames( $schema = '' )
+    protected function findFunctionNames($schema = '')
     {
-        return $this->_findRoutines( 'function', $schema );
+        return $this->_findRoutines('function', $schema);
     }
 
     /**
@@ -788,51 +727,42 @@ MYSQL;
      * @throws \Exception
      * @return mixed
      */
-    public function callFunction( $name, &$params )
+    public function callFunction($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName( $name );
-        $_bindings = [ ];
-        foreach ( $params as $_key => $_param )
-        {
-            $_name = ( isset( $_param['name'] ) && !empty( $_param['name'] ) ) ? ':' . $_param['name'] : ":p$_key";
-            $_value = isset( $_param['value'] ) ? $_param['value'] : null;
+        $name = $this->getDbConnection()->quoteTableName($name);
+        $_bindings = [];
+        foreach ($params as $_key => $_param) {
+            $_name = (isset($_param['name']) && !empty($_param['name'])) ? ':' . $_param['name'] : ":p$_key";
+            $_value = isset($_param['value']) ? $_param['value'] : null;
 
             $_bindings[$_name] = $_value;
         }
 
-        $_paramStr = implode( ',', array_keys( $_bindings ) );
+        $_paramStr = implode(',', array_keys($_bindings));
         $_sql = "SELECT $name($_paramStr);";
-        $_command = $this->getDbConnection()->createCommand( $_sql );
+        $_command = $this->getDbConnection()->createCommand($_sql);
 
         // do binding
-        $_command->bindValues( $_bindings );
+        $_command->bindValues($_bindings);
 
         // Move to the next result and get results
         $_reader = $_command->query();
         $_result = $_reader->readAll();
-        if ( $_reader->nextResult() )
-        {
+        if ($_reader->nextResult()) {
             // more data coming, make room
-            $_result = [ $_result ];
-            try
-            {
-                do
-                {
+            $_result = [$_result];
+            try {
+                do {
                     $_result[] = $_reader->readAll();
-                }
-                while ( $_reader->nextResult() );
-            }
-            catch ( \Exception $ex )
-            {
+                } while ($_reader->nextResult());
+            } catch (\Exception $ex) {
                 // mysql via pdo has issue of nextRowSet returning true one too many times
-                if ( false !== strpos( $ex->getMessage(), 'General Error' ) )
-                {
+                if (false !== strpos($ex->getMessage(), 'General Error')) {
                     throw $ex;
                 }
 
                 // if there is only one data set, just return it
-                if ( 1 == count( $_result ) )
-                {
+                if (1 == count($_result)) {
                     $_result = $_result[0];
                 }
             }
@@ -850,7 +780,7 @@ MYSQL;
      */
     protected function createCommandBuilder()
     {
-        return new CommandBuilder( $this );
+        return new CommandBuilder($this);
     }
 
     /**
@@ -864,36 +794,29 @@ MYSQL;
      * @return string the SQL statement for renaming a DB column.
      * @since 1.1.6
      */
-    public function renameColumn( $table, $name, $newName )
+    public function renameColumn($table, $name, $newName)
     {
         $db = $this->getDbConnection();
-        $row = $db->createCommand( 'SHOW CREATE TABLE ' . $db->quoteTableName( $table ) )->queryRow();
+        $row = $db->createCommand('SHOW CREATE TABLE ' . $db->quoteTableName($table))->queryRow();
 
-        if ( $row === false )
-        {
-            throw new \Exception( "Unable to find '$name' in table '$table'." );
+        if ($row === false) {
+            throw new \Exception("Unable to find '$name' in table '$table'.");
         }
 
-        if ( isset( $row['Create Table'] ) )
-        {
+        if (isset($row['Create Table'])) {
             $sql = $row['Create Table'];
-        }
-        else
-        {
-            $row = array_values( $row );
+        } else {
+            $row = array_values($row);
             $sql = $row[1];
         }
 
-        $table = $db->quoteTableName( $table );
-        $name = $db->quoteColumnName( $name );
-        $newName = $db->quoteColumnName( $newName );
+        $table = $db->quoteTableName($table);
+        $name = $db->quoteColumnName($name);
+        $newName = $db->quoteColumnName($newName);
 
-        if ( preg_match_all( '/^\s*[`"](.*?)[`"]\s+(.*?),?$/m', $sql, $matches ) )
-        {
-            foreach ( $matches[1] as $i => $c )
-            {
-                if ( $c === $name )
-                {
+        if (preg_match_all('/^\s*[`"](.*?)[`"]\s+(.*?),?$/m', $sql, $matches)) {
+            foreach ($matches[1] as $i => $c) {
+                if ($c === $name) {
                     return <<<MYSQL
 ALTER TABLE {$table} CHANGE {$name} $newName {$matches[2][$i]}
 MYSQL;
@@ -909,15 +832,16 @@ MYSQL;
     /**
      * Builds a SQL statement for dropping a foreign key constraint.
      *
-     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by the method.
+     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by
+     *                      the method.
      * @param string $table the table whose foreign is to be dropped. The name will be properly quoted by the method.
      *
      * @return string the SQL statement for dropping a foreign key constraint.
      * @since 1.1.6
      */
-    public function dropForeignKey( $name, $table )
+    public function dropForeignKey($name, $table)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' DROP FOREIGN KEY ' . $this->quoteColumnName( $name );
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP FOREIGN KEY ' . $this->quoteColumnName($name);
     }
 
     /**
@@ -929,34 +853,33 @@ MYSQL;
      * @return string the SQL statement for removing a primary key constraint from an existing table.
      * @since 1.1.13
      */
-    public function dropPrimaryKey( $name, $table )
+    public function dropPrimaryKey($name, $table)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' DROP PRIMARY KEY';
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP PRIMARY KEY';
     }
 
     /**
      * Builds a SQL statement for adding a primary key constraint to a table.
      *
-     * @param string       $name    not used in the MySQL syntax, the primary key is always called PRIMARY and is reserved.
+     * @param string       $name    not used in the MySQL syntax, the primary key is always called PRIMARY and is
+     *                              reserved.
      * @param string       $table   the table that the primary key constraint will be added to.
      * @param string|array $columns comma separated string or array of columns that the primary key will consist of.
      *
      * @return string the SQL statement for adding a primary key constraint to an existing table.
      * @since 1.1.14
      */
-    public function addPrimaryKey( $name, $table, $columns )
+    public function addPrimaryKey($name, $table, $columns)
     {
-        if ( is_string( $columns ) )
-        {
-            $columns = preg_split( '/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY );
+        if (is_string($columns)) {
+            $columns = preg_split('/\s*,\s*/', $columns, -1, PREG_SPLIT_NO_EMPTY);
         }
 
-        foreach ( $columns as $i => $col )
-        {
-            $columns[$i] = $this->quoteColumnName( $col );
+        foreach ($columns as $i => $col) {
+            $columns[$i] = $this->quoteColumnName($col);
         }
 
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' ADD PRIMARY KEY (' . implode( ', ', $columns ) . ' )';
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' ADD PRIMARY KEY (' . implode(', ', $columns) . ' )';
     }
 
     /**
@@ -970,18 +893,19 @@ MYSQL;
      * @throws \InvalidArgumentException
      * @return array all stored function names in the database.
      */
-    protected function _findRoutines( $type, $schema = '' )
+    protected function _findRoutines($type, $schema = '')
     {
         $defaultSchema = $this->getDefaultSchema();
-        $type = trim( strtoupper( $type ) );
+        $type = trim(strtoupper($type));
 
-        if ( $type != 'PROCEDURE' && $type != 'FUNCTION' )
-        {
-            throw new \InvalidArgumentException( 'The type "' . $type . '" is invalid.' );
+        if ($type != 'PROCEDURE' && $type != 'FUNCTION') {
+            throw new \InvalidArgumentException('The type "' . $type . '" is invalid.');
         }
 
-        $_select = ( empty( $schema ) || ( $defaultSchema == $schema ) ) ? 'ROUTINE_NAME' : "CONCAT('" . $schema . "','.',ROUTINE_NAME) as ROUTINE_NAME";
-        $_schema = !empty( $schema ) ? " AND ROUTINE_SCHEMA = '" . $schema . "'" : null;
+        $_select =
+            (empty($schema) || ($defaultSchema == $schema))
+                ? 'ROUTINE_NAME' : "CONCAT('" . $schema . "','.',ROUTINE_NAME) as ROUTINE_NAME";
+        $_schema = !empty($schema) ? " AND ROUTINE_SCHEMA = '" . $schema . "'" : null;
 
         $_sql = <<<MYSQL
 SELECT
@@ -993,13 +917,13 @@ WHERE
     {$_schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand( $_sql )->queryColumn( [ ':routine_type' => $type ] );
+        return $this->getDbConnection()->createCommand($_sql)->queryColumn([':routine_type' => $type]);
     }
 
     /**
      * @param string $schema default schema.
      */
-    public function setDefaultSchema( $schema )
+    public function setDefaultSchema($schema)
     {
         $this->_defaultSchema = $schema;
     }
@@ -1009,27 +933,25 @@ MYSQL;
      */
     public function getDefaultSchema()
     {
-        if ( empty( $this->_defaultSchema ) )
-        {
+        if (empty($this->_defaultSchema)) {
             $sql = <<<MYSQL
 SELECT DATABASE() FROM DUAL
 MYSQL;
 
-            $current = $this->getDbConnection()->createCommand( $sql )->queryScalar();
-            $this->setDefaultSchema( $current );
+            $current = $this->getDbConnection()->createCommand($sql)->queryScalar();
+            $this->setDefaultSchema($current);
         }
 
         return $this->_defaultSchema;
     }
 
-    public function parseValueForSet( $value, $field_info )
+    public function parseValueForSet($value, $field_info)
     {
-        $_type = ( isset( $field_info['type'] ) ) ? $field_info['type'] : null;
+        $_type = (isset($field_info['type'])) ? $field_info['type'] : null;
 
-        switch ( $_type )
-        {
+        switch ($_type) {
             case 'boolean':
-                $value = ( filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? 1 : 0 );
+                $value = (filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
                 break;
         }
 

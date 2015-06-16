@@ -16,22 +16,19 @@ namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 class Connection extends \DreamFactory\Core\SqlDbCore\Connection
 {
 
-    protected function initConnection( $pdo )
+    protected function initConnection($pdo)
     {
-        parent::initConnection( $pdo );
-        $this->setAttribute( \PDO::ATTR_CASE, \PDO::CASE_LOWER );
-        $this->setAttribute( \PDO::ATTR_STRINGIFY_FETCHES, true );
+        parent::initConnection($pdo);
+        $this->setAttribute(\PDO::ATTR_CASE, \PDO::CASE_LOWER);
+        $this->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, true);
     }
 
-    public function getPdoType( $type )
+    public function getPdoType($type)
     {
-        if ( $type == 'NULL' )
-        {
+        if ($type == 'NULL') {
             return \PDO::PARAM_STR;
-        }
-        else
-        {
-            return parent::getPdoType( $type );
+        } else {
+            return parent::getPdoType($type);
         }
     }
 

@@ -21,12 +21,11 @@ use DreamFactory\Core\SqlDbCore\ColumnSchema;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    protected function translateSimpleColumnTypes( array &$info )
+    protected function translateSimpleColumnTypes(array &$info)
     {
         // override this in each schema class
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        switch ( $type )
-        {
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        switch ($type) {
             // some types need massaging, some need other required properties
             case 'pk':
             case 'id':
@@ -47,12 +46,10 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'timestamp_on_create':
             case 'timestamp_on_update':
                 $info['type'] = 'timestamp';
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( !isset( $default ) )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (!isset($default)) {
                     $default = 'CURRENT_TIMESTAMP';
-                    if ( 'timestamp_on_update' === $type )
-                    {
+                    if ('timestamp_on_update' === $type) {
                         $default .= ' ON UPDATE CURRENT_TIMESTAMP';
                     }
                     $info['default'] = $default;
@@ -62,37 +59,33 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'boolean':
                 $info['type'] = 'tinyint';
                 $info['type_extras'] = '(1)';
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default)) {
                     // convert to bit 0 or 1, where necessary
-                    $info['default'] = (int)filter_var( $default, FILTER_VALIDATE_BOOLEAN );
+                    $info['default'] = (int)filter_var($default, FILTER_VALIDATE_BOOLEAN);
                 }
                 break;
 
             case 'money':
                 $info['type'] = 'decimal';
                 $info['type_extras'] = '(19,4)';
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) )
-                {
-                    $info['default'] = floatval( $default );
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default)) {
+                    $info['default'] = floatval($default);
                 }
                 break;
 
             case 'string':
-                $fixed = ( isset( $info['fixed_length'] ) ) ? filter_var( $info['fixed_length'], FILTER_VALIDATE_BOOLEAN ) : false;
-                $national = ( isset( $info['supports_multibyte'] ) ) ? filter_var( $info['supports_multibyte'], FILTER_VALIDATE_BOOLEAN ) : false;
-                if ( $fixed )
-                {
-                    $info['type'] = ( $national ) ? 'nchar' : 'char';
-                }
-                elseif ( $national )
-                {
+                $fixed =
+                    (isset($info['fixed_length'])) ? filter_var($info['fixed_length'], FILTER_VALIDATE_BOOLEAN) : false;
+                $national =
+                    (isset($info['supports_multibyte'])) ? filter_var($info['supports_multibyte'],
+                        FILTER_VALIDATE_BOOLEAN) : false;
+                if ($fixed) {
+                    $info['type'] = ($national) ? 'nchar' : 'char';
+                } elseif ($national) {
                     $info['type'] = 'nvarchar';
-                }
-                else
-                {
+                } else {
                     $info['type'] = 'varchar';
                 }
                 break;
@@ -103,31 +96,31 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         }
     }
 
-    protected function validateColumnSettings( array &$info )
+    protected function validateColumnSettings(array &$info)
     {
         // override this in each schema class
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        switch ( $type )
-        {
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        switch ($type) {
             // some types need massaging, some need other required properties
             case 'tinyint':
             case 'smallint':
             case 'mediumint':
             case 'int':
             case 'bigint':
-                if ( !isset( $info['type_extras'] ) )
-                {
-                    $length = ( isset( $info['length'] ) ) ? $info['length'] : (( isset( $info['precision'] ) ) ? $info['precision'] : null);
-                    if ( !empty( $length ) )
-                    {
+                if (!isset($info['type_extras'])) {
+                    $length =
+                        (isset($info['length']))
+                            ? $info['length']
+                            : ((isset($info['precision'])) ? $info['precision']
+                            : null);
+                    if (!empty($length)) {
                         $info['type_extras'] = "($length)"; // sets the viewable length
                     }
                 }
 
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) && is_numeric( $default ) )
-                {
-                    $info['default'] = intval( $default );
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default) && is_numeric($default)) {
+                    $info['default'] = intval($default);
                 }
                 break;
 
@@ -136,29 +129,33 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'real':
             case 'float':
             case 'double':
-                if ( !isset( $info['type_extras'] ) )
-                {
-                    $length = ( isset( $info['length'] ) ) ? $info['length'] : (( isset( $info['precision'] ) ) ? $info['precision'] : null);
-                    if ( !empty( $length ) )
-                    {
-                        $scale = ( isset( $info['decimals'] ) ) ? $info['decimals'] : (( isset( $info['scale'] ) ) ? $info['scale'] : null);
-                        $info['type_extras'] = ( !empty( $scale ) ) ? "($length,$scale)" : "($length)";
+                if (!isset($info['type_extras'])) {
+                    $length =
+                        (isset($info['length']))
+                            ? $info['length']
+                            : ((isset($info['precision'])) ? $info['precision']
+                            : null);
+                    if (!empty($length)) {
+                        $scale =
+                            (isset($info['decimals']))
+                                ? $info['decimals']
+                                : ((isset($info['scale'])) ? $info['scale']
+                                : null);
+                        $info['type_extras'] = (!empty($scale)) ? "($length,$scale)" : "($length)";
                     }
                 }
 
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( isset( $default ) && is_numeric( $default ) )
-                {
-                    $info['default'] = floatval( $default );
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if (isset($default) && is_numeric($default)) {
+                    $info['default'] = floatval($default);
                 }
                 break;
 
             case 'char':
             case 'nchar':
             case 'binary':
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
                 }
                 break;
@@ -166,12 +163,10 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'varchar':
             case 'nvarchar':
             case 'varbinary':
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
-                }
-                else // requires a max length
+                } else // requires a max length
                 {
                     $info['type_extras'] = '(' . static::DEFAULT_STRING_MAX_SIZE . ')';
                 }
@@ -180,16 +175,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             case 'time':
             case 'timestamp':
             case 'datetime':
-                $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-                if ( '0000-00-00 00:00:00' == $default )
-                {
+                $default = (isset($info['default'])) ? $info['default'] : null;
+                if ('0000-00-00 00:00:00' == $default) {
                     // read back from MySQL has formatted zeros, can't send that back
                     $info['default'] = 0;
                 }
 
-                $length = ( isset( $info['length'] ) ) ? $info['length'] : ( ( isset( $info['size'] ) ) ? $info['size'] : null );
-                if ( isset( $length ) )
-                {
+                $length = (isset($info['length'])) ? $info['length'] : ((isset($info['size'])) ? $info['size'] : null);
+                if (isset($length)) {
                     $info['type_extras'] = "($length)";
                 }
                 break;
@@ -202,46 +195,41 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string
      * @throws \Exception
      */
-    protected function buildColumnDefinition( array $info )
+    protected function buildColumnDefinition(array $info)
     {
-        $type = ( isset( $info['type'] ) ) ? $info['type'] : null;
-        $typeExtras = ( isset( $info['type_extras'] ) ) ? $info['type_extras'] : null;
+        $type = (isset($info['type'])) ? $info['type'] : null;
+        $typeExtras = (isset($info['type_extras'])) ? $info['type_extras'] : null;
 
         $definition = $type . $typeExtras;
 
-        $allowNull = ( isset( $info['allow_null'] ) ) ? filter_var( $info['allow_null'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $definition .= ( $allowNull ) ? ' NULL' : ' NOT NULL';
+        $allowNull = (isset($info['allow_null'])) ? filter_var($info['allow_null'], FILTER_VALIDATE_BOOLEAN) : false;
+        $definition .= ($allowNull) ? ' NULL' : ' NOT NULL';
 
-        $default = ( isset( $info['default'] ) ) ? $info['default'] : null;
-        if ( isset( $default ) )
-        {
-            $quoteDefault = ( isset( $info['quote_default'] ) ) ? filter_var( $info['quote_default'], FILTER_VALIDATE_BOOLEAN ) : false;
-            if ( $quoteDefault )
-            {
+        $default = (isset($info['default'])) ? $info['default'] : null;
+        if (isset($default)) {
+            $quoteDefault =
+                (isset($info['quote_default'])) ? filter_var($info['quote_default'], FILTER_VALIDATE_BOOLEAN) : false;
+            if ($quoteDefault) {
                 $default = "'" . $default . "'";
             }
 
             $definition .= ' DEFAULT ' . $default;
         }
 
-        $auto = ( isset( $info['auto_increment'] ) ) ? filter_var( $info['auto_increment'], FILTER_VALIDATE_BOOLEAN ) : false;
-        if ( $auto )
-        {
+        $auto = (isset($info['auto_increment'])) ? filter_var($info['auto_increment'], FILTER_VALIDATE_BOOLEAN) : false;
+        if ($auto) {
             $definition .= ' AUTOINCREMENT';
         }
 
-        $isUniqueKey = ( isset( $info['is_unique'] ) ) ? filter_var( $info['is_unique'], FILTER_VALIDATE_BOOLEAN ) : false;
-        $isPrimaryKey = ( isset( $info['is_primary_key'] ) ) ? filter_var( $info['is_primary_key'], FILTER_VALIDATE_BOOLEAN ) : false;
-        if ( $isPrimaryKey && $isUniqueKey )
-        {
-            throw new \Exception( 'Unique and Primary designations not allowed simultaneously.' );
+        $isUniqueKey = (isset($info['is_unique'])) ? filter_var($info['is_unique'], FILTER_VALIDATE_BOOLEAN) : false;
+        $isPrimaryKey =
+            (isset($info['is_primary_key'])) ? filter_var($info['is_primary_key'], FILTER_VALIDATE_BOOLEAN) : false;
+        if ($isPrimaryKey && $isUniqueKey) {
+            throw new \Exception('Unique and Primary designations not allowed simultaneously.');
         }
-        if ( $isUniqueKey )
-        {
+        if ($isUniqueKey) {
             $definition .= ' UNIQUE KEY';
-        }
-        elseif ( $isPrimaryKey )
-        {
+        } elseif ($isPrimaryKey) {
             $definition .= ' PRIMARY KEY';
         }
 
@@ -255,32 +243,30 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @param TableSchema  $table   the table schema whose primary key sequence will be reset
      * @param integer|null $value   the value for the primary key of the next new row inserted.
-     *                              If this is not set, the next new row's primary key will have the max value of a primary
-     *                              key plus one (i.e. sequence trimming).
+     *                              If this is not set, the next new row's primary key will have the max value of a
+     *                              primary key plus one (i.e. sequence trimming).
      *
      * @since 1.1
      */
-    public function resetSequence( $table, $value = null )
+    public function resetSequence($table, $value = null)
     {
-        if ( $table->sequenceName === null )
-        {
+        if ($table->sequenceName === null) {
             return;
         }
-        if ( $value !== null )
-        {
-            $value = (int)( $value ) - 1;
+        if ($value !== null) {
+            $value = (int)($value) - 1;
+        } else {
+            $value =
+                (int)$this->getDbConnection()
+                    ->createCommand("SELECT MAX(`{$table->primaryKey}`) FROM {$table->rawName}")
+                    ->queryScalar();
         }
-        else
-        {
-            $value = (int)$this->getDbConnection()->createCommand( "SELECT MAX(`{$table->primaryKey}`) FROM {$table->rawName}" )->queryScalar();
-        }
-        try
-        {
+        try {
             // it's possible that 'sqlite_sequence' does not exist
-            $this->getDbConnection()->createCommand( "UPDATE sqlite_sequence SET seq='$value' WHERE name='{$table->name}'" )->execute();
-        }
-        catch ( \Exception $e )
-        {
+            $this->getDbConnection()
+                ->createCommand("UPDATE sqlite_sequence SET seq='$value' WHERE name='{$table->name}'")
+                ->execute();
+        } catch (\Exception $e) {
         }
     }
 
@@ -293,9 +279,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @since 1.1
      */
-    public function checkIntegrity( $check = true, $schema = '' )
+    public function checkIntegrity($check = true, $schema = '')
     {
-        $this->getDbConnection()->createCommand( 'PRAGMA foreign_keys=' . (int)$check )->execute();
+        $this->getDbConnection()->createCommand('PRAGMA foreign_keys=' . (int)$check)->execute();
     }
 
     /**
@@ -306,11 +292,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @return array all table names in the database.
      */
-    protected function findTableNames( $schema = '', $include_views = true )
+    protected function findTableNames($schema = '', $include_views = true)
     {
         $sql = "SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name<>'sqlite_sequence'";
 
-        return $this->getDbConnection()->createCommand( $sql )->queryColumn();
+        return $this->getDbConnection()->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -320,7 +306,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function createCommandBuilder()
     {
-        return new CommandBuilder( $this );
+        return new CommandBuilder($this);
     }
 
     /**
@@ -330,20 +316,17 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @return TableSchema driver dependent table metadata. Null if the table does not exist.
      */
-    protected function loadTable( $name )
+    protected function loadTable($name)
     {
         $table = new TableSchema;
         $table->name = $name;
-        $table->rawName = $this->quoteTableName( $name );
+        $table->rawName = $this->quoteTableName($name);
 
-        if ( $this->findColumns( $table ) )
-        {
-            $this->findConstraints( $table );
+        if ($this->findColumns($table)) {
+            $this->findConstraints($table);
 
             return $table;
-        }
-        else
-        {
+        } else {
             return null;
         }
     }
@@ -355,37 +338,28 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @return boolean whether the table exists in the database
      */
-    protected function findColumns( $table )
+    protected function findColumns($table)
     {
         $sql = "PRAGMA table_info({$table->rawName})";
-        $columns = $this->getDbConnection()->createCommand( $sql )->queryAll();
-        if ( empty( $columns ) )
-        {
+        $columns = $this->getDbConnection()->createCommand($sql)->queryAll();
+        if (empty($columns)) {
             return false;
         }
 
-        foreach ( $columns as $column )
-        {
-            $c = $this->createColumn( $column );
+        foreach ($columns as $column) {
+            $c = $this->createColumn($column);
             $table->columns[$c->name] = $c;
-            if ( $c->isPrimaryKey )
-            {
-                if ( $table->primaryKey === null )
-                {
+            if ($c->isPrimaryKey) {
+                if ($table->primaryKey === null) {
                     $table->primaryKey = $c->name;
-                }
-                elseif ( is_string( $table->primaryKey ) )
-                {
-                    $table->primaryKey = [ $table->primaryKey, $c->name ];
-                }
-                else
-                {
+                } elseif (is_string($table->primaryKey)) {
+                    $table->primaryKey = [$table->primaryKey, $c->name];
+                } else {
                     $table->primaryKey[] = $c->name;
                 }
             }
         }
-        if ( is_string( $table->primaryKey ) && !strncasecmp( $table->columns[$table->primaryKey]->dbType, 'int', 3 ) )
-        {
+        if (is_string($table->primaryKey) && !strncasecmp($table->columns[$table->primaryKey]->dbType, 'int', 3)) {
             $table->sequenceName = '';
             $table->columns[$table->primaryKey]->autoIncrement = true;
         }
@@ -398,22 +372,20 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @param TableSchema $table the table metadata
      */
-    protected function findConstraints( $table )
+    protected function findConstraints($table)
     {
-        $foreignKeys = [ ];
+        $foreignKeys = [];
         $sql = "PRAGMA foreign_key_list({$table->rawName})";
-        $keys = $this->getDbConnection()->createCommand( $sql )->queryAll();
-        foreach ( $keys as $key )
-        {
+        $keys = $this->getDbConnection()->createCommand($sql)->queryAll();
+        foreach ($keys as $key) {
             $column = $table->columns[$key['from']];
             $column->isForeignKey = true;
             $column->refTable = $key['table'];
             $column->refFields = $key['to'];
-            if ( 'integer' === $column->type )
-            {
+            if ('integer' === $column->type) {
                 $column->type = 'reference';
             }
-            $foreignKeys[$key['from']] = [ $key['table'], $key['to'] ];
+            $foreignKeys[$key['from']] = [$key['table'], $key['to']];
         }
         $table->foreignKeys = $foreignKeys;
     }
@@ -425,21 +397,21 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      *
      * @return ColumnSchema normalized column metadata
      */
-    protected function createColumn( $column )
+    protected function createColumn($column)
     {
         $c = new ColumnSchema;
         $c->name = $column['name'];
-        $c->rawName = $this->quoteColumnName( $c->name );
+        $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = !$column['notnull'];
         $c->isPrimaryKey = $column['pk'] != 0;
         $c->comment = null; // SQLite does not support column comments at all
 
-        $c->dbType = strtolower( $column['type'] );
-        $c->extractLimit( strtolower( $column['type'] ) );
-        $c->extractFixedLength( $column['type'] );
-        $c->extractMultiByteSupport( $column['type'] );
-        $c->extractType( strtolower( $column['type'] ) );
-        $c->extractDefault( $column['dflt_value'] );
+        $c->dbType = strtolower($column['type']);
+        $c->extractLimit(strtolower($column['type']));
+        $c->extractFixedLength($column['type']);
+        $c->extractMultiByteSupport($column['type']);
+        $c->extractType(strtolower($column['type']));
+        $c->extractDefault($column['dflt_value']);
 
         return $c;
     }
@@ -453,9 +425,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for renaming a DB table.
      * @since 1.1.13
      */
-    public function renameTable( $table, $newName )
+    public function renameTable($table, $newName)
     {
-        return 'ALTER TABLE ' . $this->quoteTableName( $table ) . ' RENAME TO ' . $this->quoteTableName( $newName );
+        return 'ALTER TABLE ' . $this->quoteTableName($table) . ' RENAME TO ' . $this->quoteTableName($newName);
     }
 
     /**
@@ -466,9 +438,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for truncating a DB table.
      * @since 1.1.6
      */
-    public function truncateTable( $table )
+    public function truncateTable($table)
     {
-        return "DELETE FROM " . $this->quoteTableName( $table );
+        return "DELETE FROM " . $this->quoteTableName($table);
     }
 
     /**
@@ -482,9 +454,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for dropping a DB column.
      * @since 1.1.6
      */
-    public function dropColumn( $table, $column )
+    public function dropColumn($table, $column)
     {
-        throw new \Exception( 'Dropping DB column is not supported by SQLite.' );
+        throw new \Exception('Dropping DB column is not supported by SQLite.');
     }
 
     /**
@@ -499,65 +471,74 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for renaming a DB column.
      * @since 1.1.6
      */
-    public function renameColumn( $table, $name, $newName )
+    public function renameColumn($table, $name, $newName)
     {
-        throw new \Exception( 'Renaming a DB column is not supported by SQLite.' );
+        throw new \Exception('Renaming a DB column is not supported by SQLite.');
     }
 
     /**
      * Builds a SQL statement for adding a foreign key constraint to an existing table.
-     * Because SQLite does not support adding foreign key to an existing table, calling this method will throw an exception.
+     * Because SQLite does not support adding foreign key to an existing table, calling this method will throw an
+     * exception.
      *
      * @param string $name       the name of the foreign key constraint.
      * @param string $table      the table that the foreign key constraint will be added to.
-     * @param string $columns    the name of the column to that the constraint will be added on. If there are multiple columns, separate them with commas.
+     * @param string $columns    the name of the column to that the constraint will be added on. If there are multiple
+     *                           columns, separate them with commas.
      * @param string $refTable   the table that the foreign key references to.
-     * @param string $refColumns the name of the column that the foreign key references to. If there are multiple columns, separate them with commas.
-     * @param string $delete     the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
-     * @param string $update     the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION, SET DEFAULT, SET NULL
+     * @param string $refColumns the name of the column that the foreign key references to. If there are multiple
+     *                           columns, separate them with commas.
+     * @param string $delete     the ON DELETE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION,
+     *                           SET DEFAULT, SET NULL
+     * @param string $update     the ON UPDATE option. Most DBMS support these options: RESTRICT, CASCADE, NO ACTION,
+     *                           SET DEFAULT, SET NULL
      *
      * @throws \Exception
      * @return string the SQL statement for adding a foreign key constraint to an existing table.
      * @since 1.1.6
      */
-    public function addForeignKey( $name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null )
+    public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null)
     {
-        throw new \Exception( 'Adding a foreign key constraint to an existing table is not supported by SQLite.' );
+        throw new \Exception('Adding a foreign key constraint to an existing table is not supported by SQLite.');
     }
 
     /**
      * Builds a SQL statement for dropping a foreign key constraint.
      * Because SQLite does not support dropping a foreign key constraint, calling this method will throw an exception.
      *
-     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by the method.
+     * @param string $name  the name of the foreign key constraint to be dropped. The name will be properly quoted by
+     *                      the method.
      * @param string $table the table whose foreign is to be dropped. The name will be properly quoted by the method.
      *
      * @throws \Exception
      * @return string the SQL statement for dropping a foreign key constraint.
      * @since 1.1.6
      */
-    public function dropForeignKey( $name, $table )
+    public function dropForeignKey($name, $table)
     {
-        throw new \Exception( 'Dropping a foreign key constraint is not supported by SQLite.' );
+        throw new \Exception('Dropping a foreign key constraint is not supported by SQLite.');
     }
 
     /**
      * Builds a SQL statement for changing the definition of a column.
      * Because SQLite does not support altering a DB column, calling this method will throw an exception.
      *
-     * @param string $table      the table whose column is to be changed. The table name will be properly quoted by the method.
+     * @param string $table      the table whose column is to be changed. The table name will be properly quoted by the
+     *                           method.
      * @param string $column     the name of the column to be changed. The name will be properly quoted by the method.
-     * @param string $definition the new column type. The {@link getColumnType} method will be invoked to convert abstract column type (if any)
-     *                           into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                           For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
+     * @param string $definition the new column type. The {@link getColumnType} method will be invoked to convert
+     *                           abstract column type (if any) into the physical one. Anything that is not recognized
+     *                           as abstract type will be kept in the generated SQL. For example, 'string' will be
+     *                           turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not
+     *                           null'.
      *
      * @throws \Exception
      * @return string the SQL statement for changing the definition of a column.
      * @since 1.1.6
      */
-    public function alterColumn( $table, $column, $definition )
+    public function alterColumn($table, $column, $definition)
     {
-        throw new \Exception( 'Altering a DB column is not supported by SQLite.' );
+        throw new \Exception('Altering a DB column is not supported by SQLite.');
     }
 
     /**
@@ -569,9 +550,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for dropping an index.
      * @since 1.1.6
      */
-    public function dropIndex( $name, $table )
+    public function dropIndex($name, $table)
     {
-        return 'DROP INDEX ' . $this->quoteTableName( $name );
+        return 'DROP INDEX ' . $this->quoteTableName($name);
     }
 
     /**
@@ -586,9 +567,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for adding a primary key constraint to an existing table.
      * @since 1.1.13
      */
-    public function addPrimaryKey( $name, $table, $columns )
+    public function addPrimaryKey($name, $table, $columns)
     {
-        throw new \Exception( 'Adding a primary key after table has been created is not supported by SQLite.' );
+        throw new \Exception('Adding a primary key after table has been created is not supported by SQLite.');
     }
 
     /**
@@ -602,8 +583,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      * @return string the SQL statement for removing a primary key constraint from an existing table.
      * @since 1.1.13
      */
-    public function dropPrimaryKey( $name, $table )
+    public function dropPrimaryKey($name, $table)
     {
-        throw new \Exception( 'Removing a primary key after table has been created is not supported by SQLite.' );
+        throw new \Exception('Removing a primary key after table has been created is not supported by SQLite.');
     }
 }
