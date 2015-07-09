@@ -154,62 +154,101 @@ class Connection
      * @var string the default prefix for table names. Defaults to null, meaning no table prefix.
      * By setting this property, any token like '{{tableName}}' in {@link Command::text} will
      * be replaced by 'prefixTableName', where 'prefix' refers to this property value.
-     * @since 1.1.0
      */
     public $tablePrefix;
     /**
      * @var array list of SQL statements that should be executed right after the DB connection is established.
-     * @since 1.1.1
      */
     public $initSQLs;
     /**
-     * @var array mapping between PDO driver and schema class name.
-     * A schema class can be specified using path alias.
-     * @since 1.1.6
-     */
-    public static $driverSchemaMap = [
-        'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',
-        // PostgreSQL
-        'mysqli'  => 'DreamFactory\Core\SqlDbCore\Mysql\Schema',
-        // MySQL
-        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',
-        // MySQL
-        'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
-        // sqlite 3
-        'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
-        // sqlite 2
-        'mssql'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
-        // Mssql driver on windows hosts
-        'dblib'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
-        // dblib drivers on linux (and maybe others os) hosts
-        'sqlsrv'  => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
-        // Mssql
-        'oci'     => 'DreamFactory\Core\SqlDbCore\Oci\Schema',
-        // Oracle driver
-        'ibm'     => 'DreamFactory\Core\SqlDbCore\Ibmdb2\Schema',
-        // IBM DB2 driver
-    ];
-
-    /**
      * @var string Custom PDO wrapper class.
-     * @since 1.1.8
      */
     public $pdoClass = 'PDO';
 
     /**
+     * @var array mapping between PDO driver and schema class name.
+     * A schema class can be specified using path alias.
+     */
+    public static $driverSchemaMap = [
+        // PostgreSQL
+        'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',
+        // MySQL
+        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',
+        // SQLite
+        'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
+        'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
+        // MS SQL Server
+        'mssql'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // on linux (and maybe others os) hosts
+        'dblib'   => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // Windows hosts
+        'sqlsrv'  => 'DreamFactory\Core\SqlDbCore\Mssql\Schema',
+        // Oracle driver
+        'oci'     => 'DreamFactory\Core\SqlDbCore\Oci\Schema',
+        // IBM DB2 driver
+        'ibm'     => 'DreamFactory\Core\SqlDbCore\Ibmdb2\Schema',
+    ];
+
+    /**
+     * @var array mapping between PDO driver and label.
+     */
+    public static $driverLabelMap = [
+        'pgsql'   => 'PostgreSQL',
+        'mysql'   => 'MySQL',
+        'sqlite'  => 'SQLite',
+        'sqlite2' => 'SQLite2',
+        'dblib'   => 'MS SQL Server/Sybase',
+        'sqlsrv'  => 'MS SQL Server',
+        'oci'     => 'Oracle Database',
+        'ibm'     => 'IBM DB2',
+    ];
+
+    /**
      * @var array mapping between PDO driver and adapter class name.
      * An adapter class can be specified using path alias.
-     * @since 1.1.6
      */
     public static $driverAdapterMap = [
+        // MS SQL Server
         'mssql'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',
-        // Mssql driver on windows hosts
+        // MS SQL Server on linux (and maybe others os) hosts
         'dblib'  => 'DreamFactory\Core\SqlDbCore\Mssql\PdoAdapter',
-        // dblib drivers on linux (and maybe others os) hosts
+        // MS SQL Server on Windows
         'sqlsrv' => 'DreamFactory\Core\SqlDbCore\Mssql\SqlsrvPdoAdapter',
-        // Mssql
-        'oci'    => 'DreamFactory\Core\SqlDbCore\Oci\PdoAdapter',
         // Oracle driver
+        'oci'    => 'DreamFactory\Core\SqlDbCore\Oci\PdoAdapter',
+    ];
+
+    /**
+     * @var array mapping between PDO driver and extension name.
+     */
+    public static $driverExtensionMap = [
+        'sqlite' => 'sqlite3',
+        'mysql'  => 'mysql',
+        'dblib'  => 'mssql',
+        'sqlsrv'  => 'mssql',
+        'pgsql'  => 'pgsql',
+        'oci'    => 'oci8',
+        'ibm'    => 'ibm_db2',
+    ];
+
+    /**
+     * @var array mapping between PDO driver and default DSN template.
+     */
+    public static $driverDsnMap = [
+        'sqlite' => 'sqlite:/opt/databases/db.sq3',
+        // http://php.net/manual/en/ref.pdo-sqlite.connection.php
+        'mysql'  => 'mysql:host=localhost;port=3306;dbname=db',
+        // http://php.net/manual/en/ref.pdo-mysql.connection.php
+        'dblib'  => 'mssql:host=localhost:1433;dbname=database',
+        // http://php.net/manual/en/ref.pdo-dblib.connection.php
+        'sqlsrv'  => 'sqlsrv:Server=localhost,1433;Database=db',
+        // http://php.net/manual/en/ref.pdo-sqlsrv.connection.php
+        'pgsql'  => 'pgsql:host=localhost;port=5432;dbname=db;user=name;password=pwd',
+        // http://php.net/manual/en/ref.pdo-pgsql.connection.php
+        'oci'    => 'oci:dbname=//localhost:1521/mydb',
+        // http://php.net/manual/en/ref.pdo-oci.connection.php
+        'ibm'    => 'ibm:DRIVER={IBM DB2 ODBC DRIVER};DATABASE=db;HOSTNAME=localhost;PORT=56789;PROTOCOL=TCPIP;',
+        // http://php.net/manual/en/ref.pdo-ibm.connection.php
     ];
 
     private $_attributes = [];
@@ -288,20 +327,9 @@ class Connection
      */
     public static function requireDriver($driver, $requires_pdo = true)
     {
-        static $driverExtensionMap = [
-            'sqlite' => 'sqlite3',
-            'mysql'  => 'mysql',
-            'mysqli' => 'mysqli',
-            'dblib'  => 'mssql',
-            'mssql'  => 'mssql',
-            'pgsql'  => 'pgsql',
-            'oci'    => 'oci8',
-            'ibm'    => 'ibm_db2',
-        ];
-
         if (!empty($driver)) {
-            if (isset($driverExtensionMap[$driver])) {
-                $extension = $driverExtensionMap[$driver];
+            if (isset(static::$driverExtensionMap[$driver])) {
+                $extension = static::$driverExtensionMap[$driver];
                 if ('mysql' === $extension) {
                     if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
                         throw new \Exception("Required extension or module '$extension' is not installed or loaded.");

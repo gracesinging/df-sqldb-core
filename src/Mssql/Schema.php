@@ -696,7 +696,7 @@ EOD;
     protected function findSchemaNames()
     {
         $sql = <<<SQL
-SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN
+SELECT schema_name FROM INFORMATION_SCHEMA.SCHEMATA WHERE schema_name NOT IN
 ('INFORMATION_SCHEMA', 'sys', 'db_owner', 'db_accessadmin', 'db_securityadmin',
 'db_ddladmin', 'db_backupoperator', 'db_datareader', 'db_datawriter',
 'db_denydatareader', 'db_denydatawriter')
@@ -1077,7 +1077,7 @@ EOD;
 SELECT
     ROUTINE_NAME
 FROM
-    information_schema.ROUTINES
+    INFORMATION_SCHEMA.ROUTINES
 WHERE
     ROUTINE_TYPE = :routine_type
     {$_where}
