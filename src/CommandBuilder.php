@@ -23,16 +23,16 @@ class CommandBuilder
 {
     const PARAM_PREFIX = ':yp';
 
-    private $_schema;
-    private $_connection;
+    private $schema;
+    private $connection;
 
     /**
      * @param Schema $schema the schema for this command builder
      */
     public function __construct($schema)
     {
-        $this->_schema = $schema;
-        $this->_connection = $schema->getDbConnection();
+        $this->schema = $schema;
+        $this->connection = $schema->getDbConnection();
     }
 
     /**
@@ -40,7 +40,7 @@ class CommandBuilder
      */
     public function getDbConnection()
     {
-        return $this->_connection;
+        return $this->connection;
     }
 
     /**
@@ -48,7 +48,7 @@ class CommandBuilder
      */
     public function getSchema()
     {
-        return $this->_schema;
+        return $this->schema;
     }
 
     /**
@@ -62,7 +62,7 @@ class CommandBuilder
     {
         $this->ensureTable($table);
         if ($table->sequenceName !== null) {
-            return $this->_connection->getLastInsertID($table->sequenceName);
+            return $this->connection->getLastInsertID($table->sequenceName);
         } else {
             return null;
         }
@@ -84,14 +84,14 @@ class CommandBuilder
         if ($criteria->alias != '') {
             $alias = $criteria->alias;
         }
-        $alias = $this->_schema->quoteTableName($alias);
+        $alias = $this->schema->quoteTableName($alias);
 
         // issue 1432: need to expand * when SQL has JOIN
         if ($select === '*' && !empty($criteria->join)) {
             $prefix = $alias . '.';
             $select = array();
             foreach ($table->getColumnNames() as $name) {
-                $select[] = $prefix . $this->_schema->quoteColumnName($name);
+                $select[] = $prefix . $this->schema->quoteColumnName($name);
             }
             $select = implode(', ', $select);
         }
@@ -103,7 +103,7 @@ class CommandBuilder
         $sql = $this->applyHaving($sql, $criteria->having);
         $sql = $this->applyOrder($sql, $criteria->order);
         $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $this->bindValues($command, $criteria->params);
 
         return $command;
@@ -124,7 +124,7 @@ class CommandBuilder
         if ($criteria->alias != '') {
             $alias = $criteria->alias;
         }
-        $alias = $this->_schema->quoteTableName($alias);
+        $alias = $this->schema->quoteTableName($alias);
 
         if (!empty($criteria->group) || !empty($criteria->having)) {
             $select = is_array($criteria->select) ? implode(', ', $criteria->select) : $criteria->select;
@@ -183,7 +183,7 @@ class CommandBuilder
             }
         }
 
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $this->bindValues($command, $criteria->params);
 
         return $command;
@@ -207,7 +207,7 @@ class CommandBuilder
         $sql = $this->applyHaving($sql, $criteria->having);
         $sql = $this->applyOrder($sql, $criteria->order);
         $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $this->bindValues($command, $criteria->params);
 
         return $command;
@@ -257,7 +257,7 @@ class CommandBuilder
             ') VALUES (' .
             implode(', ', $placeholders) .
             ')';
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         foreach ($values as $name => $value) {
             $command->bindValue($name, $value);
@@ -422,7 +422,7 @@ class CommandBuilder
         $sql = $this->applyOrder($sql, $criteria->order);
         $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
 
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $this->bindValues($command, array_merge($values, $criteria->params));
 
         return $command;
@@ -458,7 +458,7 @@ class CommandBuilder
             $sql = $this->applyCondition($sql, $criteria->condition);
             $sql = $this->applyOrder($sql, $criteria->order);
             $sql = $this->applyLimit($sql, $criteria->limit, $criteria->offset);
-            $command = $this->_connection->createCommand($sql);
+            $command = $this->connection->createCommand($sql);
             $this->bindValues($command, $criteria->params);
 
             return $command;
@@ -477,7 +477,7 @@ class CommandBuilder
      */
     public function createSqlCommand($sql, $params = array())
     {
-        $command = $this->_connection->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $this->bindValues($command, $params);
 
         return $command;
@@ -669,7 +669,7 @@ class CommandBuilder
         $this->ensureTable($table);
         $criteria = $this->createCriteria($condition, $params);
         if ($criteria->alias != '') {
-            $prefix = $this->_schema->quoteTableName($criteria->alias) . '.';
+            $prefix = $this->schema->quoteTableName($criteria->alias) . '.';
         }
         if (!is_array($pk)) // single key
         {
@@ -727,7 +727,7 @@ class CommandBuilder
         $this->ensureTable($table);
         $criteria = $this->createCriteria($condition, $params);
         if ($criteria->alias != '') {
-            $prefix = $this->_schema->quoteTableName($criteria->alias) . '.';
+            $prefix = $this->schema->quoteTableName($criteria->alias) . '.';
         }
         $bindByPosition = isset($criteria->params[0]);
         $conditions = array();
@@ -808,14 +808,14 @@ class CommandBuilder
                 $keyword = '%' . strtr($keyword, array('%' => '\%', '_' => '\_')) . '%';
                 if ($caseSensitive) {
                     $condition[] =
-                        $prefix . $column->rawName . ' LIKE ' . $this->_connection->quoteValue('%' . $keyword . '%');
+                        $prefix . $column->rawName . ' LIKE ' . $this->connection->quoteValue('%' . $keyword . '%');
                 } else {
                     $condition[] =
                         'LOWER(' .
                         $prefix .
                         $column->rawName .
                         ') LIKE LOWER(' .
-                        $this->_connection->quoteValue('%' . $keyword . '%') .
+                        $this->connection->quoteValue('%' . $keyword . '%') .
                         ')';
                 }
             }
@@ -849,7 +849,7 @@ class CommandBuilder
             $prefix = $table->rawName . '.';
         }
 
-        $db = $this->_connection;
+        $db = $this->connection;
 
         if (is_array($columnName) && count($columnName) === 1) {
             $columnName = reset($columnName);
@@ -945,7 +945,7 @@ class CommandBuilder
      */
     protected function ensureTable(&$table)
     {
-        if (is_string($table) && ($table = $this->_schema->getTable($tableName = $table)) === null) {
+        if (is_string($table) && ($table = $this->schema->getTable($tableName = $table)) === null) {
             throw new \Exception("Table '$tableName' does not exist.");
         }
     }

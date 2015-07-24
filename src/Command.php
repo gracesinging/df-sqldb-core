@@ -71,12 +71,12 @@ class Command
      */
     public $params = array();
 
-    private $_connection;
-    private $_text;
-    private $_statement;
-    private $_paramLog = array();
-    private $_query;
-    private $_fetchMode = array(\PDO::FETCH_ASSOC);
+    private $connection;
+    private $text;
+    private $statement;
+    private $paramLog = array();
+    private $query;
+    private $fetchMode = array(\PDO::FETCH_ASSOC);
 
     /**
      * Constructor.
@@ -102,7 +102,7 @@ class Command
      */
     public function __construct(Connection $connection, $query = null)
     {
-        $this->_connection = $connection;
+        $this->connection = $connection;
         if (is_array($query)) {
             foreach ($query as $name => $value) {
                 $this->$name = $value;
@@ -119,7 +119,7 @@ class Command
      */
     public function __sleep()
     {
-        $this->_statement = null;
+        $this->statement = null;
 
         return array_keys(get_object_vars($this));
     }
@@ -136,7 +136,7 @@ class Command
     public function setFetchMode($mode)
     {
         $params = func_get_args();
-        $this->_fetchMode = $params;
+        $this->fetchMode = $params;
 
         return $this;
     }
@@ -152,10 +152,10 @@ class Command
      */
     public function reset()
     {
-        $this->_text = null;
-        $this->_query = null;
-        $this->_statement = null;
-        $this->_paramLog = array();
+        $this->text = null;
+        $this->query = null;
+        $this->statement = null;
+        $this->paramLog = array();
         $this->params = array();
 
         return $this;
@@ -166,11 +166,11 @@ class Command
      */
     public function getText()
     {
-        if ($this->_text == '' && !empty($this->_query)) {
-            $this->setText($this->buildQuery($this->_query));
+        if ($this->text == '' && !empty($this->query)) {
+            $this->setText($this->buildQuery($this->query));
         }
 
-        return $this->_text;
+        return $this->text;
     }
 
     /**
@@ -183,10 +183,10 @@ class Command
      */
     public function setText($value)
     {
-        if ($this->_connection->tablePrefix !== null && $value != '') {
-            $this->_text = preg_replace('/{{(.*?)}}/', $this->_connection->tablePrefix . '\1', $value);
+        if ($this->connection->tablePrefix !== null && $value != '') {
+            $this->text = preg_replace('/{{(.*?)}}/', $this->connection->tablePrefix . '\1', $value);
         } else {
-            $this->_text = $value;
+            $this->text = $value;
         }
         $this->cancel();
 
@@ -198,7 +198,7 @@ class Command
      */
     public function getConnection()
     {
-        return $this->_connection;
+        return $this->connection;
     }
 
     /**
@@ -207,7 +207,7 @@ class Command
      */
     public function getPdoStatement()
     {
-        return $this->_statement;
+        return $this->statement;
     }
 
     /**
@@ -221,10 +221,10 @@ class Command
      */
     public function prepare()
     {
-        if ($this->_statement == null) {
+        if ($this->statement == null) {
             try {
-                $this->_statement = $this->getConnection()->getPdoInstance()->prepare($this->getText());
-                $this->_paramLog = array();
+                $this->statement = $this->getConnection()->getPdoInstance()->prepare($this->getText());
+                $this->paramLog = array();
             } catch (\Exception $e) {
                 $errorInfo = $e instanceof \PDOException ? $e->errorInfo : null;
                 throw new \Exception('Command failed to prepare the SQL statement: ' . $e->getMessage(),
@@ -238,7 +238,7 @@ class Command
      */
     public function cancel()
     {
-        $this->_statement = null;
+        $this->statement = null;
     }
 
     /**
@@ -261,15 +261,15 @@ class Command
     {
         $this->prepare();
         if ($dataType === null) {
-            $this->_statement->bindParam($name, $value, $this->_connection->getPdoType(gettype($value)));
+            $this->statement->bindParam($name, $value, $this->connection->getPdoType(gettype($value)));
         } elseif ($length === null) {
-            $this->_statement->bindParam($name, $value, $dataType);
+            $this->statement->bindParam($name, $value, $dataType);
         } elseif ($driverOptions === null) {
-            $this->_statement->bindParam($name, $value, $dataType, $length);
+            $this->statement->bindParam($name, $value, $dataType, $length);
         } else {
-            $this->_statement->bindParam($name, $value, $dataType, $length, $driverOptions);
+            $this->statement->bindParam($name, $value, $dataType, $length, $driverOptions);
         }
-        $this->_paramLog[$name] =& $value;
+        $this->paramLog[$name] =& $value;
 
         return $this;
     }
@@ -292,11 +292,11 @@ class Command
     {
         $this->prepare();
         if ($dataType === null) {
-            $this->_statement->bindValue($name, $value, $this->_connection->getPdoType(gettype($value)));
+            $this->statement->bindValue($name, $value, $this->connection->getPdoType(gettype($value)));
         } else {
-            $this->_statement->bindValue($name, $value, $dataType);
+            $this->statement->bindValue($name, $value, $dataType);
         }
-        $this->_paramLog[$name] = $value;
+        $this->paramLog[$name] = $value;
 
         return $this;
     }
@@ -317,8 +317,8 @@ class Command
     {
         $this->prepare();
         foreach ($values as $name => $value) {
-            $this->_statement->bindValue($name, $value, $this->_connection->getPdoType(gettype($value)));
-            $this->_paramLog[$name] = $value;
+            $this->statement->bindValue($name, $value, $this->connection->getPdoType(gettype($value)));
+            $this->paramLog[$name] = $value;
         }
 
         return $this;
@@ -345,11 +345,11 @@ class Command
         try {
             $this->prepare();
             if ($params === array()) {
-                $this->_statement->execute();
+                $this->statement->execute();
             } else {
-                $this->_statement->execute($params);
+                $this->statement->execute($params);
             }
-            $n = $this->_statement->rowCount();
+            $n = $this->statement->rowCount();
 
             return $n;
         } catch (\Exception $e) {
@@ -399,7 +399,7 @@ class Command
      */
     public function queryAll($fetchAssociative = true, $params = array())
     {
-        return $this->queryInternal('fetchAll', $fetchAssociative ? $this->_fetchMode : \PDO::FETCH_NUM, $params);
+        return $this->queryInternal('fetchAll', $fetchAssociative ? $this->fetchMode : \PDO::FETCH_NUM, $params);
     }
 
     /**
@@ -422,7 +422,7 @@ class Command
      */
     public function queryRow($fetchAssociative = true, $params = array())
     {
-        return $this->queryInternal('fetch', $fetchAssociative ? $this->_fetchMode : \PDO::FETCH_NUM, $params);
+        return $this->queryInternal('fetch', $fetchAssociative ? $this->fetchMode : \PDO::FETCH_NUM, $params);
     }
 
     /**
@@ -495,18 +495,18 @@ class Command
         try {
             $this->prepare();
             if ($params === array()) {
-                $this->_statement->execute();
+                $this->statement->execute();
             } else {
-                $this->_statement->execute($params);
+                $this->statement->execute($params);
             }
 
             if ($method === '') {
                 $result = new DataReader($this);
             } else {
                 $mode = (array)$mode;
-                call_user_func_array(array($this->_statement, 'setFetchMode'), $mode);
-                $result = $this->_statement->$method();
-                $this->_statement->closeCursor();
+                call_user_func_array(array($this->statement, 'setFetchMode'), $mode);
+                $result = $this->statement->$method();
+                $this->statement->closeCursor();
             }
 
             return $result;
@@ -570,7 +570,7 @@ class Command
         $limit = isset($query['limit']) ? (int)$query['limit'] : -1;
         $offset = isset($query['offset']) ? (int)$query['offset'] : -1;
         if ($limit >= 0 || $offset > 0) {
-            $sql = $this->_connection->getCommandBuilder()->applyLimit($sql, $limit, $offset);
+            $sql = $this->connection->getCommandBuilder()->applyLimit($sql, $limit, $offset);
         }
 
         return $sql;
@@ -595,7 +595,7 @@ class Command
     public function select($columns = '*', $option = '')
     {
         if (is_string($columns) && strpos($columns, '(') !== false) {
-            $this->_query['select'] = $columns;
+            $this->query['select'] = $columns;
         } else {
             if (!is_array($columns)) {
                 $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
@@ -607,18 +607,18 @@ class Command
                 } elseif (strpos($column, '(') === false) {
                     if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $column, $matches)) {
                         $columns[$i] =
-                            $this->_connection->quoteColumnName($matches[1]) .
+                            $this->connection->quoteColumnName($matches[1]) .
                             ' AS ' .
-                            $this->_connection->quoteColumnName($matches[2]);
+                            $this->connection->quoteColumnName($matches[2]);
                     } else {
-                        $columns[$i] = $this->_connection->quoteColumnName($column);
+                        $columns[$i] = $this->connection->quoteColumnName($column);
                     }
                 }
             }
-            $this->_query['select'] = implode(', ', $columns);
+            $this->query['select'] = implode(', ', $columns);
         }
         if ($option != '') {
-            $this->_query['select'] = $option . ' ' . $this->_query['select'];
+            $this->query['select'] = $option . ' ' . $this->query['select'];
         }
 
         return $this;
@@ -632,7 +632,7 @@ class Command
      */
     public function getSelect()
     {
-        return isset($this->_query['select']) ? $this->_query['select'] : '';
+        return isset($this->query['select']) ? $this->query['select'] : '';
     }
 
     /**
@@ -659,7 +659,7 @@ class Command
      */
     public function selectDistinct($columns = '*')
     {
-        $this->_query['distinct'] = true;
+        $this->query['distinct'] = true;
 
         return $this->select($columns);
     }
@@ -672,7 +672,7 @@ class Command
      */
     public function getDistinct()
     {
-        return isset($this->_query['distinct']) ? $this->_query['distinct'] : false;
+        return isset($this->query['distinct']) ? $this->query['distinct'] : false;
     }
 
     /**
@@ -684,7 +684,7 @@ class Command
      */
     public function setDistinct($value)
     {
-        $this->_query['distinct'] = $value;
+        $this->query['distinct'] = $value;
     }
 
     /**
@@ -703,7 +703,7 @@ class Command
     public function from($tables)
     {
         if (is_string($tables) && strpos($tables, '(') !== false) {
-            $this->_query['from'] = $tables;
+            $this->query['from'] = $tables;
         } else {
             if (!is_array($tables)) {
                 $tables = preg_split('/\s*,\s*/', trim($tables), -1, PREG_SPLIT_NO_EMPTY);
@@ -713,15 +713,15 @@ class Command
                     if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $table, $matches))  // with alias
                     {
                         $tables[$i] =
-                            $this->_connection->quoteTableName($matches[1]) .
+                            $this->connection->quoteTableName($matches[1]) .
                             ' ' .
-                            $this->_connection->quoteTableName($matches[2]);
+                            $this->connection->quoteTableName($matches[2]);
                     } else {
-                        $tables[$i] = $this->_connection->quoteTableName($table);
+                        $tables[$i] = $this->connection->quoteTableName($table);
                     }
                 }
             }
-            $this->_query['from'] = implode(', ', $tables);
+            $this->query['from'] = implode(', ', $tables);
         }
 
         return $this;
@@ -735,7 +735,7 @@ class Command
      */
     public function getFrom()
     {
-        return isset($this->_query['from']) ? $this->_query['from'] : '';
+        return isset($this->query['from']) ? $this->query['from'] : '';
     }
 
     /**
@@ -798,7 +798,7 @@ class Command
      */
     public function where($conditions, $params = array())
     {
-        $this->_query['where'] = $this->processConditions($conditions);
+        $this->query['where'] = $this->processConditions($conditions);
 
         foreach ($params as $name => $value) {
             $this->params[$name] = $value;
@@ -822,10 +822,10 @@ class Command
      */
     public function andWhere($conditions, $params = array())
     {
-        if (isset($this->_query['where'])) {
-            $this->_query['where'] = $this->processConditions(array('AND', $this->_query['where'], $conditions));
+        if (isset($this->query['where'])) {
+            $this->query['where'] = $this->processConditions(array('AND', $this->query['where'], $conditions));
         } else {
-            $this->_query['where'] = $this->processConditions($conditions);
+            $this->query['where'] = $this->processConditions($conditions);
         }
 
         foreach ($params as $name => $value) {
@@ -850,10 +850,10 @@ class Command
      */
     public function orWhere($conditions, $params = array())
     {
-        if (isset($this->_query['where'])) {
-            $this->_query['where'] = $this->processConditions(array('OR', $this->_query['where'], $conditions));
+        if (isset($this->query['where'])) {
+            $this->query['where'] = $this->processConditions(array('OR', $this->query['where'], $conditions));
         } else {
-            $this->_query['where'] = $this->processConditions($conditions);
+            $this->query['where'] = $this->processConditions($conditions);
         }
 
         foreach ($params as $name => $value) {
@@ -871,7 +871,7 @@ class Command
      */
     public function getWhere()
     {
-        return isset($this->_query['where']) ? $this->_query['where'] : '';
+        return isset($this->query['where']) ? $this->query['where'] : '';
     }
 
     /**
@@ -917,7 +917,7 @@ class Command
      */
     public function getJoin()
     {
-        return isset($this->_query['join']) ? $this->_query['join'] : '';
+        return isset($this->query['join']) ? $this->query['join'] : '';
     }
 
     /**
@@ -931,7 +931,7 @@ class Command
      */
     public function setJoin($value)
     {
-        $this->_query['join'] = $value;
+        $this->query['join'] = $value;
     }
 
     /**
@@ -1025,7 +1025,7 @@ class Command
     public function group($columns)
     {
         if (is_string($columns) && strpos($columns, '(') !== false) {
-            $this->_query['group'] = $columns;
+            $this->query['group'] = $columns;
         } else {
             if (!is_array($columns)) {
                 $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
@@ -1034,10 +1034,10 @@ class Command
                 if (is_object($column)) {
                     $columns[$i] = (string)$column;
                 } elseif (strpos($column, '(') === false) {
-                    $columns[$i] = $this->_connection->quoteColumnName($column);
+                    $columns[$i] = $this->connection->quoteColumnName($column);
                 }
             }
-            $this->_query['group'] = implode(', ', $columns);
+            $this->query['group'] = implode(', ', $columns);
         }
 
         return $this;
@@ -1051,7 +1051,7 @@ class Command
      */
     public function getGroup()
     {
-        return isset($this->_query['group']) ? $this->_query['group'] : '';
+        return isset($this->query['group']) ? $this->query['group'] : '';
     }
 
     /**
@@ -1079,7 +1079,7 @@ class Command
      */
     public function having($conditions, $params = array())
     {
-        $this->_query['having'] = $this->processConditions($conditions);
+        $this->query['having'] = $this->processConditions($conditions);
         foreach ($params as $name => $value) {
             $this->params[$name] = $value;
         }
@@ -1095,7 +1095,7 @@ class Command
      */
     public function getHaving()
     {
-        return isset($this->_query['having']) ? $this->_query['having'] : '';
+        return isset($this->query['having']) ? $this->query['having'] : '';
     }
 
     /**
@@ -1132,7 +1132,7 @@ class Command
     public function order($columns)
     {
         if (is_string($columns) && strpos($columns, '(') !== false) {
-            $this->_query['order'] = $columns;
+            $this->query['order'] = $columns;
         } else {
             if (!is_array($columns)) {
                 $columns = preg_split('/\s*,\s*/', trim($columns), -1, PREG_SPLIT_NO_EMPTY);
@@ -1142,13 +1142,13 @@ class Command
                     $columns[$i] = (string)$column;
                 } elseif (strpos($column, '(') === false) {
                     if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
-                        $columns[$i] = $this->_connection->quoteColumnName($matches[1]) . ' ' . strtoupper($matches[2]);
+                        $columns[$i] = $this->connection->quoteColumnName($matches[1]) . ' ' . strtoupper($matches[2]);
                     } else {
-                        $columns[$i] = $this->_connection->quoteColumnName($column);
+                        $columns[$i] = $this->connection->quoteColumnName($column);
                     }
                 }
             }
-            $this->_query['order'] = implode(', ', $columns);
+            $this->query['order'] = implode(', ', $columns);
         }
 
         return $this;
@@ -1162,7 +1162,7 @@ class Command
      */
     public function getOrder()
     {
-        return isset($this->_query['order']) ? $this->_query['order'] : '';
+        return isset($this->query['order']) ? $this->query['order'] : '';
     }
 
     /**
@@ -1189,7 +1189,7 @@ class Command
      */
     public function limit($limit, $offset = null)
     {
-        $this->_query['limit'] = (int)$limit;
+        $this->query['limit'] = (int)$limit;
         if ($offset !== null) {
             $this->offset($offset);
         }
@@ -1205,7 +1205,7 @@ class Command
      */
     public function getLimit()
     {
-        return isset($this->_query['limit']) ? $this->_query['limit'] : -1;
+        return isset($this->query['limit']) ? $this->query['limit'] : -1;
     }
 
     /**
@@ -1231,7 +1231,7 @@ class Command
      */
     public function offset($offset)
     {
-        $this->_query['offset'] = (int)$offset;
+        $this->query['offset'] = (int)$offset;
 
         return $this;
     }
@@ -1244,7 +1244,7 @@ class Command
      */
     public function getOffset()
     {
-        return isset($this->_query['offset']) ? $this->_query['offset'] : -1;
+        return isset($this->query['offset']) ? $this->query['offset'] : -1;
     }
 
     /**
@@ -1270,11 +1270,11 @@ class Command
      */
     public function union($sql)
     {
-        if (isset($this->_query['union']) && is_string($this->_query['union'])) {
-            $this->_query['union'] = array($this->_query['union']);
+        if (isset($this->query['union']) && is_string($this->query['union'])) {
+            $this->query['union'] = array($this->query['union']);
         }
 
-        $this->_query['union'][] = $sql;
+        $this->query['union'][] = $sql;
 
         return $this;
     }
@@ -1288,7 +1288,7 @@ class Command
      */
     public function getUnion()
     {
-        return isset($this->_query['union']) ? $this->_query['union'] : '';
+        return isset($this->query['union']) ? $this->query['union'] : '';
     }
 
     /**
@@ -1301,7 +1301,7 @@ class Command
      */
     public function setUnion($value)
     {
-        $this->_query['union'] = $value;
+        $this->query['union'] = $value;
     }
 
     /**
@@ -1320,7 +1320,7 @@ class Command
         $names = array();
         $placeholders = array();
         foreach ($columns as $name => $value) {
-            $names[] = $this->_connection->quoteColumnName($name);
+            $names[] = $this->connection->quoteColumnName($name);
             if ($value instanceof Expression) {
                 $placeholders[] = $value->expression;
                 foreach ($value->params as $n => $v) {
@@ -1333,7 +1333,7 @@ class Command
         }
         $sql =
             'INSERT INTO ' .
-            $this->_connection->quoteTableName($table) .
+            $this->connection->quoteTableName($table) .
             ' (' .
             implode(', ', $names) .
             ') VALUES (' .
@@ -1363,18 +1363,18 @@ class Command
         $lines = array();
         foreach ($columns as $name => $value) {
             if ($value instanceof Expression) {
-                $lines[] = $this->_connection->quoteColumnName($name) . '=' . $value->expression;
+                $lines[] = $this->connection->quoteColumnName($name) . '=' . $value->expression;
                 foreach ($value->params as $n => $v) {
                     $params[$n] = $v;
                 }
             } else {
                 // DF yii not supporting spaces in field names
-                $_paramName = str_replace(' ', '_', $name);
-                $lines[] = $this->_connection->quoteColumnName($name) . '=:' . $_paramName;
-                $params[':' . $_paramName] = $value;
+                $paramName = str_replace(' ', '_', $name);
+                $lines[] = $this->connection->quoteColumnName($name) . '=:' . $paramName;
+                $params[':' . $paramName] = $value;
             }
         }
-        $sql = 'UPDATE ' . $this->_connection->quoteTableName($table) . ' SET ' . implode(', ', $lines);
+        $sql = 'UPDATE ' . $this->connection->quoteTableName($table) . ' SET ' . implode(', ', $lines);
         if (($where = $this->processConditions($conditions)) != '') {
             $sql .= ' WHERE ' . $where;
         }
@@ -1395,7 +1395,7 @@ class Command
      */
     public function delete($table, $conditions = '', $params = array())
     {
-        $sql = 'DELETE FROM ' . $this->_connection->quoteTableName($table);
+        $sql = 'DELETE FROM ' . $this->connection->quoteTableName($table);
         if (($where = $this->processConditions($conditions)) != '') {
             $sql .= ' WHERE ' . $where;
         }
@@ -1652,7 +1652,7 @@ class Command
 
         $column = $conditions[1];
         if (strpos($column, '(') === false) {
-            $column = $this->_connection->quoteColumnName($column);
+            $column = $this->connection->quoteColumnName($column);
         }
 
         $values = $conditions[2];
@@ -1666,7 +1666,7 @@ class Command
             }
             foreach ($values as $i => $value) {
                 if (is_string($value)) {
-                    $values[$i] = $this->_connection->quoteValue($value);
+                    $values[$i] = $this->connection->quoteValue($value);
                 } else {
                     $values[$i] = (string)$value;
                 }
@@ -1692,7 +1692,7 @@ class Command
             }
             $expressions = array();
             foreach ($values as $value) {
-                $expressions[] = $column . ' ' . $operator . ' ' . $this->_connection->quoteValue($value);
+                $expressions[] = $column . ' ' . $operator . ' ' . $this->connection->quoteValue($value);
             }
 
             return implode($andor, $expressions);
@@ -1723,11 +1723,11 @@ class Command
             if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $table, $matches))  // with alias
             {
                 $table =
-                    $this->_connection->quoteTableName($matches[1]) .
+                    $this->connection->quoteTableName($matches[1]) .
                     ' ' .
-                    $this->_connection->quoteTableName($matches[2]);
+                    $this->connection->quoteTableName($matches[2]);
             } else {
-                $table = $this->_connection->quoteTableName($table);
+                $table = $this->connection->quoteTableName($table);
             }
         }
 
@@ -1736,11 +1736,11 @@ class Command
             $conditions = ' ON ' . $conditions;
         }
 
-        if (isset($this->_query['join']) && is_string($this->_query['join'])) {
-            $this->_query['join'] = array($this->_query['join']);
+        if (isset($this->query['join']) && is_string($this->query['join'])) {
+            $this->query['join'] = array($this->query['join']);
         }
 
-        $this->_query['join'][] = strtoupper($type) . ' ' . $table . $conditions;
+        $this->query['join'][] = strtoupper($type) . ' ' . $table . $conditions;
 
         foreach ($params as $name => $value) {
             $this->params[$name] = $value;

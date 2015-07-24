@@ -154,13 +154,13 @@ class TableSchema
     {
         empty($separator) && $separator = ['_', '-'];
 
-        $_newString = ucwords(str_replace($separator, ' ', $string));
+        $newString = ucwords(str_replace($separator, ' ', $string));
 
         if (false !== $isKey) {
-            $_newString = lcfirst($_newString);
+            $newString = lcfirst($newString);
         }
 
-        return (false === $preserveWhiteSpace ? str_replace(' ', null, $_newString) : $_newString);
+        return (false === $preserveWhiteSpace ? str_replace(' ', null, $newString) : $newString);
     }
 
     /**
@@ -173,7 +173,7 @@ class TableSchema
     public static function pluralize($name)
     {
         /** @noinspection SpellCheckingInspection */
-        static $_blacklist = array(
+        static $blacklist = array(
             'Amoyese',
             'bison',
             'Borghese',
@@ -258,7 +258,7 @@ class TableSchema
             'Yengeese',
         );
         /** @noinspection SpellCheckingInspection */
-        static $_rules = array(
+        static $rules = array(
             '/(s)tatus$/i'                                                                 => '\1\2tatuses',
             '/(quiz)$/i'                                                                   => '\1zes',
             '/^(ox)$/i'                                                                    => '\1en',
@@ -289,13 +289,13 @@ class TableSchema
             '/$/'                                                                          => 's',
         );
 
-        if (empty($name) || in_array(strtolower($name), $_blacklist)) {
+        if (empty($name) || in_array(strtolower($name), $blacklist)) {
             return $name;
         }
 
-        foreach ($_rules as $_rule => $_replacement) {
-            if (preg_match($_rule, $name)) {
-                return preg_replace($_rule, $_replacement, $name);
+        foreach ($rules as $rule => $replacement) {
+            if (preg_match($rule, $name)) {
+                return preg_replace($rule, $replacement, $name);
             }
         }
 

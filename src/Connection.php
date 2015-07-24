@@ -251,11 +251,11 @@ class Connection
         // http://php.net/manual/en/ref.pdo-ibm.connection.php
     ];
 
-    private $_attributes = [];
-    private $_active = false;
-    private $_pdo;
-    private $_transaction;
-    private $_schema;
+    private $attributes = [];
+    private $active = false;
+    private $pdo;
+    private $transaction;
+    private $schema;
 
     /**
      * Constructor.
@@ -377,7 +377,7 @@ class Connection
      */
     public function getActive()
     {
-        return $this->_active;
+        return $this->active;
     }
 
     /**
@@ -389,7 +389,7 @@ class Connection
      */
     public function setActive($value)
     {
-        if ($value != $this->_active) {
+        if ($value != $this->active) {
             if ($value) {
                 $this->open();
             } else {
@@ -405,14 +405,14 @@ class Connection
      */
     protected function open()
     {
-        if ($this->_pdo === null) {
+        if ($this->pdo === null) {
             if (empty($this->connectionString)) {
                 throw new \Exception('Connection.connectionString cannot be empty.');
             }
             try {
-                $this->_pdo = $this->createPdoInstance();
-                $this->initConnection($this->_pdo);
-                $this->_active = true;
+                $this->pdo = $this->createPdoInstance();
+                $this->initConnection($this->pdo);
+                $this->active = true;
             } catch (\PDOException $e) {
                 throw new \Exception(
                     'Connection failed to open the DB connection: ' . $e->getMessage(), (int)$e->getCode(),
@@ -428,9 +428,9 @@ class Connection
      */
     protected function close()
     {
-        $this->_pdo = null;
-        $this->_active = false;
-        $this->_schema = null;
+        $this->pdo = null;
+        $this->active = false;
+        $this->schema = null;
     }
 
     /**
@@ -458,7 +458,7 @@ class Connection
             throw new \Exception('Connection is unable to find PDO class "{$pdoClass}". Make sure PDO is installed correctly.');
         }
 
-        @$instance = new $pdoClass($this->connectionString, $this->username, $this->password, $this->_attributes);
+        @$instance = new $pdoClass($this->connectionString, $this->username, $this->password, $this->attributes);
 
         if (!$instance) {
             throw new \Exception('Connection failed to open the DB connection.');
@@ -500,7 +500,7 @@ class Connection
      */
     public function getPdoInstance()
     {
-        return $this->_pdo;
+        return $this->pdo;
     }
 
     /**
@@ -528,9 +528,9 @@ class Connection
      */
     public function getCurrentTransaction()
     {
-        if ($this->_transaction !== null) {
-            if ($this->_transaction->getActive()) {
-                return $this->_transaction;
+        if ($this->transaction !== null) {
+            if ($this->transaction->getActive()) {
+                return $this->transaction;
             }
         }
 
@@ -545,9 +545,9 @@ class Connection
     public function beginTransaction()
     {
         $this->setActive(true);
-        $this->_pdo->beginTransaction();
+        $this->pdo->beginTransaction();
 
-        return $this->_transaction = new Transaction($this);
+        return $this->transaction = new Transaction($this);
     }
 
     /**
@@ -558,12 +558,12 @@ class Connection
      */
     public function getSchema()
     {
-        if ($this->_schema !== null) {
-            return $this->_schema;
+        if ($this->schema !== null) {
+            return $this->schema;
         } else {
             $driver = $this->getDBName();
             if (isset(static::$driverSchemaMap[$driver])) {
-                return $this->_schema = static::createComponent(static::$driverSchemaMap[$driver], $this);
+                return $this->schema = static::createComponent(static::$driverSchemaMap[$driver], $this);
             } else {
                 throw new \Exception("Connection does not support reading schema for '$driver' database.");
             }
@@ -628,7 +628,7 @@ class Connection
     {
         $this->setActive(true);
 
-        return $this->_pdo->lastInsertId($sequenceName);
+        return $this->pdo->lastInsertId($sequenceName);
     }
 
     /**
@@ -646,7 +646,7 @@ class Connection
         }
 
         $this->setActive(true);
-        if (($value = $this->_pdo->quote($str)) !== false) {
+        if (($value = $this->pdo->quote($str)) !== false) {
             return $value;
         } else  // the driver doesn't support quote (e.g. oci)
         {
@@ -877,7 +877,7 @@ class Connection
     {
         $this->setActive(true);
 
-        return $this->_pdo->getAttribute($name);
+        return $this->pdo->getAttribute($name);
     }
 
     /**
@@ -890,10 +890,10 @@ class Connection
      */
     public function setAttribute($name, $value)
     {
-        if ($this->_pdo instanceof \PDO) {
-            $this->_pdo->setAttribute($name, $value);
+        if ($this->pdo instanceof \PDO) {
+            $this->pdo->setAttribute($name, $value);
         } else {
-            $this->_attributes[$name] = $value;
+            $this->attributes[$name] = $value;
         }
     }
 
@@ -906,7 +906,7 @@ class Connection
      */
     public function getAttributes()
     {
-        return $this->_attributes;
+        return $this->attributes;
     }
 
     /**
@@ -920,7 +920,7 @@ class Connection
     public function setAttributes($values)
     {
         foreach ($values as $name => $value) {
-            $this->_attributes[$name] = $value;
+            $this->attributes[$name] = $value;
         }
     }
 

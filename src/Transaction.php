@@ -39,8 +39,8 @@ namespace DreamFactory\Core\SqlDbCore;
  */
 class Transaction
 {
-    private $_connection = null;
-    private $_active;
+    private $connection = null;
+    private $active;
 
     /**
      * Constructor.
@@ -51,8 +51,8 @@ class Transaction
      */
     public function __construct(Connection $connection)
     {
-        $this->_connection = $connection;
-        $this->_active = true;
+        $this->connection = $connection;
+        $this->active = true;
     }
 
     /**
@@ -62,9 +62,9 @@ class Transaction
      */
     public function commit()
     {
-        if ($this->_active && $this->_connection->getActive()) {
-            $this->_connection->getPdoInstance()->commit();
-            $this->_active = false;
+        if ($this->active && $this->connection->getActive()) {
+            $this->connection->getPdoInstance()->commit();
+            $this->active = false;
         } else {
             throw new \Exception('Transaction is inactive and cannot perform commit or roll back operations.');
         }
@@ -77,9 +77,9 @@ class Transaction
      */
     public function rollback()
     {
-        if ($this->_active && $this->_connection->getActive()) {
-            $this->_connection->getPdoInstance()->rollBack();
-            $this->_active = false;
+        if ($this->active && $this->connection->getActive()) {
+            $this->connection->getPdoInstance()->rollBack();
+            $this->active = false;
         } else {
             throw new \Exception('Transaction is inactive and cannot perform commit or roll back operations.');
         }
@@ -90,7 +90,7 @@ class Transaction
      */
     public function getConnection()
     {
-        return $this->_connection;
+        return $this->connection;
     }
 
     /**
@@ -98,7 +98,7 @@ class Transaction
      */
     public function getActive()
     {
-        return $this->_active;
+        return $this->active;
     }
 
     /**
@@ -106,6 +106,6 @@ class Transaction
      */
     protected function setActive($value)
     {
-        $this->_active = $value;
+        $this->active = $value;
     }
 }

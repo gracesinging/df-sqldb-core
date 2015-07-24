@@ -25,7 +25,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     /**
      * @type string
      */
-    private $_defaultSchema;
+    private $defaultSchema;
 
     protected function translateSimpleColumnTypes(array &$info)
     {
@@ -609,7 +609,7 @@ MYSQL;
      */
     protected function findProcedureNames($schema = '')
     {
-        return $this->_findRoutines('procedure', $schema);
+        return $this->findRoutines('procedure', $schema);
     }
 
     /**
@@ -622,59 +622,59 @@ MYSQL;
     public function callProcedure($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_paramStr = '';
-        $_pre = '';
-        $_post = '';
-        $_bindings = [];
-        foreach ($params as $_key => $_param) {
-            $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
-            $_pValue = isset($_param['value']) ? $_param['value'] : null;
+        $paramStr = '';
+        $pre = '';
+        $post = '';
+        $bindings = [];
+        foreach ($params as $key => $param) {
+            $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
+            $pValue = isset($param['value']) ? $param['value'] : null;
 
-            if (!empty($_paramStr)) {
-                $_paramStr .= ', ';
+            if (!empty($paramStr)) {
+                $paramStr .= ', ';
             }
 
-            switch (strtoupper(strval(isset($_param['param_type']) ? $_param['param_type'] : 'IN'))) {
+            switch (strtoupper(strval(isset($param['param_type']) ? $param['param_type'] : 'IN'))) {
                 case 'INOUT':
                     // not using binding for out or inout params here due to earlier (<5.5.3) mysql library bug
                     // since binding isn't working, set the values via statements, get the values via select
-                    $_pre .= "SET @$_pName = $_pValue; ";
-                    $_post .= (empty($_post)) ? "SELECT @$_pName" : ", @$_pName";
-                    $_paramStr .= "@$_pName";
+                    $pre .= "SET @$pName = $pValue; ";
+                    $post .= (empty($post)) ? "SELECT @$pName" : ", @$pName";
+                    $paramStr .= "@$pName";
                     break;
 
                 case 'OUT':
                     // not using binding for out or inout params here due to earlier (<5.5.3) mysql library bug
                     // since binding isn't working, get the values via select
-                    $_post .= (empty($_post)) ? "SELECT @$_pName" : ", @$_pName";
-                    $_paramStr .= "@$_pName";
+                    $post .= (empty($post)) ? "SELECT @$pName" : ", @$pName";
+                    $paramStr .= "@$pName";
                     break;
 
                 default:
-                    $_bindings[":$_pName"] = $_pValue;
-                    $_paramStr .= ":$_pName";
+                    $bindings[":$pName"] = $pValue;
+                    $paramStr .= ":$pName";
                     break;
             }
         }
 
-        !empty($_pre) && $this->getDbConnection()->createCommand($_pre)->execute();
+        !empty($pre) && $this->getDbConnection()->createCommand($pre)->execute();
 
-        $_sql = "CALL $name($_paramStr);";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $sql = "CALL $name($paramStr);";
+        $command = $this->getDbConnection()->createCommand($sql);
 
         // do binding
-        $_command->bindValues($_bindings);
+        $command->bindValues($bindings);
 
         // Move to the next result and get results
-        $_reader = $_command->query();
-        $_result = $_reader->readAll();
-        if ($_reader->nextResult()) {
+        $reader = $command->query();
+        $result = $reader->readAll();
+        if ($reader->nextResult()) {
             // more data coming, make room
-            $_result = [$_result];
+            $result = [$result];
             try {
                 do {
-                    $_result[] = $_reader->readAll();
-                } while ($_reader->nextResult());
+                    $result[] = $reader->readAll();
+                } while ($reader->nextResult());
             } catch (\Exception $ex) {
                 // mysql via pdo has issue of nextRowSet returning true one too many times
                 if (false !== strpos($ex->getMessage(), 'General Error')) {
@@ -682,28 +682,28 @@ MYSQL;
                 }
 
                 // if there is only one data set, just return it
-                if (1 == count($_result)) {
-                    $_result = $_result[0];
+                if (1 == count($result)) {
+                    $result = $result[0];
                 }
             }
         }
 
-        if (!empty($_post)) {
-            $_out = $this->getDbConnection()->createCommand($_post . ';')->queryRow();
-            foreach ($params as $_key => &$_param) {
-                $_pName = '@' . $_param['name'];
-                switch (strtoupper(strval(isset($_param['param_type']) ? $_param['param_type'] : 'IN'))) {
+        if (!empty($post)) {
+            $out = $this->getDbConnection()->createCommand($post . ';')->queryRow();
+            foreach ($params as $key => &$param) {
+                $pName = '@' . $param['name'];
+                switch (strtoupper(strval(isset($param['param_type']) ? $param['param_type'] : 'IN'))) {
                     case 'INOUT':
                     case 'OUT':
-                        if (isset($_out, $_out[$_pName])) {
-                            $_param['value'] = $_out[$_pName];
+                        if (isset($out, $out[$pName])) {
+                            $param['value'] = $out[$pName];
                         }
                         break;
                 }
             }
         }
 
-        return $_result;
+        return $result;
     }
 
     /**
@@ -717,7 +717,7 @@ MYSQL;
      */
     protected function findFunctionNames($schema = '')
     {
-        return $this->_findRoutines('function', $schema);
+        return $this->findRoutines('function', $schema);
     }
 
     /**
@@ -730,31 +730,31 @@ MYSQL;
     public function callFunction($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_bindings = [];
-        foreach ($params as $_key => $_param) {
-            $_name = (isset($_param['name']) && !empty($_param['name'])) ? ':' . $_param['name'] : ":p$_key";
-            $_value = isset($_param['value']) ? $_param['value'] : null;
+        $bindings = [];
+        foreach ($params as $key => $param) {
+            $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
+            $value = isset($param['value']) ? $param['value'] : null;
 
-            $_bindings[$_name] = $_value;
+            $bindings[$name] = $value;
         }
 
-        $_paramStr = implode(',', array_keys($_bindings));
-        $_sql = "SELECT $name($_paramStr);";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $paramStr = implode(',', array_keys($bindings));
+        $sql = "SELECT $name($paramStr);";
+        $command = $this->getDbConnection()->createCommand($sql);
 
         // do binding
-        $_command->bindValues($_bindings);
+        $command->bindValues($bindings);
 
         // Move to the next result and get results
-        $_reader = $_command->query();
-        $_result = $_reader->readAll();
-        if ($_reader->nextResult()) {
+        $reader = $command->query();
+        $result = $reader->readAll();
+        if ($reader->nextResult()) {
             // more data coming, make room
-            $_result = [$_result];
+            $result = [$result];
             try {
                 do {
-                    $_result[] = $_reader->readAll();
-                } while ($_reader->nextResult());
+                    $result[] = $reader->readAll();
+                } while ($reader->nextResult());
             } catch (\Exception $ex) {
                 // mysql via pdo has issue of nextRowSet returning true one too many times
                 if (false !== strpos($ex->getMessage(), 'General Error')) {
@@ -762,13 +762,13 @@ MYSQL;
                 }
 
                 // if there is only one data set, just return it
-                if (1 == count($_result)) {
-                    $_result = $_result[0];
+                if (1 == count($result)) {
+                    $result = $result[0];
                 }
             }
         }
 
-        return $_result;
+        return $result;
     }
 
     /**
@@ -893,7 +893,7 @@ MYSQL;
      * @throws \InvalidArgumentException
      * @return array all stored function names in the database.
      */
-    protected function _findRoutines($type, $schema = '')
+    protected function findRoutines($type, $schema = '')
     {
         $defaultSchema = $this->getDefaultSchema();
         $type = trim(strtoupper($type));
@@ -902,22 +902,22 @@ MYSQL;
             throw new \InvalidArgumentException('The type "' . $type . '" is invalid.');
         }
 
-        $_select =
+        $select =
             (empty($schema) || ($defaultSchema == $schema))
                 ? 'ROUTINE_NAME' : "CONCAT('" . $schema . "','.',ROUTINE_NAME) as ROUTINE_NAME";
-        $_schema = !empty($schema) ? " AND ROUTINE_SCHEMA = '" . $schema . "'" : null;
+        $schema = !empty($schema) ? " AND ROUTINE_SCHEMA = '" . $schema . "'" : null;
 
-        $_sql = <<<MYSQL
+        $sql = <<<MYSQL
 SELECT
-    {$_select}
+    {$select}
 FROM
     information_schema.ROUTINES
 WHERE
     ROUTINE_TYPE = :routine_type
-    {$_schema}
+    {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($_sql)->queryColumn([':routine_type' => $type]);
+        return $this->getDbConnection()->createCommand($sql)->queryColumn([':routine_type' => $type]);
     }
 
     /**
@@ -925,7 +925,7 @@ MYSQL;
      */
     public function setDefaultSchema($schema)
     {
-        $this->_defaultSchema = $schema;
+        $this->defaultSchema = $schema;
     }
 
     /**
@@ -933,7 +933,7 @@ MYSQL;
      */
     public function getDefaultSchema()
     {
-        if (empty($this->_defaultSchema)) {
+        if (empty($this->defaultSchema)) {
             $sql = <<<MYSQL
 SELECT DATABASE() FROM DUAL
 MYSQL;
@@ -942,14 +942,14 @@ MYSQL;
             $this->setDefaultSchema($current);
         }
 
-        return $this->_defaultSchema;
+        return $this->defaultSchema;
     }
 
     public function parseValueForSet($value, $field_info)
     {
-        $_type = (isset($field_info['type'])) ? $field_info['type'] : null;
+        $type = (isset($field_info['type'])) ? $field_info['type'] : null;
 
-        switch ($_type) {
+        switch ($type) {
             case 'boolean':
                 $value = (filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 1 : 0);
                 break;

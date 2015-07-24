@@ -30,39 +30,39 @@ abstract class Schema
     /**
      * @var array
      */
-    private $_schemaNames = [];
+    private $schemaNames = [];
     /**
      * @var array
      */
-    private $_tableNames = [];
+    private $tableNames = [];
     /**
      * @var array
      */
-    private $_tables = [];
+    private $tables = [];
     /**
      * @var array
      */
-    private $_procedureNames = [];
+    private $procedureNames = [];
     /**
      * @var array
      */
-    private $_procedures = [];
+    private $procedures = [];
     /**
      * @var array
      */
-    private $_functionNames = [];
+    private $functionNames = [];
     /**
      * @var array
      */
-    private $_functions = [];
+    private $functions = [];
     /**
      * @var Connection
      */
-    private $_connection;
+    private $connection;
     /**
      * @var
      */
-    private $_builder;
+    private $builder;
 
     /**
      * Loads the metadata for the specified table.
@@ -80,7 +80,7 @@ abstract class Schema
      */
     public function __construct($conn)
     {
-        $this->_connection = $conn;
+        $this->connection = $conn;
     }
 
     /**
@@ -88,7 +88,7 @@ abstract class Schema
      */
     public function getDbConnection()
     {
-        return $this->_connection;
+        return $this->connection;
     }
 
     /**
@@ -115,12 +115,12 @@ abstract class Schema
      */
     public function getSchemaNames($refresh = false)
     {
-        if ($refresh === false && !empty($this->_schemaNames)) {
-            return $this->_schemaNames;
+        if ($refresh === false && !empty($this->schemaNames)) {
+            return $this->schemaNames;
         } else {
-            $this->_schemaNames = $this->findSchemaNames();
+            $this->schemaNames = $this->findSchemaNames();
 
-            return $this->_schemaNames;
+            return $this->schemaNames;
         }
     }
 
@@ -149,16 +149,16 @@ abstract class Schema
      */
     public function getTable($name, $refresh = false)
     {
-        if ($refresh === false && isset($this->_tables[$name])) {
-            return $this->_tables[$name];
+        if ($refresh === false && isset($this->tables[$name])) {
+            return $this->tables[$name];
         } else {
-            if ($this->_connection->tablePrefix !== null && strpos($name, '{{') !== false) {
-                $realName = preg_replace('/\{\{(.*?)\}\}/', $this->_connection->tablePrefix . '$1', $name);
+            if ($this->connection->tablePrefix !== null && strpos($name, '{{') !== false) {
+                $realName = preg_replace('/\{\{(.*?)\}\}/', $this->connection->tablePrefix . '$1', $name);
             } else {
                 $realName = $name;
             }
 
-            $this->_tables[$name] = $table = $this->loadTable($realName);
+            $this->tables[$name] = $table = $this->loadTable($realName);
 
             return $table;
         }
@@ -207,11 +207,11 @@ abstract class Schema
         if (empty($schema)) {
             $names = [];
             foreach ($this->getSchemaNames() as $schema) {
-                if (!isset($this->_tableNames[$schema])) {
+                if (!isset($this->tableNames[$schema])) {
                     $this->getCachedTableNames($include_views);
                 }
 
-                $temp = (isset($this->_tableNames[$schema]) ? $this->_tableNames[$schema] : []);
+                $temp = (isset($this->tableNames[$schema]) ? $this->tableNames[$schema] : []);
                 $names = array_merge($names, $temp);
             }
 
@@ -219,11 +219,11 @@ abstract class Schema
 
             return array_values($names);
         } else {
-            if (!isset($this->_tableNames[$schema])) {
+            if (!isset($this->tableNames[$schema])) {
                 $this->getCachedTableNames($include_views);
             }
 
-            $names = (isset($this->_tableNames[$schema]) ? $this->_tableNames[$schema] : []);
+            $names = (isset($this->tableNames[$schema]) ? $this->tableNames[$schema] : []);
             natcasesort($names);
 
             return array_values($names);
@@ -242,7 +242,7 @@ abstract class Schema
         foreach ($this->getSchemaNames($refresh) as $temp) {
             $names[$temp] = $this->findTableNames($temp, $include_views);
         }
-        $this->_tableNames = $names;
+        $this->tableNames = $names;
     }
 
     /**
@@ -273,12 +273,12 @@ abstract class Schema
      */
     public function getProcedure($name, $refresh = false)
     {
-        if ($refresh === false && isset($this->_procedures[$name])) {
-            return $this->_procedures[$name];
+        if ($refresh === false && isset($this->procedures[$name])) {
+            return $this->procedures[$name];
         } else {
             $realName = $name;
 
-            $this->_procedures[$name] = $procedure = $this->loadProcedure($realName);
+            $this->procedures[$name] = $procedure = $this->loadProcedure($realName);
 
             return $procedure;
         }
@@ -348,11 +348,11 @@ abstract class Schema
         if (empty($schema)) {
             $names = [];
             foreach ($this->getSchemaNames() as $schema) {
-                if (!isset($this->_procedureNames[$schema])) {
+                if (!isset($this->procedureNames[$schema])) {
                     $this->getCachedProcedureNames();
                 }
 
-                $temp = (isset($this->_procedureNames[$schema]) ? $this->_procedureNames[$schema] : []);
+                $temp = (isset($this->procedureNames[$schema]) ? $this->procedureNames[$schema] : []);
                 $names = array_merge($names, $temp);
             }
 
@@ -360,11 +360,11 @@ abstract class Schema
 
             return array_values($names);
         } else {
-            if (!isset($this->_procedureNames[$schema])) {
+            if (!isset($this->procedureNames[$schema])) {
                 $this->getCachedProcedureNames();
             }
 
-            $names = (isset($this->_procedureNames[$schema]) ? $this->_procedureNames[$schema] : []);
+            $names = (isset($this->procedureNames[$schema]) ? $this->procedureNames[$schema] : []);
             natcasesort($names);
 
             return array_values($names);
@@ -382,7 +382,7 @@ abstract class Schema
         foreach ($this->getSchemaNames($refresh) as $temp) {
             $names[$temp] = $this->findProcedureNames($temp);
         }
-        $this->_procedureNames = $names;
+        $this->procedureNames = $names;
     }
 
     /**
@@ -413,11 +413,11 @@ abstract class Schema
      */
     public function getFunction($name, $refresh = false)
     {
-        if ($refresh === false && isset($this->_functions[$name])) {
-            return $this->_functions[$name];
+        if ($refresh === false && isset($this->functions[$name])) {
+            return $this->functions[$name];
         } else {
             $realName = $name;
-            $this->_functions[$name] = $function = $this->loadFunction($realName);
+            $this->functions[$name] = $function = $this->loadFunction($realName);
 
             return $function;
         }
@@ -462,11 +462,11 @@ abstract class Schema
         if (empty($schema)) {
             $names = [];
             foreach ($this->getSchemaNames() as $schema) {
-                if (!isset($this->_functionNames[$schema])) {
+                if (!isset($this->functionNames[$schema])) {
                     $this->getCachedFunctionNames();
                 }
 
-                $temp = (isset($this->_functionNames[$schema]) ? $this->_functionNames[$schema] : []);
+                $temp = (isset($this->functionNames[$schema]) ? $this->functionNames[$schema] : []);
                 $names = array_merge($names, $temp);
             }
 
@@ -474,11 +474,11 @@ abstract class Schema
 
             return array_values($names);
         } else {
-            if (!isset($this->_functionNames[$schema])) {
+            if (!isset($this->functionNames[$schema])) {
                 $this->getCachedFunctionNames();
             }
 
-            $names = (isset($this->_functionNames[$schema]) ? $this->_functionNames[$schema] : []);
+            $names = (isset($this->functionNames[$schema]) ? $this->functionNames[$schema] : []);
             natcasesort($names);
 
             return array_values($names);
@@ -496,7 +496,7 @@ abstract class Schema
         foreach ($this->getSchemaNames($refresh) as $temp) {
             $names[$temp] = $this->findFunctionNames($temp);
         }
-        $this->_functionNames = $names;
+        $this->functionNames = $names;
     }
 
     /**
@@ -546,10 +546,10 @@ abstract class Schema
      */
     public function getCommandBuilder()
     {
-        if ($this->_builder !== null) {
-            return $this->_builder;
+        if ($this->builder !== null) {
+            return $this->builder;
         } else {
-            return $this->_builder = $this->createCommandBuilder();
+            return $this->builder = $this->createCommandBuilder();
         }
     }
 
@@ -560,14 +560,14 @@ abstract class Schema
      */
     public function refresh()
     {
-        $this->_tables = [];
-        $this->_tableNames = [];
-        $this->_procedures = [];
-        $this->_procedureNames = [];
-        $this->_functions = [];
-        $this->_functionNames = [];
-        $this->_schemaNames = [];
-        $this->_builder = null;
+        $this->tables = [];
+        $this->tableNames = [];
+        $this->procedures = [];
+        $this->procedureNames = [];
+        $this->functions = [];
+        $this->functionNames = [];
+        $this->schemaNames = [];
+        $this->builder = null;
     }
 
     /**
@@ -661,12 +661,12 @@ abstract class Schema
         if (($pos = strrpos($name2, '.')) !== false) {
             $name2 = substr($name2, $pos + 1);
         }
-        if ($this->_connection->tablePrefix !== null) {
+        if ($this->connection->tablePrefix !== null) {
             if (strpos($name1, '{') !== false) {
-                $name1 = $this->_connection->tablePrefix . str_replace(['{', '}'], '', $name1);
+                $name1 = $this->connection->tablePrefix . str_replace(['{', '}'], '', $name1);
             }
             if (strpos($name2, '{') !== false) {
-                $name2 = $this->_connection->tablePrefix . str_replace(['{', '}'], '', $name2);
+                $name2 = $this->connection->tablePrefix . str_replace(['{', '}'], '', $name2);
             }
         }
 
@@ -1004,9 +1004,9 @@ abstract class Schema
 
     public function makeConstraintName($prefix, $table, $column)
     {
-        $_temp = $prefix . '_' . str_replace('.', '_', $table) . '_' . $column;
+        $temp = $prefix . '_' . str_replace('.', '_', $table) . '_' . $column;
 
-        return $_temp;
+        return $temp;
     }
 
     /**

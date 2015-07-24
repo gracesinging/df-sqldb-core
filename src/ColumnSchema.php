@@ -190,12 +190,12 @@ class ColumnSchema
      */
     public function extractType($dbType)
     {
-        $_simpleType = strstr($dbType, '(', true);
-        $_simpleType = strtolower($_simpleType ?: $dbType);
+        $simpleType = strstr($dbType, '(', true);
+        $simpleType = strtolower($simpleType ?: $dbType);
 
-        switch ($_simpleType) {
+        switch ($simpleType) {
             case 'bit':
-            case (false !== strpos($_simpleType, 'bool')):
+            case (false !== strpos($simpleType, 'bool')):
                 $this->type = static::TYPE_BOOLEAN;
                 break;
 
@@ -215,12 +215,12 @@ class ColumnSchema
                 $this->type = static::TYPE_DECIMAL;
                 break;
 
-            case (false !== strpos($_simpleType, 'double')):
+            case (false !== strpos($simpleType, 'double')):
                 $this->type = static::TYPE_DOUBLE;
                 break;
 
             case 'real':
-            case (false !== strpos($_simpleType, 'float')):
+            case (false !== strpos($simpleType, 'float')):
                 if ($this->size == 53) {
                     $this->type = static::TYPE_DOUBLE;
                 } else {
@@ -228,7 +228,7 @@ class ColumnSchema
                 }
                 break;
 
-            case (false !== strpos($_simpleType, 'money')):
+            case (false !== strpos($simpleType, 'money')):
                 $this->type = static::TYPE_MONEY;
                 break;
 
@@ -246,12 +246,12 @@ class ColumnSchema
                 }
                 break;
 
-            case (false !== strpos($_simpleType, 'timestamp')):
+            case (false !== strpos($simpleType, 'timestamp')):
             case 'datetimeoffset': //  MSSQL
                 $this->type = static::TYPE_TIMESTAMP;
                 break;
 
-            case (false !== strpos($_simpleType, 'datetime')):
+            case (false !== strpos($simpleType, 'datetime')):
                 $this->type = static::TYPE_DATETIME;
                 break;
 
@@ -259,18 +259,18 @@ class ColumnSchema
                 $this->type = static::TYPE_DATE;
                 break;
 
-            case (false !== strpos($_simpleType, 'time')):
+            case (false !== strpos($simpleType, 'time')):
                 $this->type = static::TYPE_TIME;
                 break;
 
-            case (false !== strpos($_simpleType, 'binary')):
-            case (false !== strpos($_simpleType, 'blob')):
+            case (false !== strpos($simpleType, 'binary')):
+            case (false !== strpos($simpleType, 'blob')):
                 $this->type = static::TYPE_BINARY;
                 break;
 
             //	String types
-            case (false !== strpos($_simpleType, 'clob')):
-            case (false !== strpos($_simpleType, 'text')):
+            case (false !== strpos($simpleType, 'clob')):
+            case (false !== strpos($simpleType, 'text')):
                 $this->type = static::TYPE_TEXT;
                 break;
 
@@ -283,7 +283,7 @@ class ColumnSchema
                 break;
 
             case 'string':
-            case (false !== strpos($_simpleType, 'char')):
+            case (false !== strpos($simpleType, 'char')):
             default:
                 $this->type = static::TYPE_STRING;
                 break;
@@ -422,12 +422,12 @@ class ColumnSchema
     {
         empty($separator) && $separator = ['_', '-'];
 
-        $_newString = ucwords(str_replace($separator, ' ', $string));
+        $newString = ucwords(str_replace($separator, ' ', $string));
 
         if (false !== $isKey) {
-            $_newString = lcfirst($_newString);
+            $newString = lcfirst($newString);
         }
 
-        return (false === $preserveWhiteSpace ? str_replace(' ', null, $_newString) : $_newString);
+        return (false === $preserveWhiteSpace ? str_replace(' ', null, $newString) : $newString);
     }
 }

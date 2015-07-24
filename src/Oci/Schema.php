@@ -24,7 +24,7 @@ use DreamFactory\Core\SqlDbCore\CommandBuilder;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    private $_defaultSchema = '';
+    private $defaultSchema = '';
 
     /**
      * @var array the abstract column types mapped to physical column types.
@@ -291,7 +291,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     public function setDefaultSchema($schema)
     {
-        $this->_defaultSchema = $schema;
+        $this->defaultSchema = $schema;
     }
 
     /**
@@ -299,11 +299,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     public function getDefaultSchema()
     {
-        if (!strlen($this->_defaultSchema)) {
+        if (!strlen($this->defaultSchema)) {
             $this->setDefaultSchema(strtoupper($this->getDbConnection()->username));
         }
 
-        return $this->_defaultSchema;
+        return $this->defaultSchema;
     }
 
     /**
@@ -657,13 +657,13 @@ EOD;
 
     public function makeConstraintName($prefix, $table, $column)
     {
-        $_temp = parent::makeConstraintName($prefix, $table, $column);
+        $temp = parent::makeConstraintName($prefix, $table, $column);
         // must be less than 30 characters
-        if (30 < strlen($_temp)) {
-            $_temp = $prefix . '_' . hash('crc32', $table . '_' . $column);
+        if (30 < strlen($temp)) {
+            $temp = $prefix . '_' . hash('crc32', $table . '_' . $column);
         }
 
-        return $_temp;
+        return $temp;
     }
 
     /**
@@ -771,7 +771,7 @@ EOD;
      */
     protected function findProcedureNames($schema = '')
     {
-        return $this->_findRoutines('procedure', $schema);
+        return $this->findRoutines('procedure', $schema);
     }
 
     /**
@@ -784,46 +784,46 @@ EOD;
     public function callProcedure($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_paramStr = '';
-        foreach ($params as $_key => $_param) {
-            $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
+        $paramStr = '';
+        foreach ($params as $key => $param) {
+            $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
 
-            if (!empty($_paramStr)) {
-                $_paramStr .= ', ';
+            if (!empty($paramStr)) {
+                $paramStr .= ', ';
             }
 
-//            switch ( strtoupper( strval( isset($_param['param_type']) ? $_param['param_type'] : 'IN' ) ) )
+//            switch ( strtoupper( strval( isset($param['param_type']) ? $param['param_type'] : 'IN' ) ) )
 //            {
 //                case 'INOUT':
 //                case 'OUT':
 //                default:
-            $_paramStr .= ":$_pName";
+            $paramStr .= ":$pName";
 //                    break;
 //            }
         }
 
-        $_sql = "BEGIN $name($_paramStr); END;";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $sql = "BEGIN $name($paramStr); END;";
+        $command = $this->getDbConnection()->createCommand($sql);
         // do binding
-        foreach ($params as $_key => $_param) {
-            $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
+        foreach ($params as $key => $param) {
+            $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
 
-//            switch ( strtoupper( strval( isset($_param['param_type']) ? $_param['param_type'] : 'IN' ) ) )
+//            switch ( strtoupper( strval( isset($param['param_type']) ? $param['param_type'] : 'IN' ) ) )
 //            {
 //                case 'IN':
 //                case 'INOUT':
 //                case 'OUT':
 //                default:
-            $_rType = (isset($_param['type'])) ? $_param['type'] : 'string';
-            $_rLength = (isset($_param['length'])) ? $_param['length'] : 256;
-            $_pdoType = $_command->getConnection()->getPdoType($_rType);
-            $_command->bindParam(":$_pName", $params[$_key]['value'], $_pdoType | \PDO::PARAM_INPUT_OUTPUT, $_rLength);
+            $rType = (isset($param['type'])) ? $param['type'] : 'string';
+            $rLength = (isset($param['length'])) ? $param['length'] : 256;
+            $pdoType = $command->getConnection()->getPdoType($rType);
+            $command->bindParam(":$pName", $params[$key]['value'], $pdoType | \PDO::PARAM_INPUT_OUTPUT, $rLength);
 //                    break;
 //            }
         }
 
         // Oracle stored procedures don't return result sets directly, must use OUT parameter.
-        $_command->execute();
+        $command->execute();
 
         return null;
     }
@@ -839,7 +839,7 @@ EOD;
      */
     protected function findFunctionNames($schema = '')
     {
-        return $this->_findRoutines('function', $schema);
+        return $this->findRoutines('function', $schema);
     }
 
     /**
@@ -852,33 +852,33 @@ EOD;
     public function callFunction($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_bindings = array();
-        foreach ($params as $_key => $_param) {
-            $_name = (isset($_param['name']) && !empty($_param['name'])) ? ':' . $_param['name'] : ":p$_key";
-            $_value = isset($_param['value']) ? $_param['value'] : null;
+        $bindings = array();
+        foreach ($params as $key => $param) {
+            $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
+            $value = isset($param['value']) ? $param['value'] : null;
 
-            $_bindings[$_name] = $_value;
+            $bindings[$name] = $value;
         }
 
-        $_paramStr = implode(',', array_keys($_bindings));
-        $_sql = "SELECT $name($_paramStr) FROM DUAL";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $paramStr = implode(',', array_keys($bindings));
+        $sql = "SELECT $name($paramStr) FROM DUAL";
+        $command = $this->getDbConnection()->createCommand($sql);
 
         // do binding
-        $_command->bindValues($_bindings);
+        $command->bindValues($bindings);
 
         // Move to the next result and get results
-        $_reader = $_command->query();
-        $_result = $_reader->readAll();
-        if ($_reader->nextResult()) {
+        $reader = $command->query();
+        $result = $reader->readAll();
+        if ($reader->nextResult()) {
             // more data coming, make room
-            $_result = array($_result);
+            $result = array($result);
             do {
-                $_result[] = $_reader->readAll();
-            } while ($_reader->nextResult());
+                $result[] = $reader->readAll();
+            } while ($reader->nextResult());
         }
 
-        return $_result;
+        return $result;
     }
 
     /**
@@ -892,7 +892,7 @@ EOD;
      * @throws \InvalidArgumentException
      * @return array all stored function names in the database.
      */
-    protected function _findRoutines($type, $schema = '')
+    protected function findRoutines($type, $schema = '')
     {
         $defaultSchema = $this->getDefaultSchema();
         $type = trim(strtoupper($type));
@@ -901,21 +901,21 @@ EOD;
             throw new \InvalidArgumentException('The type "' . $type . '" is invalid.');
         }
 
-        $_select =
+        $select =
             (empty($schema) || ($defaultSchema == $schema)) ? 'OBJECT_NAME' : "CONCAT(CONCAT(OWNER,'.'),OBJECT_NAME)";
-        $_schema = !empty($schema) ? " AND OWNER = '" . $schema . "'" : null;
+        $schema = !empty($schema) ? " AND OWNER = '" . $schema . "'" : null;
 
-        $_sql = <<<MYSQL
+        $sql = <<<MYSQL
 SELECT
-    {$_select}
+    {$select}
 FROM
     all_objects
 WHERE
     OBJECT_TYPE = :routine_type
-    {$_schema}
+    {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($_sql)->queryColumn(array(':routine_type' => $type));
+        return $this->getDbConnection()->createCommand($sql)->queryColumn(array(':routine_type' => $type));
     }
 
     public function getPrimaryKeyCommands($table, $column)

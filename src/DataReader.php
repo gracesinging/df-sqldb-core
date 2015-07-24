@@ -37,10 +37,10 @@ namespace DreamFactory\Core\SqlDbCore;
  */
 class DataReader
 {
-    private $_statement;
-    private $_closed = false;
-    private $_row;
-    private $_index = -1;
+    private $statement;
+    private $closed = false;
+    private $row;
+    private $index = -1;
 
     /**
      * Constructor.
@@ -49,8 +49,8 @@ class DataReader
      */
     public function __construct(Command $command)
     {
-        $this->_statement = $command->getPdoStatement();
-        $this->_statement->setFetchMode(\PDO::FETCH_ASSOC);
+        $this->statement = $command->getPdoStatement();
+        $this->statement->setFetchMode(\PDO::FETCH_ASSOC);
     }
 
     /**
@@ -69,9 +69,9 @@ class DataReader
     public function bindColumn($column, &$value, $dataType = null)
     {
         if ($dataType === null) {
-            $this->_statement->bindColumn($column, $value);
+            $this->statement->bindColumn($column, $value);
         } else {
-            $this->_statement->bindColumn($column, $value, $dataType);
+            $this->statement->bindColumn($column, $value, $dataType);
         }
     }
 
@@ -85,7 +85,7 @@ class DataReader
     public function setFetchMode($mode)
     {
         $params = func_get_args();
-        call_user_func_array(array($this->_statement, 'setFetchMode'), $params);
+        call_user_func_array(array($this->statement, 'setFetchMode'), $params);
     }
 
     /**
@@ -95,7 +95,7 @@ class DataReader
      */
     public function read()
     {
-        return $this->_statement->fetch();
+        return $this->statement->fetch();
     }
 
     /**
@@ -107,7 +107,7 @@ class DataReader
      */
     public function readColumn($columnIndex)
     {
-        return $this->_statement->fetchColumn($columnIndex);
+        return $this->statement->fetchColumn($columnIndex);
     }
 
     /**
@@ -120,7 +120,7 @@ class DataReader
      */
     public function readObject($className, $fields)
     {
-        return $this->_statement->fetchObject($className, $fields);
+        return $this->statement->fetchObject($className, $fields);
     }
 
     /**
@@ -131,7 +131,7 @@ class DataReader
      */
     public function readAll()
     {
-        return $this->_statement->fetchAll();
+        return $this->statement->fetchAll();
     }
 
     /**
@@ -143,8 +143,8 @@ class DataReader
      */
     public function nextResult()
     {
-        if (($result = $this->_statement->nextRowset()) !== false) {
-            $this->_index = -1;
+        if (($result = $this->statement->nextRowset()) !== false) {
+            $this->index = -1;
         }
 
         return $result;
@@ -157,8 +157,8 @@ class DataReader
      */
     public function close()
     {
-        $this->_statement->closeCursor();
-        $this->_closed = true;
+        $this->statement->closeCursor();
+        $this->closed = true;
     }
 
     /**
@@ -168,7 +168,7 @@ class DataReader
      */
     public function getIsClosed()
     {
-        return $this->_closed;
+        return $this->closed;
     }
 
     /**
@@ -180,7 +180,7 @@ class DataReader
      */
     public function getRowCount()
     {
-        return $this->_statement->rowCount();
+        return $this->statement->rowCount();
     }
 
     /**
@@ -204,7 +204,7 @@ class DataReader
      */
     public function getColumnCount()
     {
-        return $this->_statement->columnCount();
+        return $this->statement->columnCount();
     }
 
     /**
@@ -215,9 +215,9 @@ class DataReader
      */
     public function rewind()
     {
-        if ($this->_index < 0) {
-            $this->_row = $this->_statement->fetch();
-            $this->_index = 0;
+        if ($this->index < 0) {
+            $this->row = $this->statement->fetch();
+            $this->index = 0;
         } else {
             throw new \Exception('DataReader cannot rewind. It is a forward-only reader.');
         }
@@ -231,7 +231,7 @@ class DataReader
      */
     public function key()
     {
-        return $this->_index;
+        return $this->index;
     }
 
     /**
@@ -242,7 +242,7 @@ class DataReader
      */
     public function current()
     {
-        return $this->_row;
+        return $this->row;
     }
 
     /**
@@ -251,8 +251,8 @@ class DataReader
      */
     public function next()
     {
-        $this->_row = $this->_statement->fetch();
-        $this->_index++;
+        $this->row = $this->statement->fetch();
+        $this->index++;
     }
 
     /**
@@ -263,6 +263,6 @@ class DataReader
      */
     public function valid()
     {
-        return $this->_row !== false;
+        return $this->row !== false;
     }
 }

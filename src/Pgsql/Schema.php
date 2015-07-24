@@ -23,7 +23,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
     const DEFAULT_SCHEMA = 'public';
 
-    private $_sequences = [];
+    private $sequences = [];
 
     /**
      * @return string default schema.
@@ -114,7 +114,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 $default = (isset($info['default'])) ? $info['default'] : null;
                 if (isset($default)) {
                     // convert to bit 0 or 1, where necessary
-                    $info['default'] = (filter_val($default, FILTER_VALIDATE_BOOLEAN)) ? 'TRUE' : 'FALSE';
+                    $info['default'] = (filter_var($default, FILTER_VALIDATE_BOOLEAN)) ? 'TRUE' : 'FALSE';
                 }
                 break;
 
@@ -317,12 +317,12 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         }
         $this->findConstraints($table);
 
-        if (is_string($table->primaryKey) && isset($this->_sequences[$table->rawName . '.' . $table->primaryKey])) {
-            $table->sequenceName = $this->_sequences[$table->rawName . '.' . $table->primaryKey];
+        if (is_string($table->primaryKey) && isset($this->sequences[$table->rawName . '.' . $table->primaryKey])) {
+            $table->sequenceName = $this->sequences[$table->rawName . '.' . $table->primaryKey];
         } elseif (is_array($table->primaryKey)) {
             foreach ($table->primaryKey as $pk) {
-                if (isset($this->_sequences[$table->rawName . '.' . $pk])) {
-                    $table->sequenceName = $this->_sequences[$table->rawName . '.' . $pk];
+                if (isset($this->sequences[$table->rawName . '.' . $pk])) {
+                    $table->sequenceName = $this->sequences[$table->rawName . '.' . $pk];
                     break;
                 }
             }
@@ -393,9 +393,9 @@ EOD;
                 preg_match('/nextval\([^\']*\'([^\']+)\'[^\)]*\)/i', $column['adsrc'], $matches)
             ) {
                 if (strpos($matches[1], '.') !== false || $table->schemaName === self::DEFAULT_SCHEMA) {
-                    $this->_sequences[$table->rawName . '.' . $c->name] = $matches[1];
+                    $this->sequences[$table->rawName . '.' . $c->name] = $matches[1];
                 } else {
-                    $this->_sequences[$table->rawName . '.' . $c->name] = $table->schemaName . '.' . $matches[1];
+                    $this->sequences[$table->rawName . '.' . $c->name] = $table->schemaName . '.' . $matches[1];
                 }
                 $c->autoIncrement = true;
             }
@@ -634,7 +634,7 @@ EOD;
      */
     protected function findProcedureNames($schema = '')
     {
-        return $this->_findRoutines('procedure', $schema);
+        return $this->findRoutines('procedure', $schema);
     }
 
     /**
@@ -647,13 +647,13 @@ EOD;
     public function callProcedure($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_paramStr = '';
-        $_bindings = [];
-        foreach ($params as $_key => $_param) {
-            $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
-            $_pValue = (isset($_param['value'])) ? $_param['value'] : null;
+        $paramStr = '';
+        $bindings = [];
+        foreach ($params as $key => $param) {
+            $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
+            $pValue = (isset($param['value'])) ? $param['value'] : null;
 
-            switch (strtoupper(strval(isset($_param['param_type']) ? $_param['param_type'] : 'IN'))) {
+            switch (strtoupper(strval(isset($param['param_type']) ? $param['param_type'] : 'IN'))) {
                 case 'OUT':
                     // not sent as parameters, but pulled from fetch results
                     break;
@@ -661,37 +661,37 @@ EOD;
                 case 'INOUT':
                 case 'IN':
                 default:
-                    $_bindings[":$_pName"] = $_pValue;
-                    if (!empty($_paramStr)) {
-                        $_paramStr .= ', ';
+                    $bindings[":$pName"] = $pValue;
+                    if (!empty($paramStr)) {
+                        $paramStr .= ', ';
                     }
-                    $_paramStr .= ":$_pName";
+                    $paramStr .= ":$pName";
                     break;
             }
         }
 
-        $_sql = "SELECT * FROM $name($_paramStr);";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $sql = "SELECT * FROM $name($paramStr);";
+        $command = $this->getDbConnection()->createCommand($sql);
 
         // do binding
-        $_command->bindValues($_bindings);
+        $command->bindValues($bindings);
 
         // driver does not support multiple result sets currently
-        $_result = $_command->queryAll();
+        $result = $command->queryAll();
 
         // out parameters come back in fetch results, put them in the params for client
-        if (isset($_result, $_result[0])) {
-            foreach ($params as $_key => $_param) {
-                if (false !== stripos(strval(isset($_param['param_type']) ? $_param['param_type'] : ''), 'OUT')) {
-                    $_pName = (isset($_param['name']) && !empty($_param['name'])) ? $_param['name'] : "p$_key";
-                    if (isset($_result[0][$_pName])) {
-                        $params[$_key]['value'] = $_result[0][$_pName];
+        if (isset($result, $result[0])) {
+            foreach ($params as $key => $param) {
+                if (false !== stripos(strval(isset($param['param_type']) ? $param['param_type'] : ''), 'OUT')) {
+                    $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
+                    if (isset($result[0][$pName])) {
+                        $params[$key]['value'] = $result[0][$pName];
                     }
                 }
             }
         }
 
-        return $_result;
+        return $result;
     }
 
     /**
@@ -705,7 +705,7 @@ EOD;
      */
     protected function findFunctionNames($schema = '')
     {
-        return $this->_findRoutines('function', $schema);
+        return $this->findRoutines('function', $schema);
     }
 
     /**
@@ -718,25 +718,25 @@ EOD;
     public function callFunction($name, &$params)
     {
         $name = $this->getDbConnection()->quoteTableName($name);
-        $_bindings = [];
-        foreach ($params as $_key => $_param) {
-            $_name = (isset($_param['name']) && !empty($_param['name'])) ? ':' . $_param['name'] : ":p$_key";
-            $_value = isset($_param['value']) ? $_param['value'] : null;
+        $bindings = [];
+        foreach ($params as $key => $param) {
+            $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
+            $value = isset($param['value']) ? $param['value'] : null;
 
-            $_bindings[$_name] = $_value;
+            $bindings[$name] = $value;
         }
 
-        $_paramStr = implode(',', array_keys($_bindings));
-        $_sql = "SELECT * FROM $name($_paramStr)";
-        $_command = $this->getDbConnection()->createCommand($_sql);
+        $paramStr = implode(',', array_keys($bindings));
+        $sql = "SELECT * FROM $name($paramStr)";
+        $command = $this->getDbConnection()->createCommand($sql);
 
         // do binding
-        $_command->bindValues($_bindings);
+        $command->bindValues($bindings);
 
         // driver does not support multiple result sets currently
-        $_result = $_command->queryAll();
+        $result = $command->queryAll();
 
-        return $_result;
+        return $result;
     }
 
     /**
@@ -750,24 +750,24 @@ EOD;
      * @throws \InvalidArgumentException
      * @return array all stored function names in the database.
      */
-    protected function _findRoutines($type, $schema = '')
+    protected function findRoutines($type, $schema = '')
     {
         $defaultSchema = $this->getDefaultSchema();
 
-        $_select =
+        $select =
             (empty($schema) || ($defaultSchema == $schema))
                 ? 'ROUTINE_NAME' : "CONCAT('" . $schema . "','.',ROUTINE_NAME) as ROUTINE_NAME";
-        $_schema = !empty($schema) ? " WHERE ROUTINE_SCHEMA = '" . $schema . "'" : null;
+        $schema = !empty($schema) ? " WHERE ROUTINE_SCHEMA = '" . $schema . "'" : null;
 
-        $_sql = <<<MYSQL
+        $sql = <<<MYSQL
 SELECT
-    {$_select}
+    {$select}
 FROM
     information_schema.ROUTINES
-    {$_schema}
+    {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($_sql)->queryColumn();
+        return $this->getDbConnection()->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -830,9 +830,9 @@ MYSQL;
     public function alterColumn($table, $column, $definition)
     {
         $sql = 'ALTER TABLE ' . $this->quoteTableName($table) . ' ALTER COLUMN ' . $this->quoteColumnName($column);
-        if (false !== $_pos = strpos($definition, ' ')) {
-            $sql .= ' TYPE ' . $this->getColumnType(substr($definition, 0, $_pos));
-            switch (substr($definition, $_pos + 1)) {
+        if (false !== $pos = strpos($definition, ' ')) {
+            $sql .= ' TYPE ' . $this->getColumnType(substr($definition, 0, $pos));
+            switch (substr($definition, $pos + 1)) {
                 case 'NULL':
                     $sql .= ', ALTER COLUMN ' . $this->quoteColumnName($column) . ' DROP NOT NULL';
                     break;
@@ -922,9 +922,9 @@ MYSQL;
 
     public function parseValueForSet($value, $field_info)
     {
-        $_type = (isset($field_info['type'])) ? $field_info['type'] : null;
+        $type = (isset($field_info['type'])) ? $field_info['type'] : null;
 
-        switch ($_type) {
+        switch ($type) {
             case 'boolean':
                 $value = (filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'TRUE' : 'FALSE');
                 break;
