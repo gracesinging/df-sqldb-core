@@ -1,2 +1,2 @@
-# rave-sqldb-core
-DreamFactory RAVE SQL Database Core
+# df-sqldb-core
+DreamFactory SQL Database Core
