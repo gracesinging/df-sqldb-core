@@ -44,14 +44,6 @@
       "DreamFactory\\Core\\SqlDbCore\\": "src/"
     }
   },
-  "scripts": {
-    "post-install-cmd": [
-    ],
-    "post-update-cmd": [
-    ],
-    "post-create-project-cmd": [
-    ]
-  },
   "extra": {
     "branch-alias": {
       "dev-develop": "0.0.x-dev"
