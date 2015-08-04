@@ -1,0 +1,52 @@
+{
+  "name": "dreamfactory/df-sqldb-core",
+  "description": "The DreamFactory(tm) SQL DB Core.",
+  "keywords": [
+    "dreamfactory",
+    "dsp",
+    "mysql",
+    "postgresql",
+    "sqlserver",
+    "ibm db2",
+    "oracle",
+    "sql",
+    "database",
+    "db"
+  ],
+  "homepage": "https://www.dreamfactory.com/",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Arif Islam",
+      "email": "arifislam@dreamfactory.com"
+    },
+    {
+      "name": "Jerry Ablan",
+      "email": "jerryablan@dreamfactory.com"
+    },
+    {
+      "name": "Lee Hicks",
+      "email": "leehicks@dreamfactory.com"
+    }
+  ],
+  "support": {
+    "email": "support@dreamfactory.com",
+    "source": "https://github.com/dreamfactorysoftware/df-sqldb-core",
+    "issues": "https://github.com/dreamfactorysoftware/df-sqldb-core/issues",
+    "wiki": "https://github.com/dreamfactorysoftware/dreamfactory/wiki"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+  },
+  "autoload": {
+    "psr-4": {
+      "DreamFactory\\Core\\SqlDbCore\\": "src/"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-develop": "0.0.x-dev"
+    }
+  }
+}
