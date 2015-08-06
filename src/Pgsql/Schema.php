@@ -276,7 +276,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         } else {
             $value = "(SELECT COALESCE(MAX(\"{$table->primaryKey}\"),0) FROM {$table->rawName})+1";
         }
-        $this->getDbConnection()->createCommand("SELECT SETVAL('$sequence',$value,false)")->execute();
+        $this->connection->createCommand("SELECT SETVAL('$sequence',$value,false)")->execute();
     }
 
     /**
@@ -291,7 +291,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     {
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $tableNames = $this->getTableNames($schema);
-        $db = $this->getDbConnection();
+        $db = $this->connection;
         foreach ($tableNames as $tableName) {
             $tableName = '"' . $tableName . '"';
             if (strpos($tableName, '.') !== false) {
@@ -377,7 +377,7 @@ WHERE a.attnum > 0 AND NOT a.attisdropped
 		AND relnamespace = (SELECT oid FROM pg_catalog.pg_namespace WHERE nspname = :schema))
 ORDER BY a.attnum
 EOD;
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $table->schemaName);
 
@@ -465,7 +465,7 @@ EOD;
 		   AND KCU2.ORDINAL_POSITION = KCU1.ORDINAL_POSITION
 EOD;
 
-        $columns = $columns2 = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $columns = $columns2 = $this->connection->createCommand($sql)->queryAll();
 
         foreach ($columns as $key => $column) {
             $ts = $column['table_schema'];
@@ -545,7 +545,7 @@ EOD;
 		   	    AND k.table_name = :table
 				AND k.table_schema = :schema
 EOD;
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $table->schemaName);
 
@@ -573,7 +573,7 @@ EOD;
         $sql = <<<SQL
 SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('information_schema','pg_catalog')
 SQL;
-        $rows = $this->getDbConnection()->createCommand($sql)->queryColumn();
+        $rows = $this->connection->createCommand($sql)->queryColumn();
 
         if (false === array_search(static::DEFAULT_SCHEMA, $rows)) {
             $rows[] = static::DEFAULT_SCHEMA;
@@ -611,7 +611,7 @@ EOD;
 
         $defaultSchema = self::DEFAULT_SCHEMA;
 
-        $rows = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $rows = $this->connection->createCommand($sql)->queryAll();
 
         $names = [];
         foreach ($rows as $row) {
@@ -646,7 +646,7 @@ EOD;
      */
     public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $paramStr = '';
         $bindings = [];
         foreach ($params as $key => $param) {
@@ -671,7 +671,7 @@ EOD;
         }
 
         $sql = "SELECT * FROM $name($paramStr);";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -717,7 +717,7 @@ EOD;
      */
     public function callFunction($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $bindings = [];
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
@@ -728,7 +728,7 @@ EOD;
 
         $paramStr = implode(',', array_keys($bindings));
         $sql = "SELECT * FROM $name($paramStr)";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -767,7 +767,7 @@ FROM
     {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn();
+        return $this->connection->createCommand($sql)->queryColumn();
     }
 
     /**

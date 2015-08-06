@@ -256,14 +256,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         if ($value !== null) {
             $value = (int)($value) - 1;
         } else {
-            $value =
-                (int)$this->getDbConnection()
-                    ->createCommand("SELECT MAX(`{$table->primaryKey}`) FROM {$table->rawName}")
-                    ->queryScalar();
+            $value = $this->connection
+                ->createCommand("SELECT MAX(`{$table->primaryKey}`) FROM {$table->rawName}")
+                ->queryScalar();
+            $value = intval($value);
         }
         try {
             // it's possible that 'sqlite_sequence' does not exist
-            $this->getDbConnection()
+            $this->connection
                 ->createCommand("UPDATE sqlite_sequence SET seq='$value' WHERE name='{$table->name}'")
                 ->execute();
         } catch (\Exception $e) {
@@ -281,7 +281,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     public function checkIntegrity($check = true, $schema = '')
     {
-        $this->getDbConnection()->createCommand('PRAGMA foreign_keys=' . (int)$check)->execute();
+        $this->connection->createCommand('PRAGMA foreign_keys=' . (int)$check)->execute();
     }
 
     /**
@@ -296,7 +296,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     {
         $sql = "SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name<>'sqlite_sequence'";
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn();
+        return $this->connection->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -341,7 +341,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     protected function findColumns($table)
     {
         $sql = "PRAGMA table_info({$table->rawName})";
-        $columns = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $columns = $this->connection->createCommand($sql)->queryAll();
         if (empty($columns)) {
             return false;
         }
@@ -376,7 +376,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     {
         $foreignKeys = [];
         $sql = "PRAGMA foreign_key_list({$table->rawName})";
-        $keys = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $keys = $this->connection->createCommand($sql)->queryAll();
         foreach ($keys as $key) {
             $column = $table->columns[$key['from']];
             $column->isForeignKey = true;

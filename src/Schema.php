@@ -12,12 +12,12 @@ namespace DreamFactory\Core\SqlDbCore;
 /**
  * Schema is the base class for retrieving metadata information.
  *
- * @property Connection        $dbConnection   Database connection. The connection is active.
- * @property array             $tables         The metadata for all tables in the database.
+ * @property Connection     $connection     Database connection. The connection is active.
+ * @property array          $tables         The metadata for all tables in the database.
  * Each array element is an instance of {@link TableSchema} (or its child class).
  * The array keys are table names.
- * @property array             $tableNames     All table names in the database.
- * @property CommandBuilder    $commandBuilder The SQL command builder for this connection.
+ * @property array          $tableNames     All table names in the database.
+ * @property CommandBuilder $commandBuilder The SQL command builder for this connection.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
  * @package system.db.schema
@@ -30,39 +30,39 @@ abstract class Schema
     /**
      * @var array
      */
-    private $schemaNames = [];
+    protected $schemaNames = [];
     /**
      * @var array
      */
-    private $tableNames = [];
+    protected $tableNames = [];
     /**
      * @var array
      */
-    private $tables = [];
+    protected $tables = [];
     /**
      * @var array
      */
-    private $procedureNames = [];
+    protected $procedureNames = [];
     /**
      * @var array
      */
-    private $procedures = [];
+    protected $procedures = [];
     /**
      * @var array
      */
-    private $functionNames = [];
+    protected $functionNames = [];
     /**
      * @var array
      */
-    private $functions = [];
+    protected $functions = [];
     /**
      * @var Connection
      */
-    private $connection;
+    protected $connection;
     /**
      * @var
      */
-    private $builder;
+    protected $builder;
 
     /**
      * Loads the metadata for the specified table.
@@ -106,6 +106,22 @@ abstract class Schema
         return null;
     }
 
+    protected function getFromCache($key)
+    {
+        if ($this->connection->cache) {
+            return $this->connection->cache->getFromCache($key);
+        }
+
+        return null;
+    }
+
+    protected function addToCache($key, $value, $forever = false)
+    {
+        if ($this->connection->cache) {
+            $this->connection->cache->addToCache($key, $value, $forever);
+        }
+    }
+
     /**
      * Returns all schema names on the connection.
      *
@@ -115,13 +131,18 @@ abstract class Schema
      */
     public function getSchemaNames($refresh = false)
     {
-        if ($refresh === false && !empty($this->schemaNames)) {
-            return $this->schemaNames;
-        } else {
-            $this->schemaNames = $this->findSchemaNames();
-
-            return $this->schemaNames;
+        if (!$refresh) {
+            if (!empty($this->schemaNames)) {
+                return $this->schemaNames;
+            } elseif (null !== $this->schemaNames = $this->getFromCache('schema_names')) {
+                return $this->schemaNames;
+            }
         }
+
+        $this->schemaNames = $this->findSchemaNames();
+        $this->addToCache('schema_names', $this->schemaNames, true);
+
+        return $this->schemaNames;
     }
 
     /**
@@ -149,19 +170,26 @@ abstract class Schema
      */
     public function getTable($name, $refresh = false)
     {
-        if ($refresh === false && isset($this->tables[$name])) {
-            return $this->tables[$name];
-        } else {
-            if ($this->connection->tablePrefix !== null && strpos($name, '{{') !== false) {
-                $realName = preg_replace('/\{\{(.*?)\}\}/', $this->connection->tablePrefix . '$1', $name);
-            } else {
-                $realName = $name;
+        if (!$refresh) {
+            if (isset($this->tables[$name])) {
+                return $this->tables[$name];
+            } elseif (null !== $table = $this->getFromCache('table:' . $name)) {
+                $this->tables[$name] = $table;
+
+                return $this->tables[$name];
             }
-
-            $this->tables[$name] = $table = $this->loadTable($realName);
-
-            return $table;
         }
+
+        if ($this->connection->tablePrefix !== null && strpos($name, '{{') !== false) {
+            $realName = preg_replace('/\{\{(.*?)\}\}/', $this->connection->tablePrefix . '$1', $name);
+        } else {
+            $realName = $name;
+        }
+
+        $this->tables[$name] = $table = $this->loadTable($realName);
+        $this->addToCache('table:' . $name, $table, true);
+
+        return $table;
     }
 
     /**
@@ -238,11 +266,17 @@ abstract class Schema
      */
     protected function getCachedTableNames($include_views = true, $refresh = false)
     {
-        $names = [];
-        foreach ($this->getSchemaNames($refresh) as $temp) {
-            $names[$temp] = $this->findTableNames($temp, $include_views);
+        if ($refresh ||
+            (empty($this->tableNames) &&
+                (null === $this->tableNames = $this->getFromCache('table_names')))
+        ) {
+            $names = [];
+            foreach ($this->getSchemaNames($refresh) as $temp) {
+                $names[$temp] = $this->findTableNames($temp, $include_views);
+            }
+            $this->tableNames = $names;
+            $this->addToCache('table_names', $this->tableNames, true);
         }
-        $this->tableNames = $names;
     }
 
     /**
@@ -378,11 +412,17 @@ abstract class Schema
      */
     protected function getCachedProcedureNames($refresh = false)
     {
-        $names = [];
-        foreach ($this->getSchemaNames($refresh) as $temp) {
-            $names[$temp] = $this->findProcedureNames($temp);
+        if ($refresh ||
+            (empty($this->procedureNames) &&
+                (null === $this->procedureNames = $this->getFromCache('proc_names')))
+        ) {
+            $names = [];
+            foreach ($this->getSchemaNames($refresh) as $temp) {
+                $names[$temp] = $this->findProcedureNames($temp);
+            }
+            $this->procedureNames = $names;
+            $this->addToCache('proc_names', $this->procedureNames, true);
         }
-        $this->procedureNames = $names;
     }
 
     /**
@@ -492,11 +532,17 @@ abstract class Schema
      */
     protected function getCachedFunctionNames($refresh = false)
     {
-        $names = [];
-        foreach ($this->getSchemaNames($refresh) as $temp) {
-            $names[$temp] = $this->findFunctionNames($temp);
+        if ($refresh ||
+            (empty($this->functionNames) &&
+                (null === $this->functionNames = $this->getFromCache('func_names')))
+        ) {
+            $names = [];
+            foreach ($this->getSchemaNames($refresh) as $temp) {
+                $names[$temp] = $this->findFunctionNames($temp);
+            }
+            $this->functionNames = $names;
+            $this->addToCache('func_names', $this->functionNames, true);
         }
-        $this->functionNames = $names;
     }
 
     /**
@@ -568,6 +614,10 @@ abstract class Schema
         $this->functionNames = [];
         $this->schemaNames = [];
         $this->builder = null;
+
+        if ($this->connection->cache) {
+            $this->connection->cache->flush();
+        }
     }
 
     /**
@@ -751,7 +801,7 @@ abstract class Schema
                     $definition .= ' DEFAULT ' . $expression;
                 }
             } else {
-                $default = $this->getDbConnection()->quoteValue($default);
+                $default = $this->connection->quoteValue($default);
                 $definition .= ' DEFAULT ' . $default;
             }
         }

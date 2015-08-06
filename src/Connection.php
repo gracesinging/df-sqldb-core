@@ -257,6 +257,8 @@ class Connection
     private $transaction;
     private $schema;
 
+    public $cache = null;
+
     /**
      * Constructor.
      * Note, the DB connection is not established when this connection
@@ -267,14 +269,16 @@ class Connection
      *                         database.
      * @param string $username The user name for the DSN string.
      * @param string $password The password for the DSN string.
+     * @param CacheInterface|null $cache The cache instance to use.
      *
      * @see http://www.php.net/manual/en/function.PDO-construct.php
      */
-    public function __construct($dsn = '', $username = '', $password = '')
+    public function __construct($dsn = '', $username = '', $password = '', $cache = null)
     {
         $this->connectionString = $dsn;
         $this->username = $username;
         $this->password = $password;
+        $this->cache = $cache;
     }
 
     /**
