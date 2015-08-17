@@ -35,7 +35,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         }
         try {
             $sql = "SELECT * FROM QSYS2.SYSTABLES";
-            $stmt = $this->getDbConnection()->getPdoInstance()->prepare($sql)->execute();
+            $stmt = $this->connection->getPdoInstance()->prepare($sql)->execute();
             $this->isIseries = (bool)$stmt;
 
             return $this->isIseries;
@@ -379,7 +379,7 @@ ORDER BY colno
 SQL;
         }
 
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $schema);
 
@@ -471,7 +471,7 @@ INNER JOIN syscat.keycoluse AS pk ON pk.constname = syscat.references.refkeyname
 SQL;
         }
 
-        $columns = $columns2 = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $columns = $columns2 = $this->connection->createCommand($sql)->queryAll();
 
         foreach ($columns as $key => $column) {
             $ts = $column['FKTABSCHEMA'];
@@ -556,7 +556,7 @@ WHERE uniquerule = 'P'
 SQL;
         }
 
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $schema);
 
@@ -602,7 +602,7 @@ SELECT SCHEMANAME FROM SYSCAT.SCHEMATA WHERE DEFINERTYPE != 'S' ORDER BY SCHEMAN
 SQL;
         }
 
-        $rows = $this->getDbConnection()->createCommand($sql)->queryColumn();
+        $rows = $this->connection->createCommand($sql)->queryColumn();
 
         $defaultSchema = $this->getDefaultSchema();
         if (!empty($defaultSchema) && (false === array_search($defaultSchema, $rows))) {
@@ -658,7 +658,7 @@ SQL;
         $defaultSchema = $this->getDefaultSchema();
 
         $params = (!empty($schema)) ? array(':schema' => $schema) : array();
-        $rows = $this->getDbConnection()->createCommand($sql)->queryAll(true, $params);
+        $rows = $this->connection->createCommand($sql)->queryAll(true, $params);
 
         $names = array();
         foreach ($rows as $row) {
@@ -698,14 +698,14 @@ SQL;
         ) {
             if ($value === null) {
                 $value =
-                    $this->getDbConnection()
+                    $this->connection
                         ->createCommand("SELECT MAX({$table->primaryKey}) FROM {$table->rawName}")
                         ->queryScalar() + 1;
             } else {
                 $value = (int)$value;
             }
 
-            $this->getDbConnection()
+            $this->connection
                 ->createCommand("ALTER TABLE {$table->rawName} ALTER COLUMN {$table->primaryKey} RESTART WITH $value")
                 ->execute();
         }
@@ -723,7 +723,7 @@ SQL;
     {
         $enable = $check ? 'CHECKED' : 'UNCHECKED';
         $tableNames = $this->getTableNames($schema);
-        $db = $this->getDbConnection();
+        $db = $this->connection;
         foreach ($tableNames as $tableName) {
             $db->createCommand("SET INTEGRITY FOR $tableName ALL IMMEDIATE $enable")->execute();
         }
@@ -804,7 +804,7 @@ SQL;
 VALUES CURRENT_SCHEMA
 MYSQL;
 
-            $current = $this->getDbConnection()->createCommand($sql)->queryScalar();
+            $current = $this->connection->createCommand($sql)->queryScalar();
             $this->setDefaultSchema($current);
         }
 
@@ -834,7 +834,7 @@ MYSQL;
      */
     public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $paramStr = '';
         foreach ($params as $key => $param) {
             $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
@@ -854,7 +854,7 @@ MYSQL;
         }
 
         $sql = "CALL $name($paramStr)";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         // do binding
         foreach ($params as $key => $param) {
             $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
@@ -922,7 +922,7 @@ MYSQL;
      */
     public function callFunction($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $bindings = array();
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
@@ -934,7 +934,7 @@ MYSQL;
         $paramStr = implode(',', array_keys($bindings));
 //        $sql = "SELECT * from TABLE($name($paramStr))";
         $sql = "SELECT $name($paramStr) FROM SYSIBM.SYSDUMMY1";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -995,7 +995,7 @@ WHERE
     {$where}
 SQL;
 
-        $results = $this->getDbConnection()->createCommand($sql)->queryAll(true, $params);
+        $results = $this->connection->createCommand($sql)->queryAll(true, $params);
         $names = array();
         foreach ($results as $row) {
             $rs = isset($row['ROUTINESCHEMA']) ? $row['ROUTINESCHEMA'] : '';

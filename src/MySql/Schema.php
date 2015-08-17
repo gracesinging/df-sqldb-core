@@ -219,7 +219,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     $definition .= ' DEFAULT ' . $expression;
                 }
             } else {
-                $default = $this->getDbConnection()->quoteValue($default);
+                $default = $this->connection->quoteValue($default);
                 $definition .= ' DEFAULT ' . $default;
             }
         }
@@ -310,13 +310,13 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             $value = (int)$value;
         } else {
             $value =
-                (int)$this->getDbConnection()->createCommand('SELECT MAX(`' .
+                (int)$this->connection->createCommand('SELECT MAX(`' .
                     $table->primaryKey .
                     '`) + 1 FROM ' .
                     $table->rawName)->queryScalar();
         }
 
-        $this->getDbConnection()->createCommand(
+        $this->connection->createCommand(
             <<<MYSQL
 ALTER TABLE {$table->rawName} AUTO_INCREMENT = :value
 MYSQL
@@ -333,7 +333,7 @@ MYSQL
      */
     public function checkIntegrity($check = true, $schema = '')
     {
-        $this->getDbConnection()->createCommand('SET FOREIGN_KEY_CHECKS=' . ($check ? 1 : 0))->execute();
+        $this->connection->createCommand('SET FOREIGN_KEY_CHECKS=' . ($check ? 1 : 0))->execute();
     }
 
     /**
@@ -394,7 +394,7 @@ MYSQL
     {
         $sql = 'SHOW FULL COLUMNS FROM ' . $table->rawName;
         try {
-            $columns = $this->getDbConnection()->createCommand($sql)->queryAll();
+            $columns = $this->connection->createCommand($sql)->queryAll();
         } catch (\Exception $e) {
             return false;
         }
@@ -470,7 +470,7 @@ MYSQL
      */
     protected function getServerVersion()
     {
-        $version = $this->getDbConnection()->getAttribute(\PDO::ATTR_SERVER_VERSION);
+        $version = $this->connection->getAttribute(\PDO::ATTR_SERVER_VERSION);
         $digits = [];
         preg_match('/(\d+)\.(\d+)\.(\d+)/', $version, $digits);
 
@@ -494,7 +494,7 @@ SELECT table_schema, table_name, column_name, referenced_table_schema, reference
 FROM information_schema.KEY_COLUMN_USAGE WHERE referenced_table_name IS NOT NULL AND table_schema = '$schema';
 MYSQL;
 
-            $columns = array_merge($columns, $this->getDbConnection()->createCommand($sql)->queryAll());
+            $columns = array_merge($columns, $this->connection->createCommand($sql)->queryAll());
         }
 
         $columns2 = $columns;
@@ -561,7 +561,7 @@ MYSQL;
 SHOW DATABASES WHERE `Database` NOT IN ('information_schema','mysql','performance_schema','phpmyadmin')
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn();
+        return $this->connection->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -587,7 +587,7 @@ MYSQL;
             $sql .= " WHERE TABLE_TYPE = 'BASE TABLE'";
         }
 
-        $names = $this->getDbConnection()->createCommand($sql)->queryColumn();
+        $names = $this->connection->createCommand($sql)->queryColumn();
 
         if (!empty($schema) && $defaultSchema != $schema) {
             foreach ($names as &$name) {
@@ -621,7 +621,7 @@ MYSQL;
      */
     public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $paramStr = '';
         $pre = '';
         $post = '';
@@ -657,10 +657,10 @@ MYSQL;
             }
         }
 
-        !empty($pre) && $this->getDbConnection()->createCommand($pre)->execute();
+        !empty($pre) && $this->connection->createCommand($pre)->execute();
 
         $sql = "CALL $name($paramStr);";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -689,7 +689,7 @@ MYSQL;
         }
 
         if (!empty($post)) {
-            $out = $this->getDbConnection()->createCommand($post . ';')->queryRow();
+            $out = $this->connection->createCommand($post . ';')->queryRow();
             foreach ($params as $key => &$param) {
                 $pName = '@' . $param['name'];
                 switch (strtoupper(strval(isset($param['param_type']) ? $param['param_type'] : 'IN'))) {
@@ -729,7 +729,7 @@ MYSQL;
      */
     public function callFunction($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $bindings = [];
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
@@ -740,7 +740,7 @@ MYSQL;
 
         $paramStr = implode(',', array_keys($bindings));
         $sql = "SELECT $name($paramStr);";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -796,7 +796,7 @@ MYSQL;
      */
     public function renameColumn($table, $name, $newName)
     {
-        $db = $this->getDbConnection();
+        $db = $this->connection;
         $row = $db->createCommand('SHOW CREATE TABLE ' . $db->quoteTableName($table))->queryRow();
 
         if ($row === false) {
@@ -917,7 +917,7 @@ WHERE
     {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn([':routine_type' => $type]);
+        return $this->connection->createCommand($sql)->queryColumn([':routine_type' => $type]);
     }
 
     /**
@@ -938,7 +938,7 @@ MYSQL;
 SELECT DATABASE() FROM DUAL
 MYSQL;
 
-            $current = $this->getDbConnection()->createCommand($sql)->queryScalar();
+            $current = $this->connection->createCommand($sql)->queryScalar();
             $this->setDefaultSchema($current);
         }
 

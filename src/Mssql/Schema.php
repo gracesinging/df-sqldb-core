@@ -347,12 +347,12 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             $value = (int)($value) - 1;
         } else {
             $value =
-                (int)$this->getDbConnection()
+                (int)$this->connection
                     ->createCommand("SELECT MAX([{$table->primaryKey}]) FROM {$table->rawName}")
                     ->queryScalar();
         }
         $name = strtr($table->rawName, array('[' => '', ']' => ''));
-        $this->getDbConnection()->createCommand("DBCC CHECKIDENT ('$name',RESEED,$value)")->execute();
+        $this->connection->createCommand("DBCC CHECKIDENT ('$name',RESEED,$value)")->execute();
     }
 
     private $normalTables = array();  // non-view tables
@@ -371,7 +371,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         if (!isset($this->normalTables[$schema])) {
             $this->normalTables[$schema] = $this->findTableNames($schema, false);
         }
-        $db = $this->getDbConnection();
+        $db = $this->connection;
         foreach ($this->normalTables[$schema] as $tableName) {
             $tableName = $this->quoteTableName($tableName);
             $db->createCommand("ALTER TABLE $tableName $enable CONSTRAINT ALL")->execute();
@@ -467,7 +467,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 		   	    AND k.table_name = :table
 				AND k.table_schema = :schema
 EOD;
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $table->schemaName);
         $primary = $command->queryColumn();
@@ -536,7 +536,7 @@ EOD;
 		   AND KCU2.ORDINAL_POSITION = KCU1.ORDINAL_POSITION
 EOD;
 
-        $columns = $columns2 = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $columns = $columns2 = $this->connection->createCommand($sql)->queryAll();
 
         foreach ($columns as $key => $column) {
             $ts = $column['table_schema'];
@@ -604,7 +604,7 @@ EOD;
             $columnsTable = $table->catalogName . '.' . $columnsTable;
         }
 
-//        $isAzure = ( false !== strpos( $this->getDbConnection()->connectionString, '.database.windows.net' ) );
+//        $isAzure = ( false !== strpos( $this->connection->connectionString, '.database.windows.net' ) );
 //        $sql = "SELECT t1.*, columnproperty(object_id(t1.table_schema+'.'+t1.table_name), t1.column_name, 'IsIdentity') AS IsIdentity";
 //        if ( !$isAzure )
 //        {
@@ -633,7 +633,7 @@ EOD;
             "')";
 
         try {
-            $columns = $this->getDbConnection()->createCommand($sql)->queryAll();
+            $columns = $this->connection->createCommand($sql)->queryAll();
             if (empty($columns)) {
                 return false;
             }
@@ -702,7 +702,7 @@ SELECT schema_name FROM INFORMATION_SCHEMA.SCHEMATA WHERE schema_name NOT IN
 'db_denydatareader', 'db_denydatawriter')
 SQL;
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn();
+        return $this->connection->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -732,7 +732,7 @@ EOD;
 
         $defaultSchema = $this->getDefaultSchema();
 
-        $rows = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $rows = $this->connection->createCommand($sql)->queryAll();
 
         $names = array();
         foreach ($rows as $row) {
@@ -767,9 +767,9 @@ EOD;
      */
     public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
 
-        $pdo = $this->getDbConnection()->getPdoInstance();
+        $pdo = $this->connection->getPdoInstance();
         if ($pdo instanceof SqlsrvPdoAdapter) {
             return $this->callProcedureSqlsrv($name, $params);
         } else {
@@ -800,7 +800,7 @@ EOD;
         }
 
         $sql = "EXEC $name $paramStr;";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         foreach ($params as $key => $param) {
@@ -880,9 +880,9 @@ EOD;
             }
         }
 
-        $this->getDbConnection()->createCommand('SET QUOTED_IDENTIFIER ON; SET ANSI_WARNINGS ON;')->execute();
+        $this->connection->createCommand('SET QUOTED_IDENTIFIER ON; SET ANSI_WARNINGS ON;')->execute();
         $sql = "$pre EXEC $name $paramStr; $post";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -951,7 +951,7 @@ EOD;
             // requires full name with schema here.
             $name = $this->getDefaultSchema() . '.' . $name;
         }
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
 
         $bindings = array();
         foreach ($params as $key => $param) {
@@ -963,7 +963,7 @@ EOD;
 
         $paramStr = implode(',', array_keys($bindings));
         $sql = "SELECT $name($paramStr);";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -1083,7 +1083,7 @@ WHERE
     {$where}
 MYSQL;
 
-        $results = $this->getDbConnection()->createCommand($sql)->queryColumn(array(':routine_type' => $type));
+        $results = $this->connection->createCommand($sql)->queryColumn(array(':routine_type' => $type));
         if (!empty($results) && ($defaultSchema != $schema)) {
             foreach ($results as $key => $name) {
                 $results[$key] = $schema . '.' . $name;

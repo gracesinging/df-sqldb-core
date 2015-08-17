@@ -300,7 +300,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     public function getDefaultSchema()
     {
         if (!strlen($this->defaultSchema)) {
-            $this->setDefaultSchema(strtoupper($this->getDbConnection()->username));
+            $this->setDefaultSchema(strtoupper($this->connection->username));
         }
 
         return $this->defaultSchema;
@@ -412,7 +412,7 @@ WHERE
 ORDER by a.column_id
 EOD;
 
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         if (($columns = $command->queryAll()) === array()) {
             return false;
@@ -441,7 +441,7 @@ WHERE table_owner = '{$schemaName}' and table_name = '{$tableName}'
 and triggering_event = 'INSERT' and status = 'ENABLED' and trigger_type = 'BEFORE EACH ROW'
 EOD;
 
-                $trig = $command = $this->getDbConnection()->createCommand($sql)->queryScalar();
+                $trig = $command = $this->connection->createCommand($sql)->queryScalar();
                 if (!empty($trig)) {
                     $c->autoIncrement = true;
                     $seq = stristr($trig, '.nextval', true);
@@ -504,7 +504,7 @@ EOD;
         WHERE D.constraint_type = 'R'
         ORDER BY D.constraint_name, C.position
 EOD;
-        $columns = $columns2 = $command = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $columns = $columns2 = $command = $this->connection->createCommand($sql)->queryAll();
 
         foreach ($columns as $key => $column) {
             $ts = $column['TABLE_SCHEMA'];
@@ -568,7 +568,7 @@ SELECT username FROM all_users WHERE username not in ('SYSTEM','SYS','SYSAUX')
 SQL;
         }
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn();
+        return $this->connection->createCommand($sql)->queryColumn();
     }
 
     /**
@@ -600,7 +600,7 @@ EOD;
 
         $defaultSchema = $this->getDefaultSchema();
 
-        $rows = $this->getDbConnection()->createCommand($sql)->queryAll();
+        $rows = $this->connection->createCommand($sql)->queryAll();
 
         $names = array();
         foreach ($rows as $row) {
@@ -706,16 +706,16 @@ EOD;
             $value = (int)$value;
         } else {
             $value =
-                (int)$this->getDbConnection()
+                (int)$this->connection
                     ->createCommand("SELECT MAX(\"{$table->primaryKey}\") FROM {$table->rawName}")
                     ->queryScalar();
             $value++;
         }
-        $this->getDbConnection()->createCommand(
+        $this->connection->createCommand(
             "DROP SEQUENCE \"{
             $table->name}_SEQ\""
         )->execute();
-        $this->getDbConnection()->createCommand(
+        $this->connection->createCommand(
             "CREATE SEQUENCE \"{
             $table->name}_SEQ\" START WITH {
             $value} INCREMENT BY 1 NOMAXVALUE NOCACHE"
@@ -738,13 +738,13 @@ EOD;
         $mode = $check ? 'ENABLE' : 'DISABLE';
         foreach ($this->getTableNames($schema) as $table) {
             $constraints =
-                $this->getDbConnection()
+                $this->connection
                     ->createCommand("SELECT CONSTRAINT_NAME FROM USER_CONSTRAINTS WHERE TABLE_NAME=:t AND OWNER=:o")
                     ->queryColumn(
                         array(':t' => $table, ':o' => $schema)
                     );
             foreach ($constraints as $constraint) {
-                $this->getDbConnection()
+                $this->connection
                     ->createCommand("ALTER TABLE \"{$schema}\".\"{$table}\" {$mode} CONSTRAINT \"{$constraint}\"")
                     ->execute();
             }
@@ -783,7 +783,7 @@ EOD;
      */
     public function callProcedure($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $paramStr = '';
         foreach ($params as $key => $param) {
             $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
@@ -803,7 +803,7 @@ EOD;
         }
 
         $sql = "BEGIN $name($paramStr); END;";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
         // do binding
         foreach ($params as $key => $param) {
             $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
@@ -851,7 +851,7 @@ EOD;
      */
     public function callFunction($name, &$params)
     {
-        $name = $this->getDbConnection()->quoteTableName($name);
+        $name = $this->connection->quoteTableName($name);
         $bindings = array();
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
@@ -862,7 +862,7 @@ EOD;
 
         $paramStr = implode(',', array_keys($bindings));
         $sql = "SELECT $name($paramStr) FROM DUAL";
-        $command = $this->getDbConnection()->createCommand($sql);
+        $command = $this->connection->createCommand($sql);
 
         // do binding
         $command->bindValues($bindings);
@@ -915,7 +915,7 @@ WHERE
     {$schema}
 MYSQL;
 
-        return $this->getDbConnection()->createCommand($sql)->queryColumn(array(':routine_type' => $type));
+        return $this->connection->createCommand($sql)->queryColumn(array(':routine_type' => $type));
     }
 
     public function getPrimaryKeyCommands($table, $column)
