@@ -35,8 +35,6 @@
     "issues": "https://github.com/dreamfactorysoftware/df-sqldb-core/issues",
     "wiki": "https://github.com/dreamfactorysoftware/dreamfactory/wiki"
   },
-  "minimum-stability": "dev",
-  "prefer-stable": true,
   "require": {
   },
   "autoload": {
