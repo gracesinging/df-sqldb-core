@@ -79,28 +79,28 @@ namespace DreamFactory\Core\SqlDbCore;
  * )
  * </pre>
  *
- * @property boolean            $active             Whether the DB connection is established.
- * @property \PDO               $pdoInstance        The PDO instance, null if the connection is not established yet.
- * @property Transaction        $currentTransaction The currently active transaction. Null if no active transaction.
- * @property Schema             $schema             The database schema for the current connection.
- * @property CommandBuilder     $commandBuilder     The command builder.
- * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved
+ * @property boolean        $active             Whether the DB connection is established.
+ * @property \PDO           $pdoInstance        The PDO instance, null if the connection is not established yet.
+ * @property Transaction    $currentTransaction The currently active transaction. Null if no active transaction.
+ * @property Schema         $schema             The database schema for the current connection.
+ * @property CommandBuilder $commandBuilder     The command builder.
+ * @property string         $lastInsertID       The row ID of the last row inserted, or the last value retrieved
  *           from the sequence object.
- * @property mixed              $columnCase         The case of the column names.
- * @property mixed              $nullConversion     How the null and empty strings are converted.
- * @property boolean            $autoCommit         Whether creating or updating a DB record will be automatically
+ * @property mixed          $columnCase         The case of the column names.
+ * @property mixed          $nullConversion     How the null and empty strings are converted.
+ * @property boolean        $autoCommit         Whether creating or updating a DB record will be automatically
  *           committed.
- * @property boolean            $persistent         Whether the connection is persistent or not.
- * @property string             $driverName         Name of the DB driver.
- * @property string             $clientVersion      The version information of the DB driver.
- * @property string             $connectionStatus   The status of the connection.
- * @property boolean            $prefetch           Whether the connection performs data prefetching.
- * @property string             $serverInfo         The information of DBMS server.
- * @property string             $serverVersion      The version information of DBMS server.
- * @property integer            $timeout            Timeout settings for the connection.
- * @property array              $attributes         Attributes (name=>value) that are previously explicitly set for the
+ * @property boolean        $persistent         Whether the connection is persistent or not.
+ * @property string         $driverName         Name of the DB driver.
+ * @property string         $clientVersion      The version information of the DB driver.
+ * @property string         $connectionStatus   The status of the connection.
+ * @property boolean        $prefetch           Whether the connection performs data prefetching.
+ * @property string         $serverInfo         The information of DBMS server.
+ * @property string         $serverVersion      The version information of DBMS server.
+ * @property integer        $timeout            Timeout settings for the connection.
+ * @property array          $attributes         Attributes (name=>value) that are previously explicitly set for the
  *           DB connection.
- * @property array              $stats              The first element indicates the number of SQL statements executed,
+ * @property array          $stats              The first element indicates the number of SQL statements executed,
  * and the second element the total time spent in SQL execution.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
@@ -225,7 +225,7 @@ class Connection
         'sqlite' => 'sqlite3',
         'mysql'  => 'mysql',
         'dblib'  => 'mssql',
-        'sqlsrv'  => 'mssql',
+        'sqlsrv' => 'mssql',
         'pgsql'  => 'pgsql',
         'oci'    => 'oci8',
         'ibm'    => 'ibm_db2',
@@ -241,7 +241,7 @@ class Connection
         // http://php.net/manual/en/ref.pdo-mysql.connection.php
         'dblib'  => 'mssql:host=localhost:1433;dbname=database',
         // http://php.net/manual/en/ref.pdo-dblib.connection.php
-        'sqlsrv'  => 'sqlsrv:Server=localhost,1433;Database=db',
+        'sqlsrv' => 'sqlsrv:Server=localhost,1433;Database=db',
         // http://php.net/manual/en/ref.pdo-sqlsrv.connection.php
         'pgsql'  => 'pgsql:host=localhost;port=5432;dbname=db;user=name;password=pwd',
         // http://php.net/manual/en/ref.pdo-pgsql.connection.php
@@ -265,11 +265,11 @@ class Connection
      * instance is created. Set {@link setActive active} property to true
      * to establish the connection.
      *
-     * @param string $dsn      The Data Source Name, or DSN, contains the information required to connect to the
-     *                         database.
-     * @param string $username The user name for the DSN string.
-     * @param string $password The password for the DSN string.
-     * @param CacheInterface|null $cache The cache instance to use.
+     * @param string              $dsn      The Data Source Name, or DSN, contains the information required to connect
+     *                                      to the database.
+     * @param string              $username The user name for the DSN string.
+     * @param string              $password The password for the DSN string.
+     * @param CacheInterface|null $cache    The cache instance to use.
      *
      * @see http://www.php.net/manual/en/function.PDO-construct.php
      */
@@ -331,17 +331,21 @@ class Connection
      */
     public static function requireDriver($driver, $requires_pdo = true)
     {
-        if (!empty($driver)) {
-            if (isset(static::$driverExtensionMap[$driver])) {
-                $extension = static::$driverExtensionMap[$driver];
-                if ('mysql' === $extension) {
-                    if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
-                        throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
-                    }
-                } elseif (!extension_loaded($extension)) {
-                    throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
-                }
+        if (empty($driver)) {
+            throw new \Exception("PDO driver name can not be empty.");
+        }
+
+        if (!isset(static::$driverExtensionMap[$driver])) {
+            throw new \Exception("Driver '$driver' is not supported by this software.");
+        }
+
+        $extension = static::$driverExtensionMap[$driver];
+        if ('mysql' === $extension) {
+            if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
+                throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
             }
+        } elseif (!extension_loaded($extension)) {
+            throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
         }
 
         if ($requires_pdo) {
@@ -349,7 +353,7 @@ class Connection
                 throw new \Exception("Required PDO extension is not installed or loaded.");
             }
 
-            if (!empty($driver)) {
+            if (!empty($driver) && ('oci8' !== $driver)) {
                 $drivers = static::getAvailableDrivers();
                 if (!in_array($driver, $drivers)) {
                     throw new \Exception("Required PDO driver '$driver' is not installed or loaded properly.");
