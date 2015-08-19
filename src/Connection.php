@@ -353,7 +353,7 @@ class Connection
                 throw new \Exception("Required PDO extension is not installed or loaded.");
             }
 
-            if (!empty($driver) && ('oci8' !== $driver)) {
+            if (!empty($driver) && ('oci' !== $driver)) {
                 $drivers = static::getAvailableDrivers();
                 if (!in_array($driver, $drivers)) {
                     throw new \Exception("Required PDO driver '$driver' is not installed or loaded properly.");
