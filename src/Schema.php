@@ -1126,6 +1126,11 @@ abstract class Schema
         return 'ALTER TABLE ' . $this->quoteTableName($table) . ' DROP CONSTRAINT ' . $this->quoteColumnName($name);
     }
 
+    public function requiresCreateIndex($unique = false, $on_create_table = false)
+    {
+        return true;
+    }
+
     /**
      * Builds a SQL statement for creating a new index.
      *

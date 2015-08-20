@@ -234,7 +234,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             throw new \Exception('Unique and Primary designations not allowed simultaneously.');
         }
         if ($isUniqueKey) {
-            $definition .= ' UNIQUE KEY';
+            $definition .= ' UNIQUE';
         } elseif ($isPrimaryKey) {
             $definition .= ' PRIMARY KEY';
         }
@@ -662,6 +662,11 @@ EOD;
         }
 
         return $temp;
+    }
+
+    public function requiresCreateIndex($unique = false, $on_create_table = false)
+    {
+        return !($unique && $on_create_table);
     }
 
     /**
