@@ -10,7 +10,6 @@
 namespace DreamFactory\Core\SqlDbCore\Pgsql;
 
 use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
 
 /**
  * Schema is the class for retrieving metadata information from a PostgreSQL database.

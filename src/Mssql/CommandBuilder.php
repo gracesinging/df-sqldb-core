@@ -20,9 +20,6 @@
  */
 namespace DreamFactory\Core\SqlDbCore\Mssql;
 
-use DreamFactory\Core\SqlDbCore\Schema;
-use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
 use DreamFactory\Core\SqlDbCore\Criteria;
 use DreamFactory\Core\SqlDbCore\Expression;
 use DreamFactory\Core\SqlDbCore\Command;
@@ -77,8 +74,8 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
     public function createUpdateCommand($table, $data, $criteria)
     {
         $criteria = $this->checkCriteria($table, $criteria);
-        $fields = array();
-        $values = array();
+        $fields = [];
+        $values = [];
         $bindByPosition = isset($criteria->params[0]);
         $i = 0;
         foreach ($data as $name => $value) {
@@ -104,14 +101,8 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
                 }
             }
         }
-        if ($fields === array()) {
-            throw new \Exception(
-                Yii::t(
-                    'yii',
-                    'No columns are being updated for table "{table}".',
-                    array('{table}' => $table->name)
-                )
-            );
+        if ($fields === []) {
+            throw new \Exception("No columns are being updated for table '{$table->name}'.");
         }
         $sql = "UPDATE {$table->rawName} SET " . implode(', ', $fields);
         $sql = $this->applyJoin($sql, $criteria->join);
@@ -146,8 +137,8 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      * Override parent implementation to check if an orderby clause if specified when querying with an offset
      *
      * @param TableSchema $table    the table metadata
-     * @param Criteria    $counters the query criteria
-     * @param array       $criteria counters to be updated (counter increments/decrements indexed by column names.)
+     * @param array       $counters counters to be updated (counter increments/decrements indexed by column names.)
+     * @param Criteria    $criteria the query criteria
      *
      * @return Command the created command
      * @throws \Exception if no counter is specified
@@ -255,15 +246,15 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
     protected function findOrdering($sql)
     {
         if (!preg_match('/ORDER BY/i', $sql)) {
-            return array();
+            return [];
         }
-        $matches = array();
-        $ordering = array();
+        $matches = [];
+        $ordering = [];
         preg_match_all('/(ORDER BY)[\s"\[](.*)(ASC|DESC)?(?:[\s"\[]|$|COMPUTE|FOR)/i', $sql, $matches);
         if (count($matches) > 1 && count($matches[2]) > 0) {
             $parts = explode(',', $matches[2][0]);
             foreach ($parts as $part) {
-                $subs = array();
+                $subs = [];
                 if (preg_match_all('/(.*)[\s"\]](ASC|DESC)$/i', trim($part), $subs)) {
                     if (count($subs) > 1 && count($subs[2]) > 0) {
                         $name = '';
@@ -284,8 +275,8 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
 
         // replacing column names with their alias names
         foreach ($ordering as $name => $direction) {
-            $matches = array();
-            $pattern = '/\s+' . str_replace(array('[', ']'), array('\[', '\]'), $name) . '\s+AS\s+(\[[^\]]+\])/i';
+            $matches = [];
+            $pattern = '/\s+' . str_replace(['[', ']'], ['\[', '\]'], $name) . '\s+AS\s+(\[[^\]]+\])/i';
             preg_match($pattern, $sql, $matches);
             if (isset($matches[1])) {
                 $ordering[$matches[1]] = $ordering[$name];
@@ -307,7 +298,7 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
     protected function joinOrdering($orders, $newPrefix)
     {
         if (count($orders) > 0) {
-            $str = array();
+            $str = [];
             foreach ($orders as $column => $direction) {
                 $str[] = $column . ' ' . $direction;
             }
@@ -363,9 +354,9 @@ class CommandBuilder extends \DreamFactory\Core\SqlDbCore\CommandBuilder
      */
     protected function createCompositeInCondition($table, $values, $prefix)
     {
-        $vs = array();
+        $vs = [];
         foreach ($values as $value) {
-            $c = array();
+            $c = [];
             foreach ($value as $k => $v) {
                 $c[] = $prefix . $table->columns[$k]->rawName . '=' . $v;
             }

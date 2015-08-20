@@ -10,8 +10,6 @@
 namespace DreamFactory\Core\SqlDbCore\Mysql;
 
 use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
-use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from a MySQL database (version 4.1.x and 5.x).
