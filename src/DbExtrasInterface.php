@@ -1,5 +1,5 @@
 <?php
-namespace DreamFactory\Core\Contracts;
+namespace DreamFactory\Core\SqlDbCore;
 
 /**
  * Something that can retrieve database extras
@@ -18,12 +18,17 @@ interface DbExtrasInterface
      * @param string | array $field_names
      * @param string | array $select
      */
-    public function getSchemaExtrasForFields($table_name, $field_names, $select = '*');
+    public function getSchemaExtrasForFields($table_name, $field_names = '*', $select = '*');
 
     /**
-     * @param array $labels
+     * @param array $extras
      */
-    public function setSchemaExtras($labels);
+    public function setSchemaTableExtras($extras);
+
+    /**
+     * @param array $extras
+     */
+    public function setSchemaFieldExtras($extras);
 
     /**
      * @param string | array $table_names

@@ -106,22 +106,6 @@ abstract class Schema
         return null;
     }
 
-    protected function getFromCache($key)
-    {
-        if ($this->connection->cache) {
-            return $this->connection->cache->getFromCache($key);
-        }
-
-        return null;
-    }
-
-    protected function addToCache($key, $value, $forever = false)
-    {
-        if ($this->connection->cache) {
-            $this->connection->cache->addToCache($key, $value, $forever);
-        }
-    }
-
     /**
      * Returns all schema names on the connection.
      *
@@ -134,13 +118,13 @@ abstract class Schema
         if (!$refresh) {
             if (!empty($this->schemaNames)) {
                 return $this->schemaNames;
-            } elseif (null !== $this->schemaNames = $this->getFromCache('schema_names')) {
+            } elseif (null !== $this->schemaNames = $this->connection->getFromCache('schema_names')) {
                 return $this->schemaNames;
             }
         }
 
         $this->schemaNames = $this->findSchemaNames();
-        $this->addToCache('schema_names', $this->schemaNames, true);
+        $this->connection->addToCache('schema_names', $this->schemaNames, true);
 
         return $this->schemaNames;
     }
@@ -160,6 +144,34 @@ abstract class Schema
     }
 
     /**
+     * @param string $name       The name of the table to check
+     * @param bool   $returnName If true, the table name is returned instead of TRUE
+     *
+     * @throws \InvalidArgumentException
+     * @return bool
+     */
+    public function doesTableExist($name, $returnName = false)
+    {
+        if (empty($name)) {
+            throw new \InvalidArgumentException('Table name cannot be empty.');
+        }
+
+        //  Build the lower-cased table array
+        $tables = $this->getTableNames();
+
+        //	Search normal, return real name
+        if (false !== array_search($name, $tables)) {
+            return $returnName ? $name : true;
+        }
+
+        if (false !== $key = array_search(strtolower($name), array_map('strtolower', $tables))) {
+            return $returnName ? $tables[$key] : true;
+        }
+
+        return false;
+    }
+
+    /**
      * Obtains the metadata for the named table.
      *
      * @param string  $name    table name
@@ -173,7 +185,7 @@ abstract class Schema
         if (!$refresh) {
             if (isset($this->tables[$name])) {
                 return $this->tables[$name];
-            } elseif (null !== $table = $this->getFromCache('table:' . $name)) {
+            } elseif (null !== $table = $this->connection->getFromCache('table:' . $name)) {
                 $this->tables[$name] = $table;
 
                 return $this->tables[$name];
@@ -186,8 +198,27 @@ abstract class Schema
             $realName = $name;
         }
 
-        $this->tables[$name] = $table = $this->loadTable($realName);
-        $this->addToCache('table:' . $name, $table, true);
+        if (null === $table = $this->loadTable($realName)) {
+            return null;
+        }
+
+        // merge db extras
+        if (!empty($extras = $this->connection->getSchemaExtrasForTables($name, false))) {
+            $extras = (isset($extras[0])) ? $extras[0] : null;
+            $table->mergeDbExtras($extras);
+        }
+        if (!empty($extras = $this->connection->getSchemaExtrasForFields($name, '*'))) {
+            foreach ($extras as $extra) {
+                if (!empty($columnName = (isset($extra['field'])) ? $extra['field'] : null)) {
+                    if (null !== $column = $table->getColumn($columnName)) {
+                        $column->mergeDbExtras($extra);
+                    }
+                }
+            }
+        }
+
+        $this->tables[$name] = $table;
+        $this->connection->addToCache('table:' . $name, $table, true);
 
         return $table;
     }
@@ -268,14 +299,14 @@ abstract class Schema
     {
         if ($refresh ||
             (empty($this->tableNames) &&
-                (null === $this->tableNames = $this->getFromCache('table_names')))
+                (null === $this->tableNames = $this->connection->getFromCache('table_names')))
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
                 $names[$temp] = $this->findTableNames($temp, $include_views);
             }
             $this->tableNames = $names;
-            $this->addToCache('table_names', $this->tableNames, true);
+            $this->connection->addToCache('table_names', $this->tableNames, true);
         }
     }
 
@@ -414,14 +445,14 @@ abstract class Schema
     {
         if ($refresh ||
             (empty($this->procedureNames) &&
-                (null === $this->procedureNames = $this->getFromCache('proc_names')))
+                (null === $this->procedureNames = $this->connection->getFromCache('proc_names')))
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
                 $names[$temp] = $this->findProcedureNames($temp);
             }
             $this->procedureNames = $names;
-            $this->addToCache('proc_names', $this->procedureNames, true);
+            $this->connection->addToCache('proc_names', $this->procedureNames, true);
         }
     }
 
@@ -534,14 +565,14 @@ abstract class Schema
     {
         if ($refresh ||
             (empty($this->functionNames) &&
-                (null === $this->functionNames = $this->getFromCache('func_names')))
+                (null === $this->functionNames = $this->connection->getFromCache('func_names')))
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
                 $names[$temp] = $this->findFunctionNames($temp);
             }
             $this->functionNames = $names;
-            $this->addToCache('func_names', $this->functionNames, true);
+            $this->connection->addToCache('func_names', $this->functionNames, true);
         }
     }
 
@@ -760,6 +791,260 @@ abstract class Schema
     protected function createCommandBuilder()
     {
         return new CommandBuilder($this);
+    }
+
+    /**
+     * @param string           $table_name
+     * @param array            $fields
+     * @param null|TableSchema $schema
+     * @param bool             $allow_update
+     * @param bool             $allow_delete
+     *
+     * @throws \Exception
+     * @return string
+     */
+    public function buildTableFields(
+        $table_name,
+        $fields,
+        $schema = null,
+        $allow_update = false,
+        $allow_delete = false
+    ){
+        if (!is_array($fields) || empty($fields)) {
+            throw new \Exception('There are no fields in the requested schema.');
+        }
+
+        if (!isset($fields[0])) {
+            // single record possibly passed in without wrapper array
+            $fields = [$fields];
+        }
+
+        $columns = [];
+        $alterColumns = [];
+        $references = [];
+        $indexes = [];
+        $labels = [];
+        $dropColumns = [];
+        $oldFields = [];
+        $extraCommands = [];
+        if ($schema && isset($schema['field']) && is_array($schema['field'])) {
+            foreach ($schema['field'] as $old) {
+                $old = array_change_key_case($old, CASE_LOWER);
+                $oldFields[$old['name']] = $old;
+            }
+        }
+        $newFields = [];
+        foreach ($fields as $field) {
+            $newFields[$field['name']] = array_change_key_case($field, CASE_LOWER);
+        }
+
+        if ($allow_delete && !empty($oldFields)) {
+            // check for columns to drop
+            foreach ($oldFields as $oldName => $oldField) {
+                if (!isset($newFields[$oldName])) {
+                    $dropColumns[] = $oldName;
+                }
+            }
+        }
+
+        foreach ($newFields as $name => $field) {
+            if (empty($name)) {
+                throw new \Exception("Invalid schema detected - no name element.");
+            }
+
+            $isAlter = isset($oldFields[$name]);
+            if ($isAlter && !$allow_update) {
+                throw new \Exception("Field '$name' already exists in table '$table_name'.");
+            }
+
+            $oldField = ($isAlter) ? $oldFields[$name] : [];
+            $oldForeignKey = (isset($oldField['is_foreign_key'])) ? boolval($oldField['is_foreign_key']) : false;
+            $temp = [];
+
+            $values = (isset($field['value'])) ? $field['value'] : [];
+            if (!is_array($values)) {
+                $values = array_map('trim', explode(',', trim($values, ',')));
+            }
+            if (!empty($values)){
+                $oldValues = (isset($oldField['value'])) ? $oldField['value'] : [];
+                if ($values != $oldValues) {
+                    $picklist = '';
+                    foreach ($values as $value) {
+                        if (!empty($picklist)) {
+                            $picklist .= "\r";
+                        }
+                        $picklist .= $value;
+                    }
+                    if (!empty($picklist)) {
+                        $temp['picklist'] = $picklist;
+                    }
+                }
+            }
+
+            // extras
+            $label = (isset($field['label'])) ? $field['label'] : null;
+            if (!empty($label)) {
+                $oldLabel = (isset($oldField['label'])) ? $oldField['label'] : null;
+                if ($label != $oldLabel) {
+                    $temp['label'] = $label;
+                }
+            }
+
+            $alias = (isset($field['alias'])) ? $field['alias'] : null;
+            if (!empty($alias)) {
+                $oldAlias = (isset($oldField['alias'])) ? $oldField['alias'] : null;
+                if ($alias != $oldAlias) {
+                    $temp['alias'] = $alias;
+                }
+            }
+
+            $validation = (isset($field['validation'])) ? $field['validation'] : null;
+            if (!empty($validation)){
+                $oldValue = (isset($oldField['validation'])) ? $oldField['validation'] : null;
+                if ($validation != $oldValue){
+                    $temp['validation'] = json_encode($validation);
+                }
+            }
+
+            // if same as old, don't bother
+            if (!empty($oldField)) {
+                $same = true;
+
+                foreach ($field as $key => $value) {
+                    switch (strtolower($key)) {
+                        case 'label':
+                        case 'alias':
+                        case 'value':
+                        case 'validation':
+                        case 'description':
+                        case 'client_info':
+                            // extras from server already taken care of
+                            break;
+                        default:
+                            if (isset($oldField[$key])) // could be extra stuff from client
+                            {
+                                if ($value != $oldField[$key]) {
+                                    $same = false;
+                                    break 2;
+                                }
+                            }
+                            break;
+                    }
+                }
+
+                if ($same) {
+                    if (!empty($temp)) {
+                        $temp['table'] = $table_name;
+                        $temp['field'] = $name;
+                        $labels[] = $temp;
+                    }
+
+                    continue;
+                }
+            }
+
+            $type = (isset($field['type'])) ? strtolower($field['type']) : '';
+
+            switch ($type) {
+                case 'user_id':
+                    $field['type'] = 'int';
+                    $temp['extra_type'] = 'user_id';
+                    break;
+                case 'user_id_on_create':
+                    $field['type'] = 'int';
+                    $temp['extra_type'] = 'user_id_on_create';
+                    break;
+                case 'user_id_on_update':
+                    $field['type'] = 'int';
+                    $temp['extra_type'] = 'user_id_on_update';
+                    break;
+                case 'timestamp_on_create':
+                    $temp['extra_type'] = 'timestamp_on_create';
+                    break;
+                case 'timestamp_on_update':
+                    $temp['extra_type'] = 'timestamp_on_update';
+                    break;
+                case 'id':
+                case 'pk':
+                    $pkExtras = $this->getPrimaryKeyCommands($table_name, $name);
+                    $extraCommands = array_merge($extraCommands, $pkExtras);
+                    break;
+            }
+
+            $isForeignKey = (isset($field['is_foreign_key'])) ? boolval($field['is_foreign_key']) : false;
+            if (('reference' == $type) || $isForeignKey) {
+                // special case for references because the table referenced may not be created yet
+                $refTable = (isset($field['ref_table'])) ? $field['ref_table'] : null;
+                if (empty($refTable)) {
+                    throw new \Exception("Invalid schema detected - no table element for reference type of $name.");
+                }
+                $refColumns = (isset($field['ref_fields'])) ? $field['ref_fields'] : 'id';
+                $refOnDelete = (isset($field['ref_on_delete'])) ? $field['ref_on_delete'] : null;
+                $refOnUpdate = (isset($field['ref_on_update'])) ? $field['ref_on_update'] : null;
+
+                // will get to it later, $refTable may not be there
+                $keyName = $this->makeConstraintName('fk', $table_name, $name);
+                if (!$isAlter || !$oldForeignKey) {
+                    $references[] = [
+                        'name'       => $keyName,
+                        'table'      => $table_name,
+                        'column'     => $name,
+                        'ref_table'  => $refTable,
+                        'ref_fields' => $refColumns,
+                        'delete'     => $refOnDelete,
+                        'update'     => $refOnUpdate
+                    ];
+                }
+            }
+
+            // regardless of type
+            if (isset($field['is_unique']) && boolval($field['is_unique'])) {
+                if ($this->requiresCreateIndex(true, !$isAlter)) {
+                    // will get to it later, create after table built
+                    $keyName = $this->makeConstraintName('undx', $table_name, $name);
+                    $indexes[] = [
+                        'name'   => $keyName,
+                        'table'  => $table_name,
+                        'column' => $name,
+                        'unique' => true,
+                        'drop'   => $isAlter
+                    ];
+                }
+            } elseif (isset($field['is_index']) && boolval($field['is_index'])) {
+                if ($this->requiresCreateIndex(false, !$isAlter)) {
+                    // will get to it later, create after table built
+                    $keyName = $this->makeConstraintName('ndx', $table_name, $name);
+                    $indexes[] = [
+                        'name'   => $keyName,
+                        'table'  => $table_name,
+                        'column' => $name,
+                        'drop'   => $isAlter
+                    ];
+                }
+            }
+
+            if ($isAlter) {
+                $alterColumns[$name] = $field;
+            } else {
+                $columns[$name] = $field;
+            }
+
+            if (!empty($temp)) {
+                $temp['table'] = $table_name;
+                $temp['field'] = $name;
+                $labels[] = $temp;
+            }
+        }
+
+        return [
+            'columns'       => $columns,
+            'alter_columns' => $alterColumns,
+            'drop_columns'  => $dropColumns,
+            'references'    => $references,
+            'indexes'       => $indexes,
+            'labels'        => $labels,
+            'extras'        => $extraCommands
+        ];
     }
 
     /**

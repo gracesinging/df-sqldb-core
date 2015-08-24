@@ -51,6 +51,26 @@ class TableSchema
      */
     public $displayName;
     /**
+     * @var string Optional alias for this table. This alias can be used in the API to access the table.
+     */
+    public $alias;
+    /**
+     * @var string Optional label for this table.
+     */
+    public $label;
+    /**
+     * @var string Optional plural form of the label for of this table.
+     */
+    public $plural;
+    /**
+     * @var string Optional public description of this table.
+     */
+    public $description;
+    /**
+     * @var string Optional field of this table that may contain a displayable name for each row/record.
+     */
+    public $nameField;
+    /**
      * @var string|array primary key name of this table. If composite key, an array of key names is returned.
      */
     public $primaryKey;
@@ -121,6 +141,19 @@ class TableSchema
         $this->relations[$relation->name] = $relation;
     }
 
+    public function mergeDbExtras($extras)
+    {
+        $this->alias = (isset($extras['alias'])) ? $extras['alias'] : null;
+        $this->description = (isset($extras['description'])) ? $extras['description'] : null;
+        $this->nameField = (isset($extras['description'])) ? $extras['description'] : null;
+        if (isset($extras['label']) && !empty($extras['label'])) {
+            $this->label = $extras['label'];
+        }
+        if (isset($extras['plural']) && !empty($extras['plural'])) {
+            $this->plural = $extras['plural'];
+        }
+    }
+
     public function toArray()
     {
         $fields = [];
@@ -135,14 +168,17 @@ class TableSchema
             $relations[] = $relation->toArray();
         }
 
-        $label = static::camelize($this->displayName, '_', true);
-        $plural = static::pluralize($label);
+        $label = (empty($this->label)) ? static::camelize($this->displayName, '_', true) : $this->label;
+        $plural = (empty($this->plural)) ? static::pluralize($label) : $this->plural;
 
         return [
             'name'        => $this->displayName,
             'label'       => $label,
             'plural'      => $plural,
+            'description' => $this->description,
+            'alias'       => $this->alias,
             'primary_key' => $this->primaryKey,
+            'name_field'  => $this->nameField,
             'field'       => $fields,
             'related'     => $relations
         ];
@@ -173,7 +209,7 @@ class TableSchema
     public static function pluralize($name)
     {
         /** @noinspection SpellCheckingInspection */
-        static $blacklist = array(
+        static $blacklist = [
             'Amoyese',
             'bison',
             'Borghese',
@@ -256,9 +292,9 @@ class TableSchema
             'whiting',
             'wildebeest',
             'Yengeese',
-        );
+        ];
         /** @noinspection SpellCheckingInspection */
-        static $rules = array(
+        static $rules = [
             '/(s)tatus$/i'                                                                 => '\1\2tatuses',
             '/(quiz)$/i'                                                                   => '\1zes',
             '/^(ox)$/i'                                                                    => '\1en',
@@ -287,7 +323,7 @@ class TableSchema
             '/(ax|cris|test)is$/i'                                                         => '\1es',
             '/s$/'                                                                         => 's',
             '/$/'                                                                          => 's',
-        );
+        ];
 
         if (empty($name) || in_array(strtolower($name), $blacklist)) {
             return $name;
