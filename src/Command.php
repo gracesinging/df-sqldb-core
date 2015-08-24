@@ -39,23 +39,23 @@ namespace DreamFactory\Core\SqlDbCore;
  *     ->queryRow();
  * </pre>
  *
- * @property string         $text         The SQL statement to be executed.
- * @property Connection     $connection   The connection associated with this command.
- * @property \PDOStatement  $pdoStatement The underlying PDOStatement for this command
+ * @property string        $text         The SQL statement to be executed.
+ * @property Connection    $connection   The connection associated with this command.
+ * @property \PDOStatement $pdoStatement The underlying PDOStatement for this command
  * It could be null if the statement is not prepared yet.
- * @property string         $select       The SELECT part (without 'SELECT') in the query.
- * @property boolean        $distinct     A value indicating whether SELECT DISTINCT should be used.
- * @property string         $from         The FROM part (without 'FROM' ) in the query.
- * @property string         $where        The WHERE part (without 'WHERE' ) in the query.
- * @property mixed          $join         The join part in the query. This can be an array representing
+ * @property string        $select       The SELECT part (without 'SELECT') in the query.
+ * @property boolean       $distinct     A value indicating whether SELECT DISTINCT should be used.
+ * @property string        $from         The FROM part (without 'FROM' ) in the query.
+ * @property string        $where        The WHERE part (without 'WHERE' ) in the query.
+ * @property mixed         $join         The join part in the query. This can be an array representing
  * multiple join fragments, or a string representing a single join fragment.
  * Each join fragment will contain the proper join operator (e.g. LEFT JOIN).
- * @property string         $group        The GROUP BY part (without 'GROUP BY' ) in the query.
- * @property string         $having       The HAVING part (without 'HAVING' ) in the query.
- * @property string         $order        The ORDER BY part (without 'ORDER BY' ) in the query.
- * @property string         $limit        The LIMIT part (without 'LIMIT' ) in the query.
- * @property string         $offset       The OFFSET part (without 'OFFSET' ) in the query.
- * @property mixed          $union        The UNION part (without 'UNION' ) in the query.
+ * @property string        $group        The GROUP BY part (without 'GROUP BY' ) in the query.
+ * @property string        $having       The HAVING part (without 'HAVING' ) in the query.
+ * @property string        $order        The ORDER BY part (without 'ORDER BY' ) in the query.
+ * @property string        $limit        The LIMIT part (without 'LIMIT' ) in the query.
+ * @property string        $offset       The OFFSET part (without 'OFFSET' ) in the query.
+ * @property mixed         $union        The UNION part (without 'UNION' ) in the query.
  * This can be either a string or an array representing multiple union parts.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
@@ -69,14 +69,14 @@ class Command
      * @var array the parameters (name=>value) to be bound to the current query.
      * @since 1.1.6
      */
-    public $params = array();
+    public $params = [];
 
     private $connection;
     private $text;
     private $statement;
-    private $paramLog = array();
+    private $paramLog = [];
     private $query;
-    private $fetchMode = array(\PDO::FETCH_ASSOC);
+    private $fetchMode = [\PDO::FETCH_ASSOC];
 
     /**
      * Constructor.
@@ -155,8 +155,8 @@ class Command
         $this->text = null;
         $this->query = null;
         $this->statement = null;
-        $this->paramLog = array();
-        $this->params = array();
+        $this->paramLog = [];
+        $this->params = [];
 
         return $this;
     }
@@ -224,7 +224,7 @@ class Command
         if ($this->statement == null) {
             try {
                 $this->statement = $this->getConnection()->getPdoInstance()->prepare($this->getText());
-                $this->paramLog = array();
+                $this->paramLog = [];
             } catch (\Exception $e) {
                 $errorInfo = $e instanceof \PDOException ? $e->errorInfo : null;
                 throw new \Exception('Command failed to prepare the SQL statement: ' . $e->getMessage(),
@@ -340,11 +340,11 @@ class Command
      * @return integer number of rows affected by the execution.
      * @throws \Exception execution failed
      */
-    public function execute($params = array())
+    public function execute($params = [])
     {
         try {
             $this->prepare();
-            if ($params === array()) {
+            if ($params === []) {
                 $this->statement->execute();
             } else {
                 $this->statement->execute($params);
@@ -374,7 +374,7 @@ class Command
      * @return DataReader the reader object for fetching the query result
      * @throws \Exception execution failed
      */
-    public function query($params = array())
+    public function query($params = [])
     {
         return $this->queryInternal('', 0, $params);
     }
@@ -397,7 +397,7 @@ class Command
      * An empty array is returned if the query results in nothing.
      * @throws \Exception execution failed
      */
-    public function queryAll($fetchAssociative = true, $params = array())
+    public function queryAll($fetchAssociative = true, $params = [])
     {
         return $this->queryInternal('fetchAll', $fetchAssociative ? $this->fetchMode : \PDO::FETCH_NUM, $params);
     }
@@ -420,7 +420,7 @@ class Command
      * @return mixed the first row (in terms of an array) of the query result, false if no result.
      * @throws \Exception execution failed
      */
-    public function queryRow($fetchAssociative = true, $params = array())
+    public function queryRow($fetchAssociative = true, $params = [])
     {
         return $this->queryInternal('fetch', $fetchAssociative ? $this->fetchMode : \PDO::FETCH_NUM, $params);
     }
@@ -442,7 +442,7 @@ class Command
      *               no value.
      * @throws \Exception execution failed
      */
-    public function queryScalar($params = array())
+    public function queryScalar($params = [])
     {
         $result = $this->queryInternal('fetchColumn', 0, $params);
         if (is_resource($result) && get_resource_type($result) === 'stream') {
@@ -468,9 +468,9 @@ class Command
      * @return array the first column of the query result. Empty array if no result.
      * @throws \Exception execution failed
      */
-    public function queryColumn($params = array())
+    public function queryColumn($params = [])
     {
-        return $this->queryInternal('fetchAll', array(\PDO::FETCH_COLUMN, 0), $params);
+        return $this->queryInternal('fetchAll', [\PDO::FETCH_COLUMN, 0], $params);
     }
 
     /**
@@ -488,13 +488,13 @@ class Command
      * @throws \Exception if Command failed to execute the SQL statement
      * @return mixed the method execution result
      */
-    private function queryInternal($method, $mode, $params = array())
+    private function queryInternal($method, $mode, $params = [])
     {
         $params = array_merge($this->params, $params);
 
         try {
             $this->prepare();
-            if ($params === array()) {
+            if ($params === []) {
                 $this->statement->execute();
             } else {
                 $this->statement->execute($params);
@@ -504,7 +504,7 @@ class Command
                 $result = new DataReader($this);
             } else {
                 $mode = (array)$mode;
-                call_user_func_array(array($this->statement, 'setFetchMode'), $mode);
+                call_user_func_array([$this->statement, 'setFetchMode'], $mode);
                 $result = $this->statement->$method();
                 $this->statement->closeCursor();
             }
@@ -796,7 +796,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    public function where($conditions, $params = array())
+    public function where($conditions, $params = [])
     {
         $this->query['where'] = $this->processConditions($conditions);
 
@@ -820,10 +820,10 @@ class Command
      * @return Command the command object itself.
      * @since 1.1.13
      */
-    public function andWhere($conditions, $params = array())
+    public function andWhere($conditions, $params = [])
     {
         if (isset($this->query['where'])) {
-            $this->query['where'] = $this->processConditions(array('AND', $this->query['where'], $conditions));
+            $this->query['where'] = $this->processConditions(['AND', $this->query['where'], $conditions]);
         } else {
             $this->query['where'] = $this->processConditions($conditions);
         }
@@ -848,10 +848,10 @@ class Command
      * @return Command the command object itself.
      * @since 1.1.13
      */
-    public function orWhere($conditions, $params = array())
+    public function orWhere($conditions, $params = [])
     {
         if (isset($this->query['where'])) {
-            $this->query['where'] = $this->processConditions(array('OR', $this->query['where'], $conditions));
+            $this->query['where'] = $this->processConditions(['OR', $this->query['where'], $conditions]);
         } else {
             $this->query['where'] = $this->processConditions($conditions);
         }
@@ -902,7 +902,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    public function join($table, $conditions, $params = array())
+    public function join($table, $conditions, $params = [])
     {
         return $this->joinInternal('join', $table, $conditions, $params);
     }
@@ -949,7 +949,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    public function leftJoin($table, $conditions, $params = array())
+    public function leftJoin($table, $conditions, $params = [])
     {
         return $this->joinInternal('left join', $table, $conditions, $params);
     }
@@ -969,7 +969,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    public function rightJoin($table, $conditions, $params = array())
+    public function rightJoin($table, $conditions, $params = [])
     {
         return $this->joinInternal('right join', $table, $conditions, $params);
     }
@@ -1077,7 +1077,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    public function having($conditions, $params = array())
+    public function having($conditions, $params = [])
     {
         $this->query['having'] = $this->processConditions($conditions);
         foreach ($params as $name => $value) {
@@ -1271,7 +1271,7 @@ class Command
     public function union($sql)
     {
         if (isset($this->query['union']) && is_string($this->query['union'])) {
-            $this->query['union'] = array($this->query['union']);
+            $this->query['union'] = [$this->query['union']];
         }
 
         $this->query['union'][] = $sql;
@@ -1316,9 +1316,9 @@ class Command
      */
     public function insert($table, $columns)
     {
-        $params = array();
-        $names = array();
-        $placeholders = array();
+        $params = [];
+        $names = [];
+        $placeholders = [];
         foreach ($columns as $name => $value) {
             $names[] = $this->connection->quoteColumnName($name);
             if ($value instanceof Expression) {
@@ -1358,9 +1358,9 @@ class Command
      * @return integer number of rows affected by the execution.
      * @since 1.1.6
      */
-    public function update($table, $columns, $conditions = '', $params = array())
+    public function update($table, $columns, $conditions = '', $params = [])
     {
-        $lines = array();
+        $lines = [];
         foreach ($columns as $name => $value) {
             if ($value instanceof Expression) {
                 $lines[] = $this->connection->quoteColumnName($name) . '=' . $value->expression;
@@ -1393,7 +1393,7 @@ class Command
      * @return integer number of rows affected by the execution.
      * @since 1.1.6
      */
-    public function delete($table, $conditions = '', $params = array())
+    public function delete($table, $conditions = '', $params = [])
     {
         $sql = 'DELETE FROM ' . $this->connection->quoteTableName($table);
         if (($where = $this->processConditions($conditions)) != '') {
@@ -1418,8 +1418,10 @@ class Command
      * @param array  $columns the columns (name=>definition) in the new table.
      * @param string $options additional SQL fragment that will be appended to the generated SQL.
      *
-     * @return integer 0 is always returned. See {@link http://php.net/manual/en/pdostatement.rowcount.php} for more
-     *                 information.
+     * @return int 0 is always returned. See <a
+     *             href='http://php.net/manual/en/pdostatement.rowcount.php'>http://php.net/manual/en/pdostatement.rowcount.php</a>
+     *             for more for more information.
+     * @throws \Exception
      * @since 1.1.6
      */
     public function createTable($table, $columns, $options = null)
@@ -1629,13 +1631,13 @@ class Command
     {
         if (!is_array($conditions)) {
             return $conditions;
-        } elseif ($conditions === array()) {
+        } elseif ($conditions === []) {
             return '';
         }
         $n = count($conditions);
         $operator = strtoupper($conditions[0]);
         if ($operator === 'OR' || $operator === 'AND') {
-            $parts = array();
+            $parts = [];
             for ($i = 1; $i < $n; ++$i) {
                 $condition = $this->processConditions($conditions[$i]);
                 if ($condition !== '') {
@@ -1643,7 +1645,7 @@ class Command
                 }
             }
 
-            return $parts === array() ? '' : implode(' ' . $operator . ' ', $parts);
+            return $parts === [] ? '' : implode(' ' . $operator . ' ', $parts);
         }
 
         if (!isset($conditions[1], $conditions[2])) {
@@ -1657,11 +1659,11 @@ class Command
 
         $values = $conditions[2];
         if (!is_array($values)) {
-            $values = array($values);
+            $values = [$values];
         }
 
         if ($operator === 'IN' || $operator === 'NOT IN') {
-            if ($values === array()) {
+            if ($values === []) {
                 return $operator === 'IN' ? '0=1' : '';
             }
             foreach ($values as $i => $value) {
@@ -1680,7 +1682,7 @@ class Command
             $operator === 'OR LIKE' ||
             $operator === 'OR NOT LIKE'
         ) {
-            if ($values === array()) {
+            if ($values === []) {
                 return $operator === 'LIKE' || $operator === 'OR LIKE' ? '0=1' : '';
             }
 
@@ -1690,7 +1692,7 @@ class Command
                 $andor = ' OR ';
                 $operator = $operator === 'OR LIKE' ? 'LIKE' : 'NOT LIKE';
             }
-            $expressions = array();
+            $expressions = [];
             foreach ($values as $value) {
                 $expressions[] = $column . ' ' . $operator . ' ' . $this->connection->quoteValue($value);
             }
@@ -1717,7 +1719,7 @@ class Command
      * @return Command the command object itself
      * @since 1.1.6
      */
-    private function joinInternal($type, $table, $conditions = '', $params = array())
+    private function joinInternal($type, $table, $conditions = '', $params = [])
     {
         if (strpos($table, '(') === false) {
             if (preg_match('/^(.*?)(?i:\s+as\s+|\s+)(.*)$/', $table, $matches))  // with alias
@@ -1737,7 +1739,7 @@ class Command
         }
 
         if (isset($this->query['join']) && is_string($this->query['join'])) {
-            $this->query['join'] = array($this->query['join']);
+            $this->query['join'] = [$this->query['join']];
         }
 
         $this->query['join'][] = strtoupper($type) . ' ' . $table . $conditions;

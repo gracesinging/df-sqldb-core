@@ -79,28 +79,28 @@ namespace DreamFactory\Core\SqlDbCore;
  * )
  * </pre>
  *
- * @property boolean            $active             Whether the DB connection is established.
- * @property \PDO               $pdoInstance        The PDO instance, null if the connection is not established yet.
- * @property Transaction        $currentTransaction The currently active transaction. Null if no active transaction.
- * @property Schema             $schema             The database schema for the current connection.
- * @property CommandBuilder     $commandBuilder     The command builder.
- * @property string             $lastInsertID       The row ID of the last row inserted, or the last value retrieved
+ * @property boolean        $active             Whether the DB connection is established.
+ * @property \PDO           $pdoInstance        The PDO instance, null if the connection is not established yet.
+ * @property Transaction    $currentTransaction The currently active transaction. Null if no active transaction.
+ * @property Schema         $schema             The database schema for the current connection.
+ * @property CommandBuilder $commandBuilder     The command builder.
+ * @property string         $lastInsertID       The row ID of the last row inserted, or the last value retrieved
  *           from the sequence object.
- * @property mixed              $columnCase         The case of the column names.
- * @property mixed              $nullConversion     How the null and empty strings are converted.
- * @property boolean            $autoCommit         Whether creating or updating a DB record will be automatically
+ * @property mixed          $columnCase         The case of the column names.
+ * @property mixed          $nullConversion     How the null and empty strings are converted.
+ * @property boolean        $autoCommit         Whether creating or updating a DB record will be automatically
  *           committed.
- * @property boolean            $persistent         Whether the connection is persistent or not.
- * @property string             $driverName         Name of the DB driver.
- * @property string             $clientVersion      The version information of the DB driver.
- * @property string             $connectionStatus   The status of the connection.
- * @property boolean            $prefetch           Whether the connection performs data prefetching.
- * @property string             $serverInfo         The information of DBMS server.
- * @property string             $serverVersion      The version information of DBMS server.
- * @property integer            $timeout            Timeout settings for the connection.
- * @property array              $attributes         Attributes (name=>value) that are previously explicitly set for the
+ * @property boolean        $persistent         Whether the connection is persistent or not.
+ * @property string         $driverName         Name of the DB driver.
+ * @property string         $clientVersion      The version information of the DB driver.
+ * @property string         $connectionStatus   The status of the connection.
+ * @property boolean        $prefetch           Whether the connection performs data prefetching.
+ * @property string         $serverInfo         The information of DBMS server.
+ * @property string         $serverVersion      The version information of DBMS server.
+ * @property integer        $timeout            Timeout settings for the connection.
+ * @property array          $attributes         Attributes (name=>value) that are previously explicitly set for the
  *           DB connection.
- * @property array              $stats              The first element indicates the number of SQL statements executed,
+ * @property array          $stats              The first element indicates the number of SQL statements executed,
  * and the second element the total time spent in SQL execution.
  *
  * @author  Qiang Xue <qiang.xue@gmail.com>
@@ -225,7 +225,7 @@ class Connection
         'sqlite' => 'sqlite3',
         'mysql'  => 'mysql',
         'dblib'  => 'mssql',
-        'sqlsrv'  => 'mssql',
+        'sqlsrv' => 'mssql',
         'pgsql'  => 'pgsql',
         'oci'    => 'oci8',
         'ibm'    => 'ibm_db2',
@@ -241,7 +241,7 @@ class Connection
         // http://php.net/manual/en/ref.pdo-mysql.connection.php
         'dblib'  => 'mssql:host=localhost:1433;dbname=database',
         // http://php.net/manual/en/ref.pdo-dblib.connection.php
-        'sqlsrv'  => 'sqlsrv:Server=localhost,1433;Database=db',
+        'sqlsrv' => 'sqlsrv:Server=localhost,1433;Database=db',
         // http://php.net/manual/en/ref.pdo-sqlsrv.connection.php
         'pgsql'  => 'pgsql:host=localhost;port=5432;dbname=db;user=name;password=pwd',
         // http://php.net/manual/en/ref.pdo-pgsql.connection.php
@@ -258,6 +258,7 @@ class Connection
     private $schema;
 
     public $cache = null;
+    public $extraStore = null;
 
     /**
      * Constructor.
@@ -265,20 +266,22 @@ class Connection
      * instance is created. Set {@link setActive active} property to true
      * to establish the connection.
      *
-     * @param string $dsn      The Data Source Name, or DSN, contains the information required to connect to the
-     *                         database.
-     * @param string $username The user name for the DSN string.
-     * @param string $password The password for the DSN string.
-     * @param CacheInterface|null $cache The cache instance to use.
+     * @param string                 $dsn         The Data Source Name, or DSN, contains the information required to
+     *                                            connect to the database.
+     * @param string                 $username    The user name for the DSN string.
+     * @param string                 $password    The password for the DSN string.
+     * @param CacheInterface|null    $cache       The cache instance to use.
+     * @param DbExtrasInterface|null $extra_store The Database extras storage instance to use.
      *
      * @see http://www.php.net/manual/en/function.PDO-construct.php
      */
-    public function __construct($dsn = '', $username = '', $password = '', $cache = null)
+    public function __construct($dsn = '', $username = '', $password = '', $cache = null, $extra_store = null)
     {
         $this->connectionString = $dsn;
         $this->username = $username;
         $this->password = $password;
         $this->cache = $cache;
+        $this->extraStore = $extra_store;
     }
 
     /**
@@ -331,17 +334,21 @@ class Connection
      */
     public static function requireDriver($driver, $requires_pdo = true)
     {
-        if (!empty($driver)) {
-            if (isset(static::$driverExtensionMap[$driver])) {
-                $extension = static::$driverExtensionMap[$driver];
-                if ('mysql' === $extension) {
-                    if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
-                        throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
-                    }
-                } elseif (!extension_loaded($extension)) {
-                    throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
-                }
+        if (empty($driver)) {
+            throw new \Exception("PDO driver name can not be empty.");
+        }
+
+        if (!isset(static::$driverExtensionMap[$driver])) {
+            throw new \Exception("Driver '$driver' is not supported by this software.");
+        }
+
+        $extension = static::$driverExtensionMap[$driver];
+        if ('mysql' === $extension) {
+            if (!extension_loaded('mysql') && !extension_loaded('mysqlnd')) {
+                throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
             }
+        } elseif (!extension_loaded($extension)) {
+            throw new \Exception("Required extension or module '$extension' is not installed or loaded.");
         }
 
         if ($requires_pdo) {
@@ -349,7 +356,7 @@ class Connection
                 throw new \Exception("Required PDO extension is not installed or loaded.");
             }
 
-            if (!empty($driver)) {
+            if (!empty($driver) && ('oci' !== $driver)) {
                 $drivers = static::getAvailableDrivers();
                 if (!in_array($driver, $drivers)) {
                     throw new \Exception("Required PDO driver '$driver' is not installed or loaded properly.");
@@ -940,5 +947,442 @@ class Connection
     public function getStats()
     {
         return [];
+    }
+
+    public function getFromCache($key)
+    {
+        if ($this->cache) {
+            return $this->cache->getFromCache($key);
+        }
+
+        return null;
+    }
+
+    public function addToCache($key, $value, $forever = false)
+    {
+        if ($this->cache) {
+            $this->cache->addToCache($key, $value, $forever);
+        }
+    }
+
+    public function getSchemaExtrasForTables($table_names, $include_fields = true, $select = '*')
+    {
+        if ($this->extraStore) {
+            return $this->extraStore->getSchemaExtrasForTables($table_names, $include_fields, $select);
+        }
+
+        return null;
+    }
+
+    public function getSchemaExtrasForFields($table_name, $field_names, $select = '*')
+    {
+        if ($this->extraStore) {
+            return $this->extraStore->getSchemaExtrasForFields($table_name, $field_names, $select);
+        }
+
+        return null;
+    }
+
+    public function setSchemaTableExtras($extras)
+    {
+        if ($this->extraStore) {
+            $this->extraStore->setSchemaTableExtras($extras);
+        }
+
+        return null;
+    }
+
+    public function setSchemaFieldExtras($extras)
+    {
+        if ($this->extraStore) {
+            $this->extraStore->setSchemaFieldExtras($extras);
+        }
+
+        return null;
+    }
+
+    public function removeSchemaExtrasForTables($table_names)
+    {
+        if ($this->extraStore) {
+            $this->extraStore->removeSchemaExtrasForTables($table_names);
+        }
+
+        return null;
+    }
+
+    public function removeSchemaExtrasForFields($table_name, $field_names)
+    {
+        if ($this->extraStore) {
+            $this->extraStore->removeSchemaExtrasForFields($table_name, $field_names);
+        }
+
+        return null;
+    }
+
+    public function updateSchema($tables, $allow_merge = false, $allow_delete = false, $rollback = false)
+    {
+        if (!is_array($tables) || empty($tables)) {
+            throw new \Exception('There are no table sets in the request.');
+        }
+
+        if (!isset($tables[0])) {
+            // single record possibly passed in without wrapper array
+            $tables = [$tables];
+        }
+
+        $created = [];
+        $references = [];
+        $indexes = [];
+        $out = [];
+        $tableExtras = [];
+        $fieldExtras = [];
+        $count = 0;
+        $singleTable = (1 == count($tables));
+
+        foreach ($tables as $table) {
+            try {
+                if (empty($tableName = (isset($table['name'])) ? $table['name'] : null)) {
+                    throw new \Exception('Table name missing from schema.');
+                }
+
+                //	Does it already exist
+                if ($this->getSchema()->doesTableExist($tableName)) {
+                    if (!$allow_merge) {
+                        throw new \Exception("A table with name '$tableName' already exist in the database.");
+                    }
+
+                    \Log::debug('Schema update: ' . $tableName);
+
+                    $results = $this->updateTable($tableName, $table, $allow_delete);
+                } else {
+                    \Log::debug('Creating table: ' . $tableName);
+
+                    $results = $this->createTable($tableName, $table);
+
+                    if (!$singleTable && $rollback) {
+                        $created[] = $tableName;
+                    }
+                }
+
+                // add table labels
+                $label = (isset($table['label'])) ? $table['label'] : null;
+                $plural = (isset($table['plural'])) ? $table['plural'] : null;
+                $alias = (isset($table['alias'])) ? $table['alias'] : null;
+                $description = (isset($table['description'])) ? $table['description'] : null;
+                $nameField = (isset($table['name_field'])) ? $table['name_field'] : null;
+                if (!empty($label) || !empty($plural) || !empty($alias) || !empty($description) || !empty($nameField)) {
+                    $tableExtras[] = [
+                        'table'       => $tableName,
+                        'alias'       => $alias,
+                        'label'       => $label,
+                        'plural'      => $plural,
+                        'description' => $description,
+                        'name_field'  => $nameField,
+                    ];
+                }
+
+                $fieldExtras = array_merge($fieldExtras, (isset($results['labels'])) ? $results['labels'] : []);
+                $references = array_merge($references, (isset($results['references'])) ? $results['references'] : []);
+                $indexes = array_merge($indexes, (isset($results['indexes'])) ? $results['indexes'] : []);
+                $out[$count] = ['name' => $tableName];
+            } catch (\Exception $ex) {
+                if ($rollback || $singleTable) {
+                    //  Delete any created tables
+                    throw $ex;
+                }
+
+                $out[$count] = [
+                    'error' => [
+                        'message' => $ex->getMessage(),
+                        'code'    => $ex->getCode()
+                    ]
+                ];
+            }
+
+            $count++;
+        }
+
+        if (!empty($references)) {
+            $this->createFieldReferences($references);
+        }
+        if (!empty($indexes)) {
+            $this->createFieldIndexes($indexes);
+        }
+        if (!empty($tableExtras)) {
+            $this->setSchemaTableExtras($tableExtras);
+        }
+        if (!empty($fieldExtras)) {
+            $this->setSchemaFieldExtras($fieldExtras);
+        }
+
+        return $out;
+    }
+
+    /**
+     * Builds and executes a SQL statement for creating a new DB table.
+     *
+     * The columns in the new table should be specified as name-definition pairs (e.g. 'name'=>'string'),
+     * where name stands for a column name which will be properly quoted by the method, and definition
+     * stands for the column type which can contain an abstract DB type.
+     * The {@link getColumnType} method will be invoked to convert any abstract type into a physical one.
+     *
+     * If a column is specified with definition only (e.g. 'PRIMARY KEY (name, type)'), it will be directly
+     * inserted into the generated SQL.
+     *
+     * @param string $table   the name of the table to be created. The name will be properly quoted by the method.
+     * @param array  $schema  the table schema for the new table.
+     * @param string $options additional SQL fragment that will be appended to the generated SQL.
+     *
+     * @return int 0 is always returned. See <a
+     *             href='http://php.net/manual/en/pdostatement.rowcount.php'>http://php.net/manual/en/pdostatement.rowcount.php</a>
+     *             for more for more information.
+     * @throws \Exception
+     * @since 1.1.6
+     */
+    public function createTable($table, $schema, $options = null)
+    {
+        if (empty($fields = (isset($schema['field'])) ? $schema['field'] : null)) {
+            throw new \Exception("No valid fields exist in the received table schema.");
+        }
+
+        $results = $this->getSchema()->buildTableFields($table, $fields);
+        if (empty($columns = (isset($results['columns'])) ? $results['columns'] : null)) {
+            throw new \Exception("No valid fields exist in the received table schema.");
+        }
+
+        $command = $this->createCommand();
+        $command->createTable($table, $columns, $options);
+
+        if (!empty($extras = (isset($results['extras'])) ? $results['extras'] : null)) {
+            foreach ($extras as $extraCommand) {
+                try {
+                    $command->reset();
+                    $command->setText($extraCommand)->execute();
+                } catch (\Exception $ex) {
+                    // oh well, we tried.
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * @param string $table_name
+     * @param array  $schema
+     * @param bool   $allow_delete
+     *
+     * @throws \Exception
+     * @return array
+     */
+    protected function updateTable($table_name, $schema, $allow_delete = false)
+    {
+        if (empty($table_name)) {
+            throw new \Exception("Table schema received does not have a valid name.");
+        }
+
+        // does it already exist
+        if (!$this->getSchema()->doesTableExist($table_name)) {
+            throw new \Exception("Update schema called on a table with name '$table_name' that does not exist in the database.");
+        }
+
+        //  Is there a name update
+        if (!empty($newName = (isset($schema['new_name'])) ? $schema['new_name'] : null)) {
+            // todo change table name, has issue with references
+        }
+
+        $oldSchema = $this->getSchema()->getTable($table_name);
+
+        // update column types
+
+        $results = [];
+        $command = $this->createCommand();
+        $fields = (isset($schema['field'])) ? $schema['field'] : null;
+        if (!empty($fields)) {
+            $results =
+                $this->getSchema()->buildTableFields($table_name, $fields, $oldSchema, true, $allow_delete);
+            if (isset($results['columns']) && is_array($results['columns'])) {
+                foreach ($results['columns'] as $name => $definition) {
+                    $command->reset();
+                    $command->addColumn($table_name, $name, $definition);
+                }
+            }
+            if (isset($results['alter_columns']) && is_array($results['alter_columns'])) {
+                foreach ($results['alter_columns'] as $name => $definition) {
+                    $command->reset();
+                    $command->alterColumn($table_name, $name, $definition);
+                }
+            }
+            if (isset($results['drop_columns']) && is_array($results['drop_columns'])) {
+                foreach ($results['drop_columns'] as $name) {
+                    $command->reset();
+                    $command->dropColumn($table_name, $name);
+                }
+            }
+        }
+
+        return $results;
+    }
+
+    /**
+     * Builds and executes a SQL statement for dropping a DB table.
+     *
+     * @param string $table the table to be dropped. The name will be properly quoted by the method.
+     *
+     * @return integer 0 is always returned. See {@link http://php.net/manual/en/pdostatement.rowcount.php} for more
+     *                 information.
+     * @since 1.1.6
+     */
+    public function dropTable($table)
+    {
+        $result = $this->createCommand()->dropTable($table);
+        $this->removeSchemaExtrasForTables($table);
+
+        //  Any changes here should refresh cached schema
+        $this->getSchema()->refresh();
+
+        return $result;
+    }
+
+    public function dropColumn($table, $column)
+    {
+        $result = $this->createCommand()->dropColumn($table, $column);
+        $this->removeSchemaExtrasForFields($table, $column);
+
+        //  Any changes here should refresh cached schema
+        $this->getSchema()->refresh();
+
+        return $result;
+    }
+
+    /**
+     * @param string $table_name
+     * @param array  $fields
+     * @param bool   $allow_update
+     * @param bool   $allow_delete
+     *
+     * @return array
+     * @throws \Exception
+     */
+    public function updateFields($table_name, $fields, $allow_update = false, $allow_delete = false)
+    {
+        if (empty($table_name)) {
+            throw new \Exception("Table schema received does not have a valid name.");
+        }
+
+        // does it already exist
+        if (!$this->getSchema()->doesTableExist($table_name)) {
+            throw new \Exception("Update schema called on a table with name '$table_name' that does not exist in the database.");
+        }
+
+        $oldSchema = $this->getSchema()->getTable($table_name);
+
+        $command = $this->createCommand();
+        $names = [];
+        $results = $this->getSchema()->buildTableFields($table_name, $fields, $oldSchema, $allow_update, $allow_delete);
+        if (isset($results['columns']) && is_array($results['columns'])) {
+            foreach ($results['columns'] as $name => $definition) {
+                $command->reset();
+                $command->addColumn($table_name, $name, $definition);
+                $names[] = $name;
+            }
+        }
+        if (isset($results['alter_columns']) && is_array($results['alter_columns'])) {
+            foreach ($results['alter_columns'] as $name => $definition) {
+                $command->reset();
+                $command->alterColumn($table_name, $name, $definition);
+                $names[] = $name;
+            }
+        }
+        if (isset($results['drop_columns']) && is_array($results['drop_columns'])) {
+            foreach ($results['drop_columns'] as $name) {
+                $command->reset();
+                $command->dropColumn($table_name, $name);
+                $names[] = $name;
+            }
+        }
+
+        $references = (isset($results['references'])) ? $results['references'] : [];
+        $this->createFieldReferences($references);
+
+        $indexes = (isset($results['indexes'])) ? $results['indexes'] : [];
+        $this->createFieldIndexes($indexes);
+
+        $labels = (isset($results['labels'])) ? $results['labels'] : [];
+        if (!empty($labels)) {
+            $this->setSchemaFieldExtras($labels);
+        }
+
+        return ['names' => $names];
+    }
+
+    /**
+     * @param array $references
+     *
+     * @return array
+     */
+    protected function createFieldReferences($references)
+    {
+        if (!empty($references)) {
+            $command = $this->createCommand();
+            foreach ($references as $reference) {
+                $name = $reference['name'];
+                $table = $reference['table'];
+                $drop = (isset($reference['drop'])) ? boolval($reference['drop']) : false;
+                if ($drop) {
+                    try {
+                        $command->reset();
+                        $command->dropForeignKey($name, $table);
+                    } catch (\Exception $ex) {
+                        \Log::debug($ex->getMessage());
+                    }
+                }
+                // add new reference
+                $refTable = (isset($reference['ref_table'])) ? $reference['ref_table'] : null;
+                if (!empty($refTable)) {
+                    $command->reset();
+                    /** @noinspection PhpUnusedLocalVariableInspection */
+                    $rows = $command->addForeignKey(
+                        $name,
+                        $table,
+                        $reference['column'],
+                        $refTable,
+                        $reference['ref_fields'],
+                        $reference['delete'],
+                        $reference['update']
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param array $indexes
+     *
+     * @return array
+     */
+    protected function createFieldIndexes($indexes)
+    {
+        if (!empty($indexes)) {
+            $command = $this->createCommand();
+            foreach ($indexes as $index) {
+                $name = $index['name'];
+                $table = $index['table'];
+                $drop = (isset($index['drop'])) ? boolval($index['drop']) : false;
+                if ($drop) {
+                    try {
+                        $command->reset();
+                        $command->dropIndex($name, $table);
+                    } catch (\Exception $ex) {
+                        \Log::debug($ex->getMessage());
+                    }
+                }
+                $unique = (isset($index['unique'])) ? boolval($index['unique']) : false;
+
+                $command->reset();
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $rows = $command->createIndex($name, $table, $index['column'], $unique);
+            }
+        }
     }
 }

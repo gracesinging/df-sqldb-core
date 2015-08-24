@@ -10,7 +10,6 @@
 namespace DreamFactory\Core\SqlDbCore\Sqlite;
 
 use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
 
 /**
  * Schema is the class for retrieving metadata information from a SQLite (2/3) database.

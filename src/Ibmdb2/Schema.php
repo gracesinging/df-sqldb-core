@@ -9,8 +9,6 @@ namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
 use DreamFactory\Core\SqlDbCore\Expression;
 use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
-use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from a IBM DB2 database.

@@ -11,8 +11,6 @@ namespace DreamFactory\Core\SqlDbCore\Oci;
 
 use DreamFactory\Core\SqlDbCore\Expression;
 use DreamFactory\Core\SqlDbCore\TableSchema;
-use DreamFactory\Core\SqlDbCore\ColumnSchema;
-use DreamFactory\Core\SqlDbCore\CommandBuilder;
 
 /**
  * Schema is the class for retrieving metadata information from an Oracle database.
@@ -236,7 +234,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             throw new \Exception('Unique and Primary designations not allowed simultaneously.');
         }
         if ($isUniqueKey) {
-            $definition .= ' UNIQUE KEY';
+            $definition .= ' UNIQUE';
         } elseif ($isPrimaryKey) {
             $definition .= ' PRIMARY KEY';
         }
@@ -664,6 +662,11 @@ EOD;
         }
 
         return $temp;
+    }
+
+    public function requiresCreateIndex($unique = false, $on_create_table = false)
+    {
+        return !($unique && $on_create_table);
     }
 
     /**

@@ -47,6 +47,14 @@ class ColumnSchema
      */
     public $rawName;
     /**
+     * @var string Optional alias for this column.
+     */
+    public $alias;
+    /**
+     * @var string Optional label for this column.
+     */
+    public $label;
+    /**
      * @var string the DB type of this column.
      */
     public $dbType;
@@ -62,6 +70,10 @@ class ColumnSchema
      * @var string the PHP PDO type of this column.
      */
     public $pdoType;
+    /**
+     * @var string the DF extra type of this column.
+     */
+    public $extraType;
     /**
      * @var mixed default value of this column
      */
@@ -121,6 +133,18 @@ class ColumnSchema
      * @since 1.1.7
      */
     public $fixedLength = false;
+    /**
+     * @var string the allowed picklist values for this column.
+     */
+    public $picklist;
+    /**
+     * @var string Additional validations for this column.
+     */
+    public $validation;
+    /**
+     * @var string Optional description of this column.
+     */
+    public $description;
     /**
      * @var string comment of this column. Default value is empty string which means that no comment
      * has been set for the column. Null value means that RDBMS does not support column comments
@@ -380,11 +404,25 @@ class ColumnSchema
         }
     }
 
+    public function mergeDbExtras($extras)
+    {
+        $this->type = (isset($extras['extra_type'])) ? $extras['extra_type'] : $this->type;
+        $this->alias = (isset($extras['alias'])) ? $extras['alias'] : null;
+        $this->description = (isset($extras['description'])) ? $extras['description'] : null;
+        $this->picklist = (isset($extras['picklist'])) ? $extras['picklist'] : null;
+        $this->validation = (isset($extras['validation'])) ? $extras['validation'] : null;
+        if (isset($extras['label']) && !empty($extras['label'])) {
+            $this->label = $extras['label'];
+        }
+    }
+
     public function toArray()
     {
         return [
             'name'               => $this->name,
-            'label'              => static::camelize($this->name, '_', true),
+            'label'              => (empty($this->label)) ? static::camelize($this->name, '_', true) : $this->label,
+            'description'        => $this->description,
+            'alias'              => $this->alias,
             'type'               => $this->type,
             'db_type'            => $this->dbType,
             'php_type'           => $this->phpType,
@@ -403,7 +441,9 @@ class ColumnSchema
             'is_unique'          => $this->isUnique,
             'is_index'           => $this->isIndex,
             'ref_table'          => $this->refTable,
-            'ref_fields'         => $this->refFields
+            'ref_fields'         => $this->refFields,
+            'picklist'           => $this->picklist,
+            'validation'         => $this->validation
         ];
     }
 
