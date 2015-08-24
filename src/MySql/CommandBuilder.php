@@ -7,7 +7,7 @@
  * @copyright 2008-2013 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Core\SqlDbCore\MySql;
+namespace DreamFactory\Core\SqlDbCore\Mysql;
 
 /**
  * CommandBuilder provides basic methods to create query commands for tables.
