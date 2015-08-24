@@ -7,7 +7,7 @@
  * @copyright Copyright &copy; 2008-2011 Yii Software LLC
  * @license   http://www.yiiframework.com/license/
  */
-namespace DreamFactory\Core\SqlDbCore\MySql;
+namespace DreamFactory\Core\SqlDbCore\Mysql;
 
 /**
  * ProcedureSchema represents the metadata for a MySQL stored procedure.

@@ -173,7 +173,7 @@ class Connection
         // PostgreSQL
         'pgsql'   => 'DreamFactory\Core\SqlDbCore\Pgsql\Schema',
         // MySQL
-        'mysql'   => 'DreamFactory\Core\SqlDbCore\MySql\Schema',
+        'mysql'   => 'DreamFactory\Core\SqlDbCore\Mysql\Schema',
         // SQLite
         'sqlite'  => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',
         'sqlite2' => 'DreamFactory\Core\SqlDbCore\Sqllite\Schema',

@@ -1,13 +1,5 @@
 <?php
-/**
- * ColumnSchema class file.
- *
- * @author    Qiang Xue <qiang.xue@gmail.com>
- * @link      http://www.yiiframework.com/
- * @copyright 2008-2013 Yii Software LLC
- * @license   http://www.yiiframework.com/license/
- */
-namespace DreamFactory\Core\SqlDbCore\MySql;
+namespace DreamFactory\Core\SqlDbCore\Mysql;
 
 /**
  * ColumnSchema class describes the column meta data of a MySQL table.
