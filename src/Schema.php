@@ -796,7 +796,7 @@ abstract class Schema
     /**
      * @param string           $table_name
      * @param array            $fields
-     * @param null|TableSchema $schema
+     * @param null|TableSchema $oldSchema
      * @param bool             $allow_update
      * @param bool             $allow_delete
      *
@@ -806,7 +806,7 @@ abstract class Schema
     public function buildTableFields(
         $table_name,
         $fields,
-        $schema = null,
+        $oldSchema = null,
         $allow_update = false,
         $allow_delete = false
     ){
@@ -825,22 +825,15 @@ abstract class Schema
         $indexes = [];
         $labels = [];
         $dropColumns = [];
-        $oldFields = [];
         $extraCommands = [];
-        if ($schema && isset($schema['field']) && is_array($schema['field'])) {
-            foreach ($schema['field'] as $old) {
-                $old = array_change_key_case($old, CASE_LOWER);
-                $oldFields[$old['name']] = $old;
-            }
-        }
         $newFields = [];
         foreach ($fields as $field) {
             $newFields[$field['name']] = array_change_key_case($field, CASE_LOWER);
         }
 
-        if ($allow_delete && !empty($oldFields)) {
+        if ($allow_delete && isset($oldSchema, $oldSchema->columns)) {
             // check for columns to drop
-            foreach ($oldFields as $oldName => $oldField) {
+            foreach ($oldSchema->columns as $oldName => $oldField) {
                 if (!isset($newFields[$oldName])) {
                     $dropColumns[] = $oldName;
                 }
@@ -852,13 +845,14 @@ abstract class Schema
                 throw new \Exception("Invalid schema detected - no name element.");
             }
 
-            $isAlter = isset($oldFields[$name]);
+            /** @type ColumnSchema $oldField */
+            $oldField = isset($oldSchema, $oldSchema->columns[$name]) ? $oldSchema->columns[$name] : null;
+            $isAlter = (null !== $oldField);
             if ($isAlter && !$allow_update) {
                 throw new \Exception("Field '$name' already exists in table '$table_name'.");
             }
 
-            $oldField = ($isAlter) ? $oldFields[$name] : [];
-            $oldForeignKey = (isset($oldField['is_foreign_key'])) ? boolval($oldField['is_foreign_key']) : false;
+            $oldForeignKey = (isset($oldField)) ? $oldField->isForeignKey : false;
             $temp = [];
 
             $values = (isset($field['value'])) ? $field['value'] : [];
@@ -866,7 +860,7 @@ abstract class Schema
                 $values = array_map('trim', explode(',', trim($values, ',')));
             }
             if (!empty($values)){
-                $oldValues = (isset($oldField['value'])) ? $oldField['value'] : [];
+                $oldValues = (isset($oldField)) ? $oldField->picklist : [];
                 if ($values != $oldValues) {
                     $picklist = '';
                     foreach ($values as $value) {
@@ -884,7 +878,7 @@ abstract class Schema
             // extras
             $label = (isset($field['label'])) ? $field['label'] : null;
             if (!empty($label)) {
-                $oldLabel = (isset($oldField['label'])) ? $oldField['label'] : null;
+                $oldLabel = (isset($oldField)) ? $oldField->label : null;
                 if ($label != $oldLabel) {
                     $temp['label'] = $label;
                 }
@@ -892,7 +886,7 @@ abstract class Schema
 
             $alias = (isset($field['alias'])) ? $field['alias'] : null;
             if (!empty($alias)) {
-                $oldAlias = (isset($oldField['alias'])) ? $oldField['alias'] : null;
+                $oldAlias = (isset($oldField)) ? $oldField->alias : null;
                 if ($alias != $oldAlias) {
                     $temp['alias'] = $alias;
                 }
@@ -900,7 +894,7 @@ abstract class Schema
 
             $validation = (isset($field['validation'])) ? $field['validation'] : null;
             if (!empty($validation)){
-                $oldValue = (isset($oldField['validation'])) ? $oldField['validation'] : null;
+                $oldValue = (isset($oldField)) ? $oldField->validation : null;
                 if ($validation != $oldValue){
                     $temp['validation'] = json_encode($validation);
                 }
@@ -909,6 +903,7 @@ abstract class Schema
             // if same as old, don't bother
             if (!empty($oldField)) {
                 $same = true;
+                $oldFieldArray = $oldField->toArray();
 
                 foreach ($field as $key => $value) {
                     switch (strtolower($key)) {
@@ -921,9 +916,9 @@ abstract class Schema
                             // extras from server already taken care of
                             break;
                         default:
-                            if (isset($oldField[$key])) // could be extra stuff from client
+                            if (isset($oldFieldArray[$key])) // could be extra stuff from client
                             {
-                                if ($value != $oldField[$key]) {
+                                if ($value != $oldFieldArray[$key]) {
                                     $same = false;
                                     break 2;
                                 }

@@ -1053,9 +1053,7 @@ class Connection
 
                     \Log::debug('Schema update: ' . $tableName);
 
-                    $oldSchema = $this->getSchema()->getTable($tableName);
-
-                    $results = $this->updateTable($tableName, $table, $oldSchema, $allow_delete);
+                    $results = $this->updateTable($tableName, $table, $allow_delete);
                 } else {
                     \Log::debug('Creating table: ' . $tableName);
 
@@ -1172,13 +1170,12 @@ class Connection
     /**
      * @param string $table_name
      * @param array  $schema
-     * @param array  $old_schema
      * @param bool   $allow_delete
      *
      * @throws \Exception
      * @return array
      */
-    protected function updateTable($table_name, $schema, $old_schema, $allow_delete = false)
+    protected function updateTable($table_name, $schema, $allow_delete = false)
     {
         if (empty($table_name)) {
             throw new \Exception("Table schema received does not have a valid name.");
@@ -1194,6 +1191,8 @@ class Connection
             // todo change table name, has issue with references
         }
 
+        $oldSchema = $this->getSchema()->getTable($table_name);
+
         // update column types
 
         $results = [];
@@ -1201,7 +1200,7 @@ class Connection
         $fields = (isset($schema['field'])) ? $schema['field'] : null;
         if (!empty($fields)) {
             $results =
-                $this->getSchema()->buildTableFields($table_name, $fields, $old_schema, true, $allow_delete);
+                $this->getSchema()->buildTableFields($table_name, $fields, $oldSchema, true, $allow_delete);
             if (isset($results['columns']) && is_array($results['columns'])) {
                 foreach ($results['columns'] as $name => $definition) {
                     $command->reset();
@@ -1276,11 +1275,11 @@ class Connection
             throw new \Exception("Update schema called on a table with name '$table_name' that does not exist in the database.");
         }
 
-        $schema = $this->getSchema()->getTable($table_name);
+        $oldSchema = $this->getSchema()->getTable($table_name);
 
         $command = $this->createCommand();
         $names = [];
-        $results = $this->getSchema()->buildTableFields($table_name, $fields, $schema, $allow_update, $allow_delete);
+        $results = $this->getSchema()->buildTableFields($table_name, $fields, $oldSchema, $allow_update, $allow_delete);
         if (isset($results['columns']) && is_array($results['columns'])) {
             foreach ($results['columns'] as $name => $definition) {
                 $command->reset();
