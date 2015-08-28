@@ -11,6 +11,7 @@
 namespace DreamFactory\Core\SqlDbCore\Mssql;
 
 use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableNameSchema;
 
 /**
  * Schema is the class for retrieving metadata information from a MS SQL Server database.
@@ -24,9 +25,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     const DEFAULT_SCHEMA = 'dbo';
 
     /**
+     * @param boolean $refresh if we need to refresh schema cache.
+     *
      * @return string default schema.
      */
-    public function getDefaultSchema()
+    public function getDefaultSchema($refresh = false)
     {
         return static::DEFAULT_SCHEMA;
     }
@@ -317,8 +320,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     public function compareTableNames($name1, $name2)
     {
-        $name1 = str_replace(array('[', ']'), '', $name1);
-        $name2 = str_replace(array('[', ']'), '', $name2);
+        $name1 = str_replace(['[', ']'], '', $name1);
+        $name2 = str_replace(['[', ']'], '', $name2);
 
         return parent::compareTableNames(strtolower($name1), strtolower($name2));
     }
@@ -348,11 +351,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     ->createCommand("SELECT MAX([{$table->primaryKey}]) FROM {$table->rawName}")
                     ->queryScalar();
         }
-        $name = strtr($table->rawName, array('[' => '', ']' => ''));
+        $name = strtr($table->rawName, ['[' => '', ']' => '']);
         $this->connection->createCommand("DBCC CHECKIDENT ('$name',RESEED,$value)")->execute();
     }
 
-    private $normalTables = array();  // non-view tables
+    private $normalTables = [];  // non-view tables
 
     /**
      * Enables or disables integrity check.
@@ -369,8 +372,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
             $this->normalTables[$schema] = $this->findTableNames($schema, false);
         }
         $db = $this->connection;
-        foreach ($this->normalTables[$schema] as $tableName) {
-            $tableName = $this->quoteTableName($tableName);
+        foreach ($this->normalTables[$schema] as $table) {
+            $tableName = $this->quoteTableName($table->name);
             $db->createCommand("ALTER TABLE $tableName $enable CONSTRAINT ALL")->execute();
         }
     }
@@ -384,7 +387,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function loadTable($name)
     {
-        $table = new TableSchema;
+        $table = new TableSchema($name);
         $this->resolveTableNames($table, $name);
         //if (!in_array($table->name, $this->tableNames)) return null;
 
@@ -405,7 +408,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function resolveTableNames($table, $name)
     {
-        $parts = explode('.', str_replace(array('[', ']'), '', $name));
+        $parts = explode('.', str_replace(['[', ']'], '', $name));
         if (($c = count($parts)) == 3) {
             // Catalog name, schema name and table name provided
             $table->catalogName = $parts[0];
@@ -545,7 +548,7 @@ EOD;
             if ((0 == strcasecmp($tn, $table->name)) && (0 == strcasecmp($ts, $schema))) {
                 $name = ($rts == static::DEFAULT_SCHEMA) ? $rtn : $rts . '.' . $rtn;
 
-                $table->foreignKeys[$cn] = array($name, $rcn);
+                $table->foreignKeys[$cn] = [$name, $rcn];
                 if (isset($table->columns[$cn])) {
                     $table->columns[$cn]->isForeignKey = true;
                     $table->columns[$cn]->refTable = $name;
@@ -658,8 +661,7 @@ EOD;
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['name'];
+        $c = new ColumnSchema($column['name']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = $column['is_nullable'] == '1';
         $c->isPrimaryKey = $column['is_primary_key'] == '1';
@@ -720,7 +722,7 @@ SQL;
         }
 
         $sql = <<<EOD
-SELECT TABLE_NAME, TABLE_SCHEMA FROM [INFORMATION_SCHEMA].[TABLES] WHERE $condition
+SELECT TABLE_NAME, TABLE_SCHEMA, TABLE_TYPE FROM [INFORMATION_SCHEMA].[TABLES] WHERE $condition
 EOD;
 
         if (!empty($schema)) {
@@ -728,14 +730,16 @@ EOD;
         }
 
         $defaultSchema = $this->getDefaultSchema();
-
         $rows = $this->connection->createCommand($sql)->queryAll();
 
-        $names = array();
+        $names = [];
         foreach ($rows as $row) {
-            $ts = isset($row['TABLE_SCHEMA']) ? $row['TABLE_SCHEMA'] : '';
-            $tn = isset($row['TABLE_NAME']) ? $row['TABLE_NAME'] : '';
-            $names[] = ($defaultSchema == $ts) ? $tn : $ts . '.' . $tn;
+            $schema = isset($row['TABLE_SCHEMA']) ? $row['TABLE_SCHEMA'] : '';
+            $name = isset($row['TABLE_NAME']) ? $row['TABLE_NAME'] : '';
+            if ($defaultSchema == $schema) {
+                $name = $schema . '.' . $name;
+            }
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['TABLE_TYPE'])));
         }
 
         return $names;
@@ -826,7 +830,7 @@ EOD;
         $result = $reader->readAll();
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $result[] = $reader->readAll();
             } while ($reader->nextResult());
@@ -843,7 +847,7 @@ EOD;
         $pre = '';
         $post = '';
         $skip = 0;
-        $bindings = array();
+        $bindings = [];
         foreach ($params as $key => $param) {
             $pName = (isset($param['name']) && !empty($param['name'])) ? $param['name'] : "p$key";
             $pValue = (isset($param['value'])) ? $param['value'] : null;
@@ -893,7 +897,7 @@ EOD;
         }
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $temp = $reader->readAll();
                 $keep = true;
@@ -950,7 +954,7 @@ EOD;
         }
         $name = $this->connection->quoteTableName($name);
 
-        $bindings = array();
+        $bindings = [];
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
             $value = isset($param['value']) ? $param['value'] : null;
@@ -970,7 +974,7 @@ EOD;
         $result = $reader->readAll();
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $result[] = $reader->readAll();
             } while ($reader->nextResult());
@@ -1051,7 +1055,7 @@ EOD;
     /**
      * Returns all routines in the database.
      *
-     * @param string $type  "procedure" or "function"
+     * @param string $type   "procedure" or "function"
      * @param string $schema the schema of the routine. Defaults to empty string, meaning the current or
      *                       default schema. If not empty, the returned stored function names will be prefixed with the
      *                       schema name.
@@ -1080,7 +1084,7 @@ WHERE
     {$where}
 MYSQL;
 
-        $results = $this->connection->createCommand($sql)->queryColumn(array(':routine_type' => $type));
+        $results = $this->connection->createCommand($sql)->queryColumn([':routine_type' => $type]);
         if (!empty($results) && ($defaultSchema != $schema)) {
             foreach ($results as $key => $name) {
                 $results[$key] = $schema . '.' . $name;

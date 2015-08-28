@@ -295,7 +295,14 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     {
         $sql = "SELECT DISTINCT tbl_name FROM sqlite_master WHERE tbl_name<>'sqlite_sequence'";
 
-        return $this->connection->createCommand($sql)->queryColumn();
+        $rows = $this->connection->createCommand($sql)->queryColumn();
+
+        $names = [];
+        foreach ($rows as $row) {
+            $names[strtolower($row)] = ['name' => $row, 'is_view' => false];
+        }
+
+        return $names;
     }
 
     /**
@@ -317,7 +324,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function loadTable($name)
     {
-        $table = new TableSchema;
+        $table = new TableSchema($name);
         $table->name = $name;
         $table->rawName = $this->quoteTableName($name);
 
@@ -398,8 +405,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['name'];
+        $c = new ColumnSchema($column['name']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = !$column['notnull'];
         $c->isPrimaryKey = $column['pk'] != 0;

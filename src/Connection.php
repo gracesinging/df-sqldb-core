@@ -259,6 +259,7 @@ class Connection
 
     public $cache = null;
     public $extraStore = null;
+    protected $defaultSchemaOnly = false;
 
     /**
      * Constructor.
@@ -270,18 +271,14 @@ class Connection
      *                                            connect to the database.
      * @param string                 $username    The user name for the DSN string.
      * @param string                 $password    The password for the DSN string.
-     * @param CacheInterface|null    $cache       The cache instance to use.
-     * @param DbExtrasInterface|null $extra_store The Database extras storage instance to use.
      *
      * @see http://www.php.net/manual/en/function.PDO-construct.php
      */
-    public function __construct($dsn = '', $username = '', $password = '', $cache = null, $extra_store = null)
+    public function __construct($dsn = '', $username = '', $password = '')
     {
         $this->connectionString = $dsn;
         $this->username = $username;
         $this->password = $password;
-        $this->cache = $cache;
-        $this->extraStore = $extra_store;
     }
 
     /**
@@ -294,6 +291,63 @@ class Connection
         $this->close();
 
         return array_keys(get_object_vars($this));
+    }
+
+    /**
+     * @return CacheInterface|null
+     */
+    public function getCache()
+    {
+        return $this->cache;
+    }
+
+    /**
+     * @param CacheInterface|null $cache
+     */
+    public function setCache($cache)
+    {
+        $this->cache = $cache;
+    }
+
+    /**
+     */
+    public function flushCache()
+    {
+        if ($this->cache) {
+            $this->cache->flush();
+        }
+    }
+
+    /**
+     * @return DbExtrasInterface|null
+     */
+    public function getExtraStore()
+    {
+        return $this->extraStore;
+    }
+
+    /**
+     * @param DbExtrasInterface|null $extraStore
+     */
+    public function setExtraStore($extraStore)
+    {
+        $this->extraStore = $extraStore;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isDefaultSchemaOnly()
+    {
+        return $this->defaultSchemaOnly;
+    }
+
+    /**
+     * @param boolean $defaultSchemaOnly
+     */
+    public function setDefaultSchemaOnly($defaultSchemaOnly)
+    {
+        $this->defaultSchemaOnly = $defaultSchemaOnly;
     }
 
     /**
@@ -1141,20 +1195,20 @@ class Connection
      */
     public function createTable($table, $schema, $options = null)
     {
-        if (empty($fields = (isset($schema['field'])) ? $schema['field'] : null)) {
+        if (empty($schema['field'])) {
             throw new \Exception("No valid fields exist in the received table schema.");
         }
 
-        $results = $this->getSchema()->buildTableFields($table, $fields);
-        if (empty($columns = (isset($results['columns'])) ? $results['columns'] : null)) {
+        $results = $this->getSchema()->buildTableFields($table, $schema['field']);
+        if (empty($results['columns'])) {
             throw new \Exception("No valid fields exist in the received table schema.");
         }
 
         $command = $this->createCommand();
-        $command->createTable($table, $columns, $options);
+        $command->createTable($table, $results['columns'], $options);
 
-        if (!empty($extras = (isset($results['extras'])) ? $results['extras'] : null)) {
-            foreach ($extras as $extraCommand) {
+        if (!empty($results['extras'])) {
+            foreach ($results['extras'] as $extraCommand) {
                 try {
                     $command->reset();
                     $command->setText($extraCommand)->execute();
@@ -1187,7 +1241,7 @@ class Connection
         }
 
         //  Is there a name update
-        if (!empty($newName = (isset($schema['new_name'])) ? $schema['new_name'] : null)) {
+        if (!empty($schema['new_name'])) {
             // todo change table name, has issue with references
         }
 
@@ -1197,10 +1251,9 @@ class Connection
 
         $results = [];
         $command = $this->createCommand();
-        $fields = (isset($schema['field'])) ? $schema['field'] : null;
-        if (!empty($fields)) {
+        if (!empty($schema['field'])) {
             $results =
-                $this->getSchema()->buildTableFields($table_name, $fields, $oldSchema, true, $allow_delete);
+                $this->getSchema()->buildTableFields($table_name, $schema['field'], $oldSchema, true, $allow_delete);
             if (isset($results['columns']) && is_array($results['columns'])) {
                 foreach ($results['columns'] as $name => $definition) {
                     $command->reset();

@@ -8,6 +8,7 @@
 namespace DreamFactory\Core\SqlDbCore\Ibmdb2;
 
 use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableNameSchema;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 
 /**
@@ -381,7 +382,7 @@ SQL;
         $command->bindValue(':table', $table->name);
         $command->bindValue(':schema', $schema);
 
-        if (($columns = $command->queryAll()) === array()) {
+        if (($columns = $command->queryAll()) === []) {
             return false;
         }
 
@@ -402,8 +403,7 @@ SQL;
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['COLNAME'];
+        $c = new ColumnSchema($column['COLNAME']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = ($column['NULLS'] == 'Y');
         $c->autoIncrement = ($column['IDENTITY'] == 'Y');
@@ -481,7 +481,7 @@ SQL;
             if ((0 == strcasecmp($tn, $table->name)) && (0 == strcasecmp($ts, $schema))) {
                 $name = ($rts == $defaultSchema) ? $rtn : $rts . '.' . $rtn;
 
-                $table->foreignKeys[$cn] = array($name, $rcn);
+                $table->foreignKeys[$cn] = [$name, $rcn];
                 if (isset($table->columns[$cn])) {
                     $table->columns[$cn]->isForeignKey = true;
                     $table->columns[$cn]->refTable = $name;
@@ -571,7 +571,7 @@ SQL;
                     if ($table->primaryKey === null) {
                         $table->primaryKey = $colname;
                     } elseif (is_string($table->primaryKey)) {
-                        $table->primaryKey = array($table->primaryKey, $colname);
+                        $table->primaryKey = [$table->primaryKey, $colname];
                     } else {
                         $table->primaryKey[] = $colname;
                     }
@@ -628,7 +628,7 @@ SQL;
 
         if ($this->isISeries()) {
             $sql = <<<SQL
-SELECT TABLE_SCHEMA as TABSCHEMA, TABLE_NAME as TABNAME
+SELECT TABLE_SCHEMA as TABSCHEMA, TABLE_NAME as TABNAME, TABLE_TYPE AS TYPE
 FROM QSYS2.SYSTABLES
 WHERE TABLE_TYPE IN $condition AND SYSTEM_TABLE = 'N'
 SQL;
@@ -639,7 +639,7 @@ SQL;
             }
         } else {
             $sql = <<<SQL
-SELECT TABSCHEMA, TABNAME
+SELECT TABSCHEMA, TABNAME, TYPE
 FROM SYSCAT.TABLES
 WHERE TYPE IN $condition AND OWNERTYPE != 'S'
 SQL;
@@ -655,14 +655,17 @@ SQL;
 
         $defaultSchema = $this->getDefaultSchema();
 
-        $params = (!empty($schema)) ? array(':schema' => $schema) : array();
+        $params = (!empty($schema)) ? [':schema' => $schema] : [];
         $rows = $this->connection->createCommand($sql)->queryAll(true, $params);
 
-        $names = array();
+        $names = [];
         foreach ($rows as $row) {
-            $ts = isset($row['TABSCHEMA']) ? $row['TABSCHEMA'] : '';
-            $tn = isset($row['TABNAME']) ? $row['TABNAME'] : '';
-            $names[] = ($defaultSchema == $ts) ? $tn : $ts . '.' . $tn;
+            $schema = isset($row['TABSCHEMA']) ? $row['TABSCHEMA'] : '';
+            $name = isset($row['TABNAME']) ? $row['TABNAME'] : '';
+            if ($defaultSchema == $schema) {
+                $name = $schema . '.' . $name;
+            }
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('V', $row['TYPE'])));
         }
 
         return $names;
@@ -722,7 +725,8 @@ SQL;
         $enable = $check ? 'CHECKED' : 'UNCHECKED';
         $tableNames = $this->getTableNames($schema);
         $db = $this->connection;
-        foreach ($tableNames as $tableName) {
+        foreach ($tableNames as $tableInfo) {
+            $tableName = $tableInfo['name'];
             $db->createCommand("SET INTEGRITY FOR $tableName ALL IMMEDIATE $enable")->execute();
         }
     }
@@ -785,28 +789,15 @@ SQL;
     }
 
     /**
-     * @param string $schema default schema.
-     */
-    public function setDefaultSchema($schema)
-    {
-        $this->defaultSchema = $schema;
-    }
-
-    /**
      * @return string default schema.
      */
-    public function getDefaultSchema()
+    public function findDefaultSchema()
     {
-        if (empty($this->defaultSchema)) {
-            $sql = <<<MYSQL
+        $sql = <<<SQL
 VALUES CURRENT_SCHEMA
-MYSQL;
+SQL;
 
-            $current = $this->connection->createCommand($sql)->queryScalar();
-            $this->setDefaultSchema($current);
-        }
-
-        return $this->defaultSchema;
+        return $this->connection->createCommand($sql)->queryScalar();
     }
 
     /**
@@ -865,7 +856,7 @@ MYSQL;
                     $rType = (isset($param['type'])) ? $param['type'] : 'string';
                     $rLength = (isset($param['length'])) ? $param['length'] : 256;
                     $pdoType = $command->getConnection()->getPdoType($rType);
-                    $command->bindParam(":$pName", $params[$key]['value'], $pdoType | PDO::PARAM_INPUT_OUTPUT,
+                    $command->bindParam(":$pName", $params[$key]['value'], $pdoType | \PDO::PARAM_INPUT_OUTPUT,
                         $rLength);
                     break;
             }
@@ -876,7 +867,7 @@ MYSQL;
         $result = $reader->readAll();
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $result[] = $reader->readAll();
             } while ($reader->nextResult());
@@ -921,7 +912,7 @@ MYSQL;
     public function callFunction($name, &$params)
     {
         $name = $this->connection->quoteTableName($name);
-        $bindings = array();
+        $bindings = [];
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
             $value = isset($param['value']) ? $param['value'] : null;
@@ -942,7 +933,7 @@ MYSQL;
         $result = $reader->readAll();
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $result[] = $reader->readAll();
             } while ($reader->nextResult());
@@ -966,7 +957,7 @@ MYSQL;
     {
         $defaultSchema = $this->getDefaultSchema();
 
-        $params = array();
+        $params = [];
         switch (trim(strtoupper($type))) {
             case 'PROCEDURE':
                 $params[':type'] = 'P';
@@ -994,7 +985,7 @@ WHERE
 SQL;
 
         $results = $this->connection->createCommand($sql)->queryAll(true, $params);
-        $names = array();
+        $names = [];
         foreach ($results as $row) {
             $rs = isset($row['ROUTINESCHEMA']) ? $row['ROUTINESCHEMA'] : '';
             $rn = isset($row['ROUTINENAME']) ? $row['ROUTINENAME'] : '';

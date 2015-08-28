@@ -9,6 +9,7 @@
  */
 namespace DreamFactory\Core\SqlDbCore\Mysql;
 
+use DreamFactory\Core\SqlDbCore\TableNameSchema;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 
 /**
@@ -20,11 +21,6 @@ use DreamFactory\Core\SqlDbCore\TableSchema;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    /**
-     * @type string
-     */
-    private $defaultSchema;
-
     protected function translateSimpleColumnTypes(array &$info)
     {
         // override this in each schema class
@@ -343,7 +339,7 @@ MYSQL
      */
     protected function loadTable($name)
     {
-        $table = new TableSchema;
+        $table = new TableSchema($name);
         $this->resolveTableNames($table, $name);
 
         if (!$this->findColumns($table)) {
@@ -425,8 +421,7 @@ MYSQL
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['Field'];
+        $c = new ColumnSchema($column['Field']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = $column['Null'] === 'YES';
         $c->isPrimaryKey = strpos($column['Key'], 'PRI') !== false;
@@ -574,6 +569,7 @@ MYSQL;
     protected function findTableNames($schema = '', $include_views = true)
     {
         $defaultSchema = $this->getDefaultSchema();
+        $addSchema = (!empty($schema) && $defaultSchema != $schema);
 
         $sql = 'SHOW FULL TABLES';
 
@@ -585,12 +581,16 @@ MYSQL;
             $sql .= " WHERE TABLE_TYPE = 'BASE TABLE'";
         }
 
-        $names = $this->connection->createCommand($sql)->queryColumn();
+        $rows = $this->connection->createCommand($sql)->queryAll();
 
-        if (!empty($schema) && $defaultSchema != $schema) {
-            foreach ($names as &$name) {
+        $names = [];
+        foreach ($rows as $row) {
+            $row = array_values($row);
+            $name = $row[0];
+            if ($addSchema) {
                 $name = $schema . '.' . $name;
             }
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row[1])));
         }
 
         return $names;
@@ -919,28 +919,15 @@ MYSQL;
     }
 
     /**
-     * @param string $schema default schema.
-     */
-    public function setDefaultSchema($schema)
-    {
-        $this->defaultSchema = $schema;
-    }
-
-    /**
      * @return string default schema.
      */
-    public function getDefaultSchema()
+    public function findDefaultSchema()
     {
-        if (empty($this->defaultSchema)) {
-            $sql = <<<MYSQL
+        $sql = <<<MYSQL
 SELECT DATABASE() FROM DUAL
 MYSQL;
 
-            $current = $this->connection->createCommand($sql)->queryScalar();
-            $this->setDefaultSchema($current);
-        }
-
-        return $this->defaultSchema;
+        return $this->connection->createCommand($sql)->queryScalar();
     }
 
     public function parseValueForSet($value, $field_info)
