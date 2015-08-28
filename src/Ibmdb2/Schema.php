@@ -100,6 +100,12 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 }
                 break;
 
+            case 'user_id':
+            case 'user_id_on_create':
+            case 'user_id_on_update':
+                $info['type'] = 'integer';
+                break;
+
             case 'datetime':
                 $info['type'] = 'TIMESTAMP';
                 break;

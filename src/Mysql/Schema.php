@@ -57,6 +57,13 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                 }
                 break;
 
+            case 'user_id':
+            case 'user_id_on_create':
+            case 'user_id_on_update':
+                $info['type'] = 'int';
+                $info['type_extras'] = '(11)';
+                break;
+
             case 'boolean':
                 $info['type'] = 'tinyint';
                 $info['type_extras'] = '(1)';

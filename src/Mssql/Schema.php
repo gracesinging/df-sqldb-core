@@ -73,6 +73,12 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     $info['default'] = $default;
                 }
                 break;
+            case 'user_id':
+            case 'user_id_on_create':
+            case 'user_id_on_update':
+                $info['type'] = 'int';
+                break;
+
 
             case 'boolean':
                 $info['type'] = 'bit';

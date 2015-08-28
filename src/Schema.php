@@ -974,15 +974,12 @@ abstract class Schema
 
             switch ($type) {
                 case 'user_id':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id';
                     break;
                 case 'user_id_on_create':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id_on_create';
                     break;
                 case 'user_id_on_update':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id_on_update';
                     break;
                 case 'timestamp_on_create':
