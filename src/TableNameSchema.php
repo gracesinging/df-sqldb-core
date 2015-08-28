@@ -69,7 +69,7 @@ class TableNameSchema
     public function toArray($use_alias = false)
     {
         $out = [
-            'name'        => ($use_alias) ? $this->alias : $this->name,
+            'name'        => ($use_alias && !empty($this->alias)) ? $this->alias : $this->name,
             'is_view'     => $this->isView,
             'label'       => $this->label,
             'plural'      => $this->plural,
