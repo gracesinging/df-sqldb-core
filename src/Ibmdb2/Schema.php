@@ -662,7 +662,7 @@ SQL;
         foreach ($rows as $row) {
             $schema = isset($row['TABSCHEMA']) ? $row['TABSCHEMA'] : '';
             $name = isset($row['TABNAME']) ? $row['TABNAME'] : '';
-            if ($defaultSchema == $schema) {
+            if ($defaultSchema !== $schema) {
                 $name = $schema . '.' . $name;
             }
             $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('V', $row['TYPE'])));

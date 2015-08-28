@@ -569,7 +569,7 @@ MYSQL;
     protected function findTableNames($schema = '', $include_views = true)
     {
         $defaultSchema = $this->getDefaultSchema();
-        $addSchema = (!empty($schema) && $defaultSchema != $schema);
+        $addSchema = (!empty($schema) && ($defaultSchema !== $schema));
 
         $sql = 'SHOW FULL TABLES';
 

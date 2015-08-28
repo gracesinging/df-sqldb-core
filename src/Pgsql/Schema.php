@@ -619,7 +619,7 @@ EOD;
         foreach ($rows as $row) {
             $schema = isset($row['table_schema']) ? $row['table_schema'] : '';
             $name = isset($row['table_name']) ? $row['table_name'] : '';
-            if ($defaultSchema == $schema) {
+            if ($defaultSchema !== $schema) {
                 $name = $schema . '.' . $name;
             }
             $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['TABLE_TYPE'])));
