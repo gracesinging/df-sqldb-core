@@ -628,7 +628,7 @@ EOD;
             if ($defaultSchema !== $schema) {
                 $name = $schema . '.' . $name;
             }
-            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['TABLE_TYPE'])));
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['table_type'])));
         }
 
         return $names;

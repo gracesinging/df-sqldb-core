@@ -152,6 +152,8 @@ abstract class Schema
         }
 
         $this->schemaNames = $this->findSchemaNames();
+        natcasesort($this->schemaNames);
+
         $this->connection->addToCache('schema_names', $this->schemaNames, true);
 
         return $this->schemaNames;
@@ -324,6 +326,7 @@ abstract class Schema
             foreach ($this->getSchemaNames($refresh) as $temp) {
                 /** @type TableNameSchema[] $tables */
                 $tables = $this->findTableNames($temp, $include_views);
+                ksort($tables, SORT_NATURAL); // sort alphabetically
                 // merge db extras
                 if (!empty($extrasEntries = $this->connection->getSchemaExtrasForTables(array_keys($tables), false))) {
                     foreach ($extrasEntries as $extras) {
@@ -454,8 +457,6 @@ abstract class Schema
                 $names = array_merge($names, $temp);
             }
 
-            natcasesort($names);
-
             return array_values($names);
         } else {
             if (!isset($this->procedureNames[$schema])) {
@@ -463,7 +464,6 @@ abstract class Schema
             }
 
             $names = (isset($this->procedureNames[$schema]) ? $this->procedureNames[$schema] : []);
-            natcasesort($names);
 
             return array_values($names);
         }
@@ -482,7 +482,9 @@ abstract class Schema
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
-                $names[$temp] = $this->findProcedureNames($temp);
+                $procs = $this->findProcedureNames($temp);
+                natcasesort($procs);
+                $names[$temp] = $procs;
             }
             $this->procedureNames = $names;
             $this->connection->addToCache('proc_names', $this->procedureNames, true);
@@ -575,8 +577,6 @@ abstract class Schema
                 $names = array_merge($names, $temp);
             }
 
-            natcasesort($names);
-
             return array_values($names);
         } else {
             if (!isset($this->functionNames[$schema])) {
@@ -584,7 +584,6 @@ abstract class Schema
             }
 
             $names = (isset($this->functionNames[$schema]) ? $this->functionNames[$schema] : []);
-            natcasesort($names);
 
             return array_values($names);
         }
@@ -603,7 +602,9 @@ abstract class Schema
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
-                $names[$temp] = $this->findFunctionNames($temp);
+                $funcs = $this->findFunctionNames($temp);
+                natcasesort($funcs);
+                $names[$temp] = $funcs;
             }
             $this->functionNames = $names;
             $this->connection->addToCache('func_names', $this->functionNames, true);
