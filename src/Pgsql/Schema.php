@@ -9,6 +9,7 @@
  */
 namespace DreamFactory\Core\SqlDbCore\Pgsql;
 
+use DreamFactory\Core\SqlDbCore\TableNameSchema;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 
 /**
@@ -25,9 +26,11 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     private $sequences = [];
 
     /**
+     * @param boolean $refresh if we need to refresh schema cache.
+     *
      * @return string default schema.
      */
-    public function getDefaultSchema()
+    public function getDefaultSchema($refresh = false)
     {
         return static::DEFAULT_SCHEMA;
     }
@@ -68,6 +71,12 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     }
                     $info['default'] = $default;
                 }
+                break;
+
+            case 'user_id':
+            case 'user_id_on_create':
+            case 'user_id_on_update':
+                $info['type'] = 'integer';
                 break;
 
             case 'int':
@@ -291,7 +300,8 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
         $enable = $check ? 'ENABLE' : 'DISABLE';
         $tableNames = $this->getTableNames($schema);
         $db = $this->connection;
-        foreach ($tableNames as $tableName) {
+        foreach ($tableNames as $tableInfo) {
+            $tableName = $tableInfo['name'];
             $tableName = '"' . $tableName . '"';
             if (strpos($tableName, '.') !== false) {
                 $tableName = str_replace('.', '"."', $tableName);
@@ -309,7 +319,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function loadTable($name)
     {
-        $table = new TableSchema;
+        $table = new TableSchema($name);
         $this->resolveTableNames($table, $name);
         if (!$this->findColumns($table)) {
             return null;
@@ -412,8 +422,7 @@ EOD;
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['attname'];
+        $c = new ColumnSchema($column['attname']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = !$column['attnotnull'];
         $c->comment = $column['comment'] === null ? '' : $column['comment'];
@@ -600,7 +609,7 @@ SQL;
         }
 
         $sql = <<<EOD
-SELECT table_name, table_schema FROM information_schema.tables
+SELECT table_name, table_schema, table_type FROM information_schema.tables
 WHERE $condition
 EOD;
 
@@ -614,9 +623,12 @@ EOD;
 
         $names = [];
         foreach ($rows as $row) {
-            $ts = isset($row['table_schema']) ? $row['table_schema'] : '';
-            $tn = isset($row['table_name']) ? $row['table_name'] : '';
-            $names[] = ($defaultSchema == $ts) ? $tn : $ts . '.' . $tn;
+            $schema = isset($row['table_schema']) ? $row['table_schema'] : '';
+            $name = isset($row['table_name']) ? $row['table_name'] : '';
+            if ($defaultSchema !== $schema) {
+                $name = $schema . '.' . $name;
+            }
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['table_type'])));
         }
 
         return $names;

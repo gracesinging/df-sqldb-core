@@ -153,6 +153,12 @@ class ColumnSchema
      */
     public $comment = '';
 
+    public function __construct($name)
+    {
+        $this->name = $name;
+        $this->label = static::camelize($this->name, '_', true);
+    }
+
     /**
      * Extracts the PHP type from DF type.
      *
@@ -406,27 +412,34 @@ class ColumnSchema
 
     public function mergeDbExtras($extras)
     {
-        $this->type = (isset($extras['extra_type'])) ? $extras['extra_type'] : $this->type;
-        $this->alias = (isset($extras['alias'])) ? $extras['alias'] : null;
-        $this->description = (isset($extras['description'])) ? $extras['description'] : null;
-        $this->picklist = (isset($extras['picklist'])) ? $extras['picklist'] : null;
-        $this->validation = (isset($extras['validation'])) ? $extras['validation'] : null;
-        if (isset($extras['label']) && !empty($extras['label'])) {
+        if (!empty($extras['label'])) {
             $this->label = $extras['label'];
+        }
+        if (!empty($extras['extra_type'])) {
+            $this->type = $extras['extra_type'];
+        }
+        if (!empty($extras['alias'])) {
+            $this->alias = $extras['alias'];
+        }
+        if (!empty($extras['description'])) {
+            $this->description = $extras['description'];
+        }
+        if (!empty($extras['picklist'])) {
+            $this->picklist = $extras['picklist'];
+        }
+        if (!empty($extras['validation'])) {
+            $this->validation = $extras['validation'];
         }
     }
 
-    public function toArray()
+    public function toArray($use_alias = false)
     {
-        return [
-            'name'               => $this->name,
+        $out = [
+            'name'               => ($use_alias && !empty($this->alias)) ? $this->alias : $this->name,
             'label'              => (empty($this->label)) ? static::camelize($this->name, '_', true) : $this->label,
             'description'        => $this->description,
-            'alias'              => $this->alias,
             'type'               => $this->type,
             'db_type'            => $this->dbType,
-            'php_type'           => $this->phpType,
-            'pdo_type'           => $this->pdoType,
             'length'             => $this->size,
             'precision'          => $this->precision,
             'scale'              => $this->scale,
@@ -445,6 +458,12 @@ class ColumnSchema
             'picklist'           => $this->picklist,
             'validation'         => $this->validation
         ];
+
+        if ($use_alias) {
+            $out['alias'] = $this->alias;
+        }
+
+        return $out;
     }
 
     public function determineRequired()

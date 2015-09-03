@@ -28,6 +28,10 @@ abstract class Schema
     const DEFAULT_STRING_MAX_SIZE = 255;
 
     /**
+     * @type string
+     */
+    protected $defaultSchema;
+    /**
      * @var array
      */
     protected $schemaNames = [];
@@ -92,16 +96,37 @@ abstract class Schema
     }
 
     /**
-     * @param $schema
+     * Returns the default schema name for the connection.
+     *
+     * @param boolean $refresh if we need to refresh schema cache.
+     *
+     * @return string default schema.
      */
-    public function setDefaultSchema($schema)
+    public function getDefaultSchema($refresh = false)
     {
+        if (!$refresh) {
+            if (!empty($this->defaultSchema)) {
+                return $this->defaultSchema;
+            } elseif (null !== $this->defaultSchema = $this->connection->getFromCache('default_schema')) {
+                return $this->defaultSchema;
+            }
+        }
+
+        $this->defaultSchema = $this->findDefaultSchema();
+        $this->connection->addToCache('default_schema', $this->defaultSchema, true);
+
+        return $this->defaultSchema;
     }
 
     /**
-     * @return string default schema.
+     * Returns the default schema name for the database.
+     * This method should be overridden by child classes in order to support this feature
+     * because the default implementation simply returns null.
+     *
+     * @throws \Exception
+     * @return array all schema names in the database.
      */
-    public function getDefaultSchema()
+    protected function findDefaultSchema()
     {
         return null;
     }
@@ -115,6 +140,9 @@ abstract class Schema
      */
     public function getSchemaNames($refresh = false)
     {
+        if ($this->connection->isDefaultSchemaOnly()) {
+            return [$this->getDefaultSchema()];
+        }
         if (!$refresh) {
             if (!empty($this->schemaNames)) {
                 return $this->schemaNames;
@@ -124,6 +152,8 @@ abstract class Schema
         }
 
         $this->schemaNames = $this->findSchemaNames();
+        natcasesort($this->schemaNames);
+
         $this->connection->addToCache('schema_names', $this->schemaNames, true);
 
         return $this->schemaNames;
@@ -160,12 +190,8 @@ abstract class Schema
         $tables = $this->getTableNames();
 
         //	Search normal, return real name
-        if (false !== array_search($name, $tables)) {
-            return $returnName ? $name : true;
-        }
-
-        if (false !== $key = array_search(strtolower($name), array_map('strtolower', $tables))) {
-            return $returnName ? $tables[$key] : true;
+        if (false !== array_key_exists(strtolower($name), $tables)) {
+            return $returnName ? $tables[strtolower($name)]->name : true;
         }
 
         return false;
@@ -274,18 +300,13 @@ abstract class Schema
                 $names = array_merge($names, $temp);
             }
 
-            natcasesort($names);
-
-            return array_values($names);
+            return $names;
         } else {
             if (!isset($this->tableNames[$schema])) {
                 $this->getCachedTableNames($include_views);
             }
 
-            $names = (isset($this->tableNames[$schema]) ? $this->tableNames[$schema] : []);
-            natcasesort($names);
-
-            return array_values($names);
+            return (isset($this->tableNames[$schema]) ? $this->tableNames[$schema] : []);
         }
     }
 
@@ -303,7 +324,20 @@ abstract class Schema
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
-                $names[$temp] = $this->findTableNames($temp, $include_views);
+                /** @type TableNameSchema[] $tables */
+                $tables = $this->findTableNames($temp, $include_views);
+                ksort($tables, SORT_NATURAL); // sort alphabetically
+                // merge db extras
+                if (!empty($extrasEntries = $this->connection->getSchemaExtrasForTables(array_keys($tables), false))) {
+                    foreach ($extrasEntries as $extras) {
+                        if (!empty($extraName = strtolower(strval($extras['table'])))) {
+                            if (array_key_exists($extraName, $tables)) {
+                                $tables[$extraName]->mergeDbExtras($extras);
+                            }
+                        }
+                    }
+                }
+                $names[$temp] = $tables;
             }
             $this->tableNames = $names;
             $this->connection->addToCache('table_names', $this->tableNames, true);
@@ -402,6 +436,8 @@ abstract class Schema
      * @param string $schema the schema of the procedures. Defaults to empty string, meaning the current or default
      *                       schema. If not empty, the returned procedure names will be prefixed with the schema name.
      *
+     * @param bool   $refresh
+     *
      * @return array all procedure names in the database.
      */
     public function getProcedureNames($schema = '', $refresh = false)
@@ -421,8 +457,6 @@ abstract class Schema
                 $names = array_merge($names, $temp);
             }
 
-            natcasesort($names);
-
             return array_values($names);
         } else {
             if (!isset($this->procedureNames[$schema])) {
@@ -430,7 +464,6 @@ abstract class Schema
             }
 
             $names = (isset($this->procedureNames[$schema]) ? $this->procedureNames[$schema] : []);
-            natcasesort($names);
 
             return array_values($names);
         }
@@ -449,7 +482,9 @@ abstract class Schema
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
-                $names[$temp] = $this->findProcedureNames($temp);
+                $procs = $this->findProcedureNames($temp);
+                natcasesort($procs);
+                $names[$temp] = $procs;
             }
             $this->procedureNames = $names;
             $this->connection->addToCache('proc_names', $this->procedureNames, true);
@@ -478,7 +513,6 @@ abstract class Schema
      *
      * @param string  $name    stored function name
      * @param boolean $refresh if we need to refresh schema cache for a stored function.
-     *                         Parameter available since 1.1.9
      *
      * @return FunctionSchema stored function metadata. Null if the named stored function does not exist.
      */
@@ -522,6 +556,8 @@ abstract class Schema
      * @param string $schema the schema of the functions. Defaults to empty string, meaning the current or default
      *                       schema. If not empty, the returned functions names will be prefixed with the schema name.
      *
+     * @param bool   $refresh
+     *
      * @return array all stored functions names in the database.
      */
     public function getFunctionNames($schema = '', $refresh = false)
@@ -541,8 +577,6 @@ abstract class Schema
                 $names = array_merge($names, $temp);
             }
 
-            natcasesort($names);
-
             return array_values($names);
         } else {
             if (!isset($this->functionNames[$schema])) {
@@ -550,7 +584,6 @@ abstract class Schema
             }
 
             $names = (isset($this->functionNames[$schema]) ? $this->functionNames[$schema] : []);
-            natcasesort($names);
 
             return array_values($names);
         }
@@ -569,7 +602,9 @@ abstract class Schema
         ) {
             $names = [];
             foreach ($this->getSchemaNames($refresh) as $temp) {
-                $names[$temp] = $this->findFunctionNames($temp);
+                $funcs = $this->findFunctionNames($temp);
+                natcasesort($funcs);
+                $names[$temp] = $funcs;
             }
             $this->functionNames = $names;
             $this->connection->addToCache('func_names', $this->functionNames, true);
@@ -646,9 +681,7 @@ abstract class Schema
         $this->schemaNames = [];
         $this->builder = null;
 
-        if ($this->connection->cache) {
-            $this->connection->cache->flush();
-        }
+        $this->connection->flushCache();
     }
 
     /**
@@ -859,7 +892,7 @@ abstract class Schema
             if (!is_array($values)) {
                 $values = array_map('trim', explode(',', trim($values, ',')));
             }
-            if (!empty($values)){
+            if (!empty($values)) {
                 $oldValues = (isset($oldField)) ? $oldField->picklist : [];
                 if ($values != $oldValues) {
                     $picklist = '';
@@ -893,9 +926,9 @@ abstract class Schema
             }
 
             $validation = (isset($field['validation'])) ? $field['validation'] : null;
-            if (!empty($validation)){
+            if (!empty($validation)) {
                 $oldValue = (isset($oldField)) ? $oldField->validation : null;
-                if ($validation != $oldValue){
+                if ($validation != $oldValue) {
                     $temp['validation'] = json_encode($validation);
                 }
             }
@@ -942,15 +975,12 @@ abstract class Schema
 
             switch ($type) {
                 case 'user_id':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id';
                     break;
                 case 'user_id_on_create':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id_on_create';
                     break;
                 case 'user_id_on_update':
-                    $field['type'] = 'int';
                     $temp['extra_type'] = 'user_id_on_update';
                     break;
                 case 'timestamp_on_create':

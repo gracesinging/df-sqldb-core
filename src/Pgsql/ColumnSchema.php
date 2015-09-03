@@ -73,7 +73,9 @@ class ColumnSchema extends \DreamFactory\Core\SqlDbCore\ColumnSchema
             $this->defaultValue = $this->typecast(str_replace("''", "'", $matches[1]));
         } elseif (preg_match('/^(-?\d+(\.\d*)?)(::.*)?$/', $defaultValue, $matches)) {
             $this->defaultValue = $this->typecast($matches[1]);
+        } else {
+            // could be a internal function call like setting uuids
+            $this->defaultValue = $defaultValue;
         }
-        // else is null
     }
 }

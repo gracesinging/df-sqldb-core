@@ -10,6 +10,7 @@
 namespace DreamFactory\Core\SqlDbCore\Oci;
 
 use DreamFactory\Core\SqlDbCore\Expression;
+use DreamFactory\Core\SqlDbCore\TableNameSchema;
 use DreamFactory\Core\SqlDbCore\TableSchema;
 
 /**
@@ -22,18 +23,16 @@ use DreamFactory\Core\SqlDbCore\TableSchema;
  */
 class Schema extends \DreamFactory\Core\SqlDbCore\Schema
 {
-    private $defaultSchema = '';
-
     /**
      * @var array the abstract column types mapped to physical column types.
      * @since 1.1.6
      */
-    public $columnTypes = array(
+    public $columnTypes = [
         // no autoincrement, requires sequences and optionally triggers or client input
         'pk' => 'NUMBER(10) NOT NULL PRIMARY KEY',
         // new no sequence identity setting from 12c
         //        'pk' => 'NUMBER GENERATED ALWAYS AS IDENTITY',
-    );
+    ];
 
     protected function translateSimpleColumnTypes(array &$info)
     {
@@ -69,6 +68,13 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
                     }
                     $info['default'] = $default;
                 }
+                break;
+
+            case 'user_id':
+            case 'user_id_on_create':
+            case 'user_id_on_update':
+                $info['type'] = 'number';
+                $info['type_extras'] = '(10)';
                 break;
 
             case 'integer':
@@ -285,23 +291,13 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     }
 
     /**
-     * @param string $schema default schema.
-     */
-    public function setDefaultSchema($schema)
-    {
-        $this->defaultSchema = $schema;
-    }
-
-    /**
+     * @param boolean $refresh if we need to refresh schema cache.
+     *
      * @return string default schema.
      */
-    public function getDefaultSchema()
+    public function getDefaultSchema($refresh = false)
     {
-        if (!strlen($this->defaultSchema)) {
-            $this->setDefaultSchema(strtoupper($this->connection->username));
-        }
-
-        return $this->defaultSchema;
+        return strtoupper($this->connection->username);
     }
 
     /**
@@ -314,9 +310,9 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
     {
         $table = strtoupper($table);
         if (count($parts = explode('.', str_replace('"', '', $table))) > 1) {
-            return array($parts[0], $parts[1]);
+            return [$parts[0], $parts[1]];
         } else {
-            return array($this->getDefaultSchema(), $parts[0]);
+            return [$this->getDefaultSchema(), $parts[0]];
         }
     }
 
@@ -329,7 +325,7 @@ class Schema extends \DreamFactory\Core\SqlDbCore\Schema
      */
     protected function loadTable($name)
     {
-        $table = new TableSchema;
+        $table = new TableSchema($name);
         $this->resolveTableNames($table, $name);
 
         if (!$this->findColumns($table)) {
@@ -412,7 +408,7 @@ EOD;
 
         $command = $this->connection->createCommand($sql);
 
-        if (($columns = $command->queryAll()) === array()) {
+        if (($columns = $command->queryAll()) === []) {
             return false;
         }
 
@@ -424,7 +420,7 @@ EOD;
                 if ($table->primaryKey === null) {
                     $table->primaryKey = $c->name;
                 } elseif (is_string($table->primaryKey)) {
-                    $table->primaryKey = array($table->primaryKey, $c->name);
+                    $table->primaryKey = [$table->primaryKey, $c->name];
                 } else {
                     $table->primaryKey[] = $c->name;
                 }
@@ -461,8 +457,7 @@ EOD;
      */
     protected function createColumn($column)
     {
-        $c = new ColumnSchema;
-        $c->name = $column['COLUMN_NAME'];
+        $c = new ColumnSchema($column['COLUMN_NAME']);
         $c->rawName = $this->quoteColumnName($c->name);
         $c->allowNull = $column['NULLABLE'] === 'Y';
         $c->isPrimaryKey = strpos($column['KEY'], 'P') !== false;
@@ -514,7 +509,7 @@ EOD;
             if ((0 == strcasecmp($tn, $table->name)) && (0 == strcasecmp($ts, $schema))) {
                 $name = ($rts == $defaultSchema) ? $rtn : $rts . '.' . $rtn;
 
-                $table->foreignKeys[$cn] = array($name, $rcn);
+                $table->foreignKeys[$cn] = [$name, $rcn];
                 if (isset($table->columns[$cn])) {
                     $table->columns[$cn]->isForeignKey = true;
                     $table->columns[$cn]->refTable = $name;
@@ -589,7 +584,7 @@ SQL;
 //SELECT table_name, '{$schema}' as table_schema FROM user_tables
 
         $sql = <<<EOD
-SELECT object_name as table_name, owner as table_schema FROM all_objects WHERE $condition
+SELECT object_name as table_name, owner as table_schema, object_type as table_type FROM all_objects WHERE $condition
 EOD;
 
         if (!empty($schema)) {
@@ -600,11 +595,14 @@ EOD;
 
         $rows = $this->connection->createCommand($sql)->queryAll();
 
-        $names = array();
+        $names = [];
         foreach ($rows as $row) {
-            $ts = isset($row['TABLE_SCHEMA']) ? $row['TABLE_SCHEMA'] : '';
-            $tn = isset($row['TABLE_NAME']) ? $row['TABLE_NAME'] : '';
-            $names[] = ($defaultSchema == $ts) ? $tn : $ts . '.' . $tn;
+            $schema = isset($row['TABLE_SCHEMA']) ? $row['TABLE_SCHEMA'] : '';
+            $name = isset($row['TABLE_NAME']) ? $row['TABLE_NAME'] : '';
+            if ($defaultSchema !== $schema) {
+                $name = $schema . '.' . $name;
+            }
+            $names[strtolower($name)] = new TableNameSchema($name, (0 === strcasecmp('VIEW', $row['TABLE_TYPE'])));
         }
 
         return $names;
@@ -739,12 +737,13 @@ EOD;
             $schema = $this->getDefaultSchema();
         }
         $mode = $check ? 'ENABLE' : 'DISABLE';
-        foreach ($this->getTableNames($schema) as $table) {
+        foreach ($this->getTableNames($schema) as $tableInfo) {
+            $table = $tableInfo['name'];
             $constraints =
                 $this->connection
                     ->createCommand("SELECT CONSTRAINT_NAME FROM USER_CONSTRAINTS WHERE TABLE_NAME=:t AND OWNER=:o")
                     ->queryColumn(
-                        array(':t' => $table, ':o' => $schema)
+                        [':t' => $table, ':o' => $schema]
                     );
             foreach ($constraints as $constraint) {
                 $this->connection
@@ -855,7 +854,7 @@ EOD;
     public function callFunction($name, &$params)
     {
         $name = $this->connection->quoteTableName($name);
-        $bindings = array();
+        $bindings = [];
         foreach ($params as $key => $param) {
             $name = (isset($param['name']) && !empty($param['name'])) ? ':' . $param['name'] : ":p$key";
             $value = isset($param['value']) ? $param['value'] : null;
@@ -875,7 +874,7 @@ EOD;
         $result = $reader->readAll();
         if ($reader->nextResult()) {
             // more data coming, make room
-            $result = array($result);
+            $result = [$result];
             do {
                 $result[] = $reader->readAll();
             } while ($reader->nextResult());
@@ -918,7 +917,7 @@ WHERE
     {$schema}
 MYSQL;
 
-        return $this->connection->createCommand($sql)->queryColumn(array(':routine_type' => $type));
+        return $this->connection->createCommand($sql)->queryColumn([':routine_type' => $type]);
     }
 
     public function getPrimaryKeyCommands($table, $column)
